@@ -1,6 +1,6 @@
 {
   "name": "dve",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Graphs and stuff",
   "main": "index.js",
   "scripts": {
