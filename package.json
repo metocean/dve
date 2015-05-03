@@ -1,0 +1,22 @@
+{
+  "name": "dve",
+  "version": "0.0.1",
+  "description": "Graphs and stuff",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/metocean/dve.git"
+  },
+  "keywords": [
+    "d3"
+  ],
+  "author": "MetOcean Solutions",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/metocean/dve/issues"
+  },
+  "homepage": "https://github.com/metocean/dve"
+}
