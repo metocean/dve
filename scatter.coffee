@@ -1,132 +1,136 @@
-class SRscatter
-  constructor: (options, params) ->
-    @options = options
-    { @svg, @data, @scale, @axis, @dimensions, @hub, @domain } = params
+d3 = require 'd3'
+moment = require 'moment'
+neighbours = require './util/neighbours'
 
-    @data = @data.map (d) ->
-      result = time: d.time
-      result[options.field] = +d[options.field]
-      result
+module.exports = (dom, options) ->
+  { components, spec, dimensions, data, domain, hub, scale, axis } = options
 
-    @data = @data.filter (d) => d[@options.field]?
+  svg = dom.append 'g'
 
-    getNeighbours = neighbours @data, (d) -> d.time
+  data = data.map (d) ->
+    result = time: d.time
+    result[spec.field] = +d[spec.field]
+    result
 
-    start = getNeighbours(@domain[0])[0]
-    end = getNeighbours(@domain[1])
-    end = end[end.length-1]
+  data = data.filter (d) -> d[spec.field]?
 
-    @filteredData = @data.filter (d) =>
-      +d.time >= +start.time and +d.time <= +end.time
+  getNeighbours = neighbours data, (d) -> d.time
 
-    @value = {
-      x : (d)=> d.time
-      y : (d)=> d[options.field]
-    }
+  start = getNeighbours(domain[0])[0]
+  end = getNeighbours(domain[1])
+  end = end[end.length-1]
 
-    @dotContainer = @svg
-      .append 'g'
+  filteredData = data.filter (d) ->
+    +d.time >= +start.time and +d.time <= +end.time
 
-    @dotContainer
-      .selectAll ".dot"
-      .data @filteredData
-      .enter()
-      .append "circle"
-      .attr "class", "dot"
-      .attr "r", 3.5
+  value =
+    x: (d) -> d.time
+    y: (d) -> d[spec.field]
 
-    @focus = @svg
-      .append 'g'
-      .attr 'class', 'focus'
+  dotContainer = svg.append 'g'
 
-    @focus
-      .append 'text'
-      .attr 'class', 'poi-y-val-shad'
-      .attr 'display', 'none'
-      .attr 'dy', '-0.3em'
+  dotContainer
+    .selectAll ".dot"
+    .data filteredData
+    .enter()
+    .append "circle"
+    .attr "class", "dot"
+    .attr "r", 3.5
 
-    @focus
-      .append 'text'
-      .attr 'class', 'poi-y-val'
-      .attr 'display', 'none'
-      .attr 'dy', '-0.3em'
+  focus = svg
+    .append 'g'
+    .attr 'class', 'focus'
 
-    @hub.on 'poi', @setpoi
+  focus
+    .append 'text'
+    .attr 'class', 'poi-y-val-shad'
+    .attr 'display', 'none'
+    .attr 'dy', '-0.3em'
 
-  provideMax: =>
-    d3.max @filteredData, (d) => d[@options.field]
+  focus
+    .append 'text'
+    .attr 'class', 'poi-y-val'
+    .attr 'display', 'none'
+    .attr 'dy', '-0.3em'
 
-  drawDots : (svg, data) =>
+  poi = null
+  hub.on 'poi', (p) ->
+    poi = p
+    updatepoi()
+
+  provideMax = ->
+    d3.max filteredData, (d) -> d[spec.field]
+
+  drawDots = (svg, data) ->
     svg.selectAll ".dot"
       .data data
-      .attr "cx", (d) => @scale.x @value.x d
-      .attr "cy", (d) => @scale.y @value.y d
+      .attr "cx", (d) -> scale.x value.x d
+      .attr "cy", (d) -> scale.y value.y d
 
-  setpoi: (poi) =>
-    @poi = poi
-    @updatepoi()
-
-  updatepoi: =>
-    if !@poi?
-      @focus
+  updatepoi = ->
+    if !poi?
+      focus
         .select '.poi-y-val-shad'
         .attr 'display', 'none'
-      @focus
+      focus
         .select '.poi-y-val'
         .attr 'display', 'none'
-      @svg
+      svg
         .selectAll '.dot'
-        .data @filteredData
+        .data filteredData
         .style 'fill', 'rgb(20, 44, 88)'
       return
 
-    Neighbours = neighbours @filteredData, (d) -> d.time
-    poiNeighbours = Neighbours @poi
+    Neighbours = neighbours filteredData, (d) -> d.time
+    poiNeighbours = Neighbours poi
 
     d
 
     if poiNeighbours.length is 1
       d = poiNeighbours[0]
-    else if +poiNeighbours[0].time < +@domain[0]
+    else if +poiNeighbours[0].time < +domain[0]
       d = poiNeighbours[1]
-    else if +poiNeighbours[1].time > +@domain[1]
+    else if +poiNeighbours[1].time > +domain[1]
       d = poiNeighbours[0]
     else
       d0 = poiNeighbours[0]
       d1 = poiNeighbours[1]
       halfway = d0.time + (d1.time - d0.time)/2
-      d = if @poi.isBefore(halfway) then d0 else d1
+      d = if poi.isBefore(halfway) then d0 else d1
 
-    @svg
+    svg
       .selectAll '.dot'
-      .data @filteredData
-      .style 'fill', (f) =>
+      .data filteredData
+      .style 'fill', (f) ->
         return 'rgb(216, 34, 42)' if f.time == d.time
 
-    yValWidth = +@focus.select('.poi-y-val').node().getComputedTextLength()
+    yValWidth = +focus.select('.poi-y-val').node().getComputedTextLength()
 
-    if (@dimensions[0] - (@scale.x @poi)-yValWidth) < yValWidth
+    if (dimensions[0] - (scale.x poi)-yValWidth) < yValWidth
       dxAttr = - yValWidth - 8
     else
       dxAttr = 8
 
-    @focus
+    focus
       .select '.poi-y-val-shad'
       .attr 'display', null
-      .attr 'transform', "translate(#{@scale.x(d.time)}, #{@scale.y(d[@options.field])})"
+      .attr 'transform', "translate(#{scale.x(d.time)}, #{scale.y(d[spec.field])})"
       .attr 'dx', dxAttr
-      .text "#{d[@options.field].toPrecision(3)} (#{@options.units})"
+      .text "#{d[spec.field].toPrecision(3)} (#{spec.units})"
 
-    @focus
+    focus
       .select '.poi-y-val'
       .attr 'display', null
-      .attr 'transform', "translate(#{@scale.x(d.time)}, #{@scale.y(d[@options.field])})"
+      .attr 'transform', "translate(#{scale.x(d.time)}, #{scale.y(d[spec.field])})"
       .attr 'dx', dxAttr
-      .text "#{d[@options.field].toPrecision(3)} (#{@options.units})"
+      .text "#{d[spec.field].toPrecision(3)} (#{spec.units})"
 
-  resize: (dimensions) =>
-    @dimensions = dimensions
+  resize = (dimensions) ->
+    dimensions = dimensions
 
-    @drawDots @dotContainer, @filteredData
+    drawDots dotContainer, filteredData
 
-    @updatepoi()
+    updatepoi()
+
+  resize: resize
+  provideMax: provideMax
