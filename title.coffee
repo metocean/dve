@@ -3,13 +3,13 @@ d3 = require 'd3'
 calculate_layout = (dimensions) =>
   margin =
     top: 0
-    right: 20
+    right: 0
     bottom: 0
-    left: 20
+    left: 0
 
   dimensions =
     width: dimensions[0]
-    height: 20
+    height: 25
 
   canvas =
     top: margin.top
@@ -32,11 +32,12 @@ module.exports = (dom, options) ->
     .attr 'class', 'item title'
   svg
     .append 'g'
-    .attr 'class', 'canvas'
+    .attr 'class', 'title'
     .attr 'transform', "translate(#{layout.canvas.left},#{layout.canvas.top})"
     .append 'text'
-    .attr 'x', 0
-    .attr 'y', 12
+    .attr 'class', 'infotext'
+    .attr 'dy', 20
+    .attr 'dx', 5
     .text spec.text
 
   resize = (dimensions) ->

@@ -2,22 +2,22 @@
 var slice = [].slice;
 
 module.exports = function() {
-  var hub_listeners;
-  hub_listeners = {};
+  var listeners;
+  listeners = {};
   return {
     on: function(id, listener) {
-      if (hub_listeners[id] == null) {
-        hub_listeners[id] = [];
+      if (listeners[id] == null) {
+        listeners[id] = [];
       }
-      return hub_listeners[id].push(listener);
+      return listeners[id].push(listener);
     },
     emit: function() {
       var args, h, i, id, len, ref, results;
       id = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
-      if (hub_listeners[id] == null) {
+      if (listeners[id] == null) {
         return;
       }
-      ref = hub_listeners[id];
+      ref = listeners[id];
       results = [];
       for (i = 0, len = ref.length; i < len; i++) {
         h = ref[i];

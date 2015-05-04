@@ -8,13 +8,13 @@ calculate_layout = (function(_this) {
     var canvas, margin;
     margin = {
       top: 0,
-      right: 20,
+      right: 0,
       bottom: 0,
-      left: 20
+      left: 0
     };
     dimensions = {
       width: dimensions[0],
-      height: 20
+      height: 25
     };
     canvas = {
       top: margin.top,
@@ -37,7 +37,7 @@ module.exports = function(dom, options) {
   spec = options.spec, dimensions = options.dimensions;
   layout = calculate_layout(dimensions);
   svg = d3.select(dom).append('svg').attr('class', 'item title');
-  svg.append('g').attr('class', 'canvas').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")").append('text').attr('x', 0).attr('y', 12).text(spec.text);
+  svg.append('g').attr('class', 'title').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")").append('text').attr('class', 'infotext').attr('dy', 20).attr('dx', 5).text(spec.text);
   resize = function(dimensions) {
     layout = calculate_layout(dimensions);
     return svg.attr('width', layout.dimensions.width).attr('height', layout.dimensions.height);
