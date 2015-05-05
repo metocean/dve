@@ -4,7 +4,8 @@
 
 Add a series plotting area.
 
-TODO: add height as an attribute so it's not hardcoded
+TODO: Add height as an attribute so it's not hardcoded
+TODO: Region series for areas. E.g. probabilities, min and max.
 
 - type: chart
   text: Wind Speed
