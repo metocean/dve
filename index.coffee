@@ -6,6 +6,7 @@ module.exports =
   space: require './display/space'
   # data set
   data: require './display/data'
+  report: require './display/report'
 
   # navigation
   timeheadings: require './time/timeheadings'

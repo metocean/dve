@@ -51,13 +51,14 @@ gutil = require 'gulp-util'
 coffee = (options) ->
   shouldwatch = options?.watch? and options.watch
   browserifyargs =
-    entries: './dve.coffee'
+    entries: './index.coffee'
     # output sourcemaps
     debug: yes
     # needed for watchify
     cache: {}
     packageCache: {}
     fullPaths: shouldwatch
+    standalone: 'dve'
   bundler = browserify browserifyargs
   bundler = watchify bundler if shouldwatch
   # plugin to search for .coffee files first

@@ -58,11 +58,12 @@ coffee = function(options) {
   var browserifyargs, bundler, coffeefirst, compressor, shouldwatch;
   shouldwatch = ((options != null ? options.watch : void 0) != null) && options.watch;
   browserifyargs = {
-    entries: './dve.coffee',
+    entries: './index.coffee',
     debug: true,
     cache: {},
     packageCache: {},
-    fullPaths: shouldwatch
+    fullPaths: shouldwatch,
+    standalone: 'dve'
   };
   bundler = browserify(browserifyargs);
   if (shouldwatch) {

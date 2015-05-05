@@ -4,6 +4,7 @@ module.exports = {
   title: require('./display/title'),
   space: require('./display/space'),
   data: require('./display/data'),
+  report: require('./display/report'),
   timeheadings: require('./time/timeheadings'),
   dayheadings: require('./time/dayheadings'),
   chart: require('./time/chart'),
