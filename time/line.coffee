@@ -1,6 +1,6 @@
 d3 = require 'd3'
 moment = require 'moment'
-neighbours = require './util/neighbours'
+neighbours = require '../util/neighbours'
 
 module.exports = (dom, options) ->
   { components, spec, dimensions, data, domain, hub, scale, axis } = options
@@ -10,36 +10,38 @@ module.exports = (dom, options) ->
   data = data.map (d) ->
     result = time: d.time
     result[spec.field] = +d[spec.field]
+    result[spec.field] = null if result[spec.field] is 0
     result
 
-  data = data.filter (d) -> d[spec.field]?
+  line = svg
+    .append 'path'
+    .attr 'class', "#{spec.style} #{spec.type}"
+    .attr 'd', ''
 
-  getNeighbours = neighbours data, (d) -> d.time
+  labelShad = svg
+    .append 'text'
+    .attr 'class', 'label-shad'
+    .attr 'text-anchor', 'start'
+    .attr 'dy', 12
+    .text "#{spec.text} (#{spec.units})"
 
-  start = getNeighbours(domain[0])[0]
-  end = getNeighbours(domain[1])
-  end = end[end.length-1]
+  label = svg
+    .append 'text'
+    .attr 'class', 'label'
+    .attr 'text-anchor', 'start'
+    .attr 'dy', 12
+    .text "#{spec.text} (#{spec.units})"
 
-  filteredData = data.filter (d) ->
-    +d.time >= +start.time and +d.time <= +end.time
-
-  value =
-    x: (d) -> d.time
-    y: (d) -> d[spec.field]
-
-  dotContainer = svg.append 'g'
-
-  dotContainer
-    .selectAll ".dot"
-    .data filteredData
-    .enter()
-    .append "circle"
-    .attr "class", "dot"
-    .attr "r", 3.5
-
+  #---creation: createpoi----#
   focus = svg
     .append 'g'
     .attr 'class', 'focus'
+
+  focus
+    .append 'circle'
+    .attr 'class', 'poi-circle'
+    .attr 'display', 'none'
+    .attr 'r', 4
 
   focus
     .append 'text'
@@ -53,6 +55,17 @@ module.exports = (dom, options) ->
     .attr 'display', 'none'
     .attr 'dy', '-0.3em'
 
+  data = data.filter (d) -> d[spec.field]?
+
+  getNeighbours = neighbours data, (d) -> d.time
+
+  start = getNeighbours(domain[0])[0]
+  end = getNeighbours(domain[1])
+  end = end[end.length-1]
+
+  filteredData = data.filter (d) ->
+    +d.time >= +start.time and +d.time <= +end.time
+
   poi = null
   hub.on 'poi', (p) ->
     poi = p
@@ -61,25 +74,25 @@ module.exports = (dom, options) ->
   provideMax = ->
     d3.max filteredData, (d) -> d[spec.field]
 
-  drawDots = (svg, data) ->
-    svg.selectAll ".dot"
-      .data data
-      .attr "cx", (d) -> scale.x value.x d
-      .attr "cy", (d) -> scale.y value.y d
-
   updatepoi = ->
     if !poi?
+      focus
+        .select '.poi-circle'
+        .attr 'display', 'none'
       focus
         .select '.poi-y-val-shad'
         .attr 'display', 'none'
       focus
         .select '.poi-y-val'
         .attr 'display', 'none'
-      svg
-        .selectAll '.dot'
-        .data filteredData
-        .style 'fill', 'rgb(20, 44, 88)'
       return
+
+    yValWidth = +focus.select('.poi-y-val').node().getComputedTextLength()
+
+    if (dimensions[0] - (scale.x poi)-yValWidth) < yValWidth
+      dxAttr = - yValWidth - 8
+    else
+      dxAttr = 8
 
     Neighbours = neighbours filteredData, (d) -> d.time
     poiNeighbours = Neighbours poi
@@ -98,18 +111,10 @@ module.exports = (dom, options) ->
       halfway = d0.time + (d1.time - d0.time)/2
       d = if poi.isBefore(halfway) then d0 else d1
 
-    svg
-      .selectAll '.dot'
-      .data filteredData
-      .style 'fill', (f) ->
-        return 'rgb(216, 34, 42)' if f.time == d.time
-
-    yValWidth = +focus.select('.poi-y-val').node().getComputedTextLength()
-
-    if (dimensions[0] - (scale.x poi)-yValWidth) < yValWidth
-      dxAttr = - yValWidth - 8
-    else
-      dxAttr = 8
+    focus
+      .select '.poi-circle'
+      .attr 'display', null
+      .attr 'transform', "translate(#{scale.x(d.time)}, #{scale.y(d[spec.field])})"
 
     focus
       .select '.poi-y-val-shad'
@@ -128,7 +133,20 @@ module.exports = (dom, options) ->
   resize = (dimensions) ->
     dimensions = dimensions
 
-    drawDots dotContainer, filteredData
+    path =  d3.svg.line()
+      .x (d) -> scale.x d.time
+      .y (d) -> scale.y d[spec.field]
+
+    line
+      .attr 'd', path filteredData
+
+    labelWidth = +label.node().getComputedTextLength()
+
+    labelShad
+      .attr 'transform', "translate(#{dimensions[0] - labelWidth}, #{scale.y(filteredData[filteredData.length-2][spec.field])})"
+
+    label
+      .attr 'transform', "translate(#{dimensions[0] - labelWidth}, #{scale.y(filteredData[filteredData.length-2][spec.field])})"
 
     updatepoi()
 

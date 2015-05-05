@@ -7,22 +7,22 @@ module.exports =
   data: require './data'
 
   # navigation
-  timeheadings: require './timeheadings'
-  dayheadings: require './dayheadings'
+  timeheadings: require './time/timeheadings'
+  dayheadings: require './time/dayheadings'
 
   # time x single scale
-  chart: require './chart'
+  chart: require './time/chart'
+  tablebytime: require './time/tablebytime'
 
   # chart series
-  line: require './line'
-  scatter: require './scatter'
+  line: require './time/line'
+  scatter: require './time/scatter'
 
   # single series
-  direction: require './direction'
+  direction: require './time/direction'
   #TODO traffic light
 
   # non-timeline components
   histogram: require './histogram'
   table: require './table'
-  tablebytime: require './tablebytime'
   windrose: require './windrose'

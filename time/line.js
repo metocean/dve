@@ -5,7 +5,7 @@ d3 = require('d3');
 
 moment = require('moment');
 
-neighbours = require('./util/neighbours');
+neighbours = require('../util/neighbours');
 
 module.exports = function(dom, options) {
   var axis, components, data, dimensions, domain, end, filteredData, focus, getNeighbours, hub, label, labelShad, line, poi, provideMax, resize, scale, spec, start, svg, updatepoi;

@@ -6,7 +6,7 @@ d3 = require('d3');
 
 moment = require('moment');
 
-neighbours = require('./util/neighbours');
+neighbours = require('../util/neighbours');
 
 calculate_layout = function(dimensions) {
   var canvas, info, title;
