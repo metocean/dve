@@ -1,6 +1,6 @@
 d3 = require 'd3'
 moment = require 'moment'
-createhub = require './util/hub'
+createhub = require '../util/hub'
 
 module.exports = (dom, options) ->
   { components, spec, dimensions } = options

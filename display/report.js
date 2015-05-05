@@ -5,14 +5,14 @@
 Represents an entire report.
 Includes title, author and other metadata.
  */
-var dve;
+var mount;
 
-dve = require('./');
+mount = require('./mount');
 
 module.exports = function(dom, options) {
   var components, spec;
   components = options.components, spec = options.spec;
-  return dve(dom, {
+  return mount(dom, {
     components: components,
     spec: spec.spec
   });

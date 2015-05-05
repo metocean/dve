@@ -5,10 +5,10 @@ Includes title, author and other metadata.
 
 ###
 
-dve = require './'
+mount = require './mount'
 
 module.exports = (dom, options) ->
   { components, spec } = options
-  dve dom,
+  mount dom,
     components: components
     spec: spec.spec
