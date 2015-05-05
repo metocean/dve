@@ -23,6 +23,6 @@ module.exports =
   #TODO traffic light
 
   # non-timeline components
-  histogram: require './histogram'
-  table: require './table'
-  windrose: require './windrose'
+  histogram: require './xy/histogram'
+  table: require './xy/table'
+  windrose: require './xy/windrose'

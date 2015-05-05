@@ -10,7 +10,7 @@ module.exports = {
   line: require('./time/line'),
   scatter: require('./time/scatter'),
   direction: require('./time/direction'),
-  histogram: require('./histogram'),
-  table: require('./table'),
-  windrose: require('./windrose')
+  histogram: require('./xy/histogram'),
+  table: require('./xy/table'),
+  windrose: require('./xy/windrose')
 };
