@@ -1,3 +1,15 @@
+###
+
+Shows days of the week on a timeline.
+
+TODO: Allow any resolution of time, e.g. seconds, hours, days, weeks, months and years.
+TODO: Merge with timeheadings.
+
+- type: dayheadings
+  text: Date
+
+###
+
 d3 = require 'd3'
 moment = require 'moment'
 

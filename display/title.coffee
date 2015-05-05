@@ -1,3 +1,12 @@
+###
+
+Add a title to your visualisations.
+
+- type: title
+  text: Wind Speed (kts)
+
+###
+
 d3 = require 'd3'
 
 calculate_layout = (dimensions) =>

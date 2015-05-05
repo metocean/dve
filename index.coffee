@@ -1,3 +1,11 @@
+###
+
+Export all the things, for people not using browserify.
+Also for people who want all the inbuilt components for
+passing into report, mount and chart.
+
+###
+
 module.exports =
   # handles browser resize
   mount: require './display/mount'

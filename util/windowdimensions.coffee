@@ -1,3 +1,9 @@
+###
+
+Find the dimensions of the whole page.
+
+###
+
 module.exports = ->
   documentElement = document.documentElement
   body = document.getElementsByTagName('body')[0]

@@ -1,3 +1,9 @@
+###
+
+Find the closest points in a dataset.
+
+###
+
 module.exports = (data, f) ->
   (value) ->
     value = +value

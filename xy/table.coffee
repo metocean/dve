@@ -1,3 +1,12 @@
+###
+
+Plot an xy table with heatmap.
+
+TODO: Work out how to position these xy visualisations.
+TODO: Allow the different categories and values to be specified.
+
+###
+
 d3 = require 'd3'
 colorbrewer = require 'colorbrewer'
 

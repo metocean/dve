@@ -1,3 +1,26 @@
+###
+
+Add a series plotting area.
+
+TODO: add height as an attribute so it's not hardcoded
+
+- type: chart
+  text: Wind Speed
+  spec:
+  - type: line
+    style: primary
+    text: Wind Speed 10m
+    field: wsp
+    units: kts
+  - type: line
+    style: secondary
+    text: Gust 10m
+    field: gst
+    units: kts
+
+###
+
+
 d3 = require 'd3'
 moment = require 'moment'
 

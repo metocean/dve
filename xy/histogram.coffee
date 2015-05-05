@@ -1,3 +1,13 @@
+###
+
+Plot a frequency histogram with additional buckets for each point.
+
+TODO: Work out how to position these xy visualisations.
+TODO: Allow the different categories and values to be specified.
+
+###
+
+
 d3 = require 'd3'
 
 calculate_layout = (dimensions) ->
@@ -310,7 +320,7 @@ module.exports = (dom, options) ->
       .select '.legend'
       .attr 'x', scale.x max.value
       .attr 'y', scale.y max.count
-      .text "#{max.count} SOMETHING?"
+      .text "#{max.count}"
 
   resize dimensions
   resize: resize

@@ -1,3 +1,12 @@
+###
+
+Plot a series of dots on a chart.
+Great for discontinuous like observations.
+
+TODO: Same todos as line
+
+###
+
 d3 = require 'd3'
 moment = require 'moment'
 neighbours = require '../util/neighbours'

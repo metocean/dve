@@ -1,3 +1,12 @@
+###
+
+Show a cell heatmap of cells of data on a timeline.
+Great for visually seeing highlights.
+
+TODO: Add poi.
+
+###
+
 d3 = require 'd3'
 moment = require 'moment'
 colorbrewer = require 'colorbrewer'

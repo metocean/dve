@@ -3,7 +3,9 @@
 /*
 
 Mount a component or group of components into the dom.
-Keep them resized based on window resize events
+Keep them resized based on window resize events.
+
+TODO: Optional offset (e.g. remove hardcoded 42)
  */
 var d3, debounce, getwindowdimensions, windowdimensions;
 

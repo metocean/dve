@@ -1,3 +1,10 @@
+###
+
+Keep track of listeners based on id.
+Great for messaging.
+
+###
+
 module.exports = ->
   listeners = {}
   on: (id, listener) ->

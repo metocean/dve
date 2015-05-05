@@ -1,3 +1,47 @@
+###
+
+1. Loads data from a csv file.
+2. Translates variable names
+3. Filters data points through include and exclude.
+4. Filters time through start and end
+5. Passes data to sub components
+6. Provides a hub for communication
+   e.g. Point Of Interest (poi)
+
+TODO: Load and query data using odoql
+TODO: Implement more types (csv, tsv, NetCDF, ascii)
+TODO: Turn time range specification into library
+TODO: Timezones
+
+- type: data
+  source:
+    type: csv
+    url: example2.csv
+    translate:
+      time: DateTime
+      wsp: WSpd10m
+      gst: Gust10m
+      wd: WindDir
+      location: Location
+    timeformat: DD-MM-YYYY HH:mm
+    include:
+      location: Location 1
+  display:
+    # timezone:
+    start: 2014-12-09
+    end: 2014-12-13
+  spec:
+  - type: chart
+    text: Wind Speed
+    spec:
+    - type: line
+      style: primary
+      text: Wind Speed 10m
+      field: wsp
+      units: kts
+
+###
+
 d3 = require 'd3'
 moment = require 'moment'
 createhub = require '../util/hub'

@@ -1,3 +1,12 @@
+###
+
+TODO: Merge with dayheadings
+
+- type: timeheadings
+  text: Time
+
+###
+
 d3 = require 'd3'
 moment = require 'moment'
 

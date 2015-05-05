@@ -1,3 +1,15 @@
+###
+
+Plot a single line on a chart.
+Great for continuous data.
+Not great for observations or direction.
+Can include style for css based line styles.
+
+TODO: Add points of interest such as local maxima and minima.
+TODO: Push series labels to chart for overlapping adjustment.
+
+###
+
 d3 = require 'd3'
 moment = require 'moment'
 neighbours = require '../util/neighbours'

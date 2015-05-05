@@ -1,3 +1,13 @@
+###
+
+Plot a windrose with additional categories for each direction.
+
+TODO: Work out how to position these xy visualisations.
+TODO: Allow the different categories and values to be specified.
+
+###
+
+
 d3 = require 'd3'
 
 calculate_layout = (dimensions) ->

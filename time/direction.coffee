@@ -1,3 +1,14 @@
+###
+
+Shows a series of directional arrows.
+Useful for current and wind direction.
+Scales number of arrows depending on space.
+
+TODO: Implement more dynamic scalling.
+
+###
+
+
 d3 = require 'd3'
 moment = require 'moment'
 neighbours = require '../util/neighbours'
