@@ -1,6 +1,6 @@
 {
   "name": "dve",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Graphs and stuff",
   "main": "index.js",
   "scripts": {
@@ -46,6 +46,5 @@
     "moment": "2.*",
     "colorbrewer": "0.*"
   },
-  "dependencies": {
-  }
+  "dependencies": {}
 }
