@@ -86,7 +86,7 @@ module.exports = (dom, options) ->
   inner
     .append 'g'
     .attr 'class', 'axis'
-    .attr "transform", "translate(0,#{-layout.canvas.top})"
+    .attr "transform", "translate(0,#{-layout.canvas.top + 3 * layout.canvas.height/4})"
 
   scale = d3.time.scale().domain domain
 
@@ -233,7 +233,7 @@ module.exports = (dom, options) ->
 
     inner
       .select '.axis'
-      .call (axis.tickSize layout.canvas.height)
+      .call (axis.tickSize layout.canvas.height/4)
 
     focus
       .select '.foreground'

@@ -67,7 +67,7 @@ module.exports = function(dom, options) {
   svg.append('g').attr('class', 'title').attr('transform', "translate(" + layout.title.left + "," + layout.title.top + ")").append('text').attr('class', 'infotext').text(spec.text).attr('dy', 20).attr('dx', 5);
   inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
   inner.append('line').attr('class', 'divider').attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', layout.dimensions.height);
-  inner.append('g').attr('class', 'axis').attr("transform", "translate(0," + (-layout.canvas.top) + ")");
+  inner.append('g').attr('class', 'axis').attr("transform", "translate(0," + (-layout.canvas.top + 3 * layout.canvas.height / 4) + ")");
   scale = d3.time.scale().domain(domain);
   axis = d3.svg.axis().scale(scale).ticks(d3.time.day).tickFormat(function(d) {
     return d3.time.format('%a %d %b')(d);
@@ -171,7 +171,7 @@ module.exports = function(dom, options) {
         return null;
       }
     });
-    inner.select('.axis').call(axis.tickSize(layout.canvas.height));
+    inner.select('.axis').call(axis.tickSize(layout.canvas.height / 4));
     focus.select('.foreground').attr('height', layout.canvas.height).attr('width', layout.canvas.width);
     inner.selectAll('.axis text').data(scale.ticks(axis.ticks()[0])).attr('x', function(d) {
       var first;

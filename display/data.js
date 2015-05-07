@@ -42,11 +42,29 @@ TODO: Timezones
       field: wsp
       units: kts
  */
-var createhub, d3, moment;
+
+/*
+
+Parse strings of the form:
+
+<variable> (+|-) digits unit
+or
+ISO 8601 (http://en.wikipedia.org/wiki/ISO_8601)
+
+e.g.
+
+day+5h = start of the current day + five hours in current timezone
+utcmonth+1M = start of the next month in utc
+
+Always returns utc times
+ */
+var createhub, d3, moment, timelord;
 
 d3 = require('d3');
 
-moment = require('moment');
+moment = require('moment-timezone');
+
+timelord = require('@metocean/timelord');
 
 createhub = require('../util/hub');
 
@@ -55,7 +73,7 @@ module.exports = function(dom, options) {
   components = options.components, spec = options.spec, dimensions = options.dimensions;
   items = [];
   d3.csv(spec.source.url, function(error, data) {
-    var d, domain, durationformats, end, fn, fn1, hub, j, k, l, len, len1, len2, name, parse, parse_duration, parse_end, parse_start, parse_time, poi, ref, ref1, s, source, start, target, timeRegex, value;
+    var d, domain, hub, j, k, l, len, len1, len2, parse_time, poi, ref, ref1, s, source, target, value;
     if (spec.source.translate != null) {
       for (j = 0, len = data.length; j < len; j++) {
         d = data[j];
@@ -116,140 +134,16 @@ module.exports = function(dom, options) {
     domain = d3.extent(data, function(d) {
       return d.time;
     });
-    timeRegex = /(\-|\+)[0-9]+([dwMyhms])/;
-    start = spec.display.start;
-    end = spec.display.end;
-    parse_start = function(time) {
-      return moment.utc(time, moment.ISO_8601);
-    };
-    parse_end = function(time) {
-      return moment.utc(time, moment.ISO_8601);
-    };
-    parse_duration = function(str) {
-      var duration, offset, offsetunit, sign;
-      sign = str.substr(0, 1);
-      offset = +str.substr(1, str.length - 2);
-      offsetunit = str.substr(str.length - 1);
-      if (sign === '-') {
-        offset = -offset;
-      }
-      return duration = moment.duration(offset, offsetunit);
-    };
-    durationformats = {
-      timestamp: function(str) {
-        var duration;
-        duration = parse_duration(str);
-        return moment.utc().add(duration);
-      },
-      second: function(str) {
-        var duration;
-        duration = parse_duration(str);
-        return moment.utc().startOf('second').add(duration);
-      },
-      minute: function(str) {
-        var duration;
-        duration = parse_duration(str);
-        return moment.utc().startOf('minute').add(duration);
-      },
-      hour: function(str) {
-        var duration;
-        duration = parse_duration(str);
-        return moment.utc().startOf('hour').add(duration);
-      },
-      day: function(str) {
-        var duration;
-        duration = parse_duration(str);
-        return moment.utc().startOf('day').add(duration);
-      },
-      week: function(str) {
-        var duration;
-        duration = parse_duration(str);
-        return moment.utc().startOf('week').add(duration);
-      },
-      month: function(str) {
-        var duration;
-        duration = parse_duration(str);
-        return moment.utc().startOf('month').add(duration);
-      },
-      year: function(str) {
-        var duration;
-        duration = parse_duration(str);
-        return moment.utc().startOf('year').add(duration);
-      },
-      localsecond: function(str) {
-        var duration;
-        duration = parse_duration(str);
-        return moment().startOf('second').add(duration).utc();
-      },
-      localminute: function(str) {
-        var duration;
-        duration = parse_duration(str);
-        return moment().startOf('minute').add(duration).utc();
-      },
-      localhour: function(str) {
-        var duration;
-        duration = parse_duration(str);
-        return moment().startOf('hour').add(duration).utc();
-      },
-      localday: function(str) {
-        var duration;
-        duration = parse_duration(str);
-        return moment().startOf('day').add(duration).utc();
-      },
-      localweek: function(str) {
-        var duration;
-        duration = parse_duration(str);
-        return moment().startOf('week').add(duration).utc();
-      },
-      localmonth: function(str) {
-        var duration;
-        duration = parse_duration(str);
-        return moment().startOf('month').add(duration).utc();
-      },
-      localyear: function(str) {
-        var duration;
-        duration = parse_duration(str);
-        return moment().startOf('year').add(duration).utc();
-      }
-    };
-    if (start != null) {
-      if (typeof start === 'string') {
-        fn = function(name, parse) {
-          return parse_start = function(time) {
-            return parse(start.slice(name.length));
-          };
-        };
-        for (name in durationformats) {
-          parse = durationformats[name];
-          if (start.indexOf(name) !== 0) {
-            continue;
-          }
-          fn(name, parse);
-          break;
-        }
-        domain[0] = parse_start(start);
-      } else {
-        domain[0] = start;
+    if (spec.display.start != null) {
+      domain[0] = spec.display.start;
+      if (typeof domain[0] === 'string') {
+        domain[0] = timelord(domain[0]);
       }
     }
-    if (end != null) {
-      if (typeof start === 'string') {
-        fn1 = function(name, parse) {
-          return parse_end = function(time) {
-            return parse(end.slice(name.length));
-          };
-        };
-        for (name in durationformats) {
-          parse = durationformats[name];
-          if (end.indexOf(name) !== 0) {
-            continue;
-          }
-          fn1(name, parse);
-          break;
-        }
-        domain[1] = parse_end(end);
-      } else {
-        domain[1] = end;
+    if (spec.display.end != null) {
+      domain[1] = spec.display.end;
+      if (typeof domain[1] === 'string') {
+        domain[1] = timelord(domain[1]);
       }
     }
     poi = null;

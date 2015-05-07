@@ -44,6 +44,8 @@
   "peerDependencies": {
     "d3": "3.*",
     "moment": "2.*",
+    "moment-timezone": "0.*",
+    "@metocean/timelord": "0.*",
     "colorbrewer": "0.*"
   },
   "dependencies": {}

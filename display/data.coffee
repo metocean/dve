@@ -42,8 +42,26 @@ TODO: Timezones
 
 ###
 
+###
+
+Parse strings of the form:
+
+<variable> (+|-) digits unit
+or
+ISO 8601 (http://en.wikipedia.org/wiki/ISO_8601)
+
+e.g.
+
+day+5h = start of the current day + five hours in current timezone
+utcmonth+1M = start of the next month in utc
+
+Always returns utc times
+
+###
+
 d3 = require 'd3'
-moment = require 'moment'
+moment = require 'moment-timezone'
+timelord = require '@metocean/timelord'
 createhub = require '../util/hub'
 
 module.exports = (dom, options) ->
@@ -82,91 +100,15 @@ module.exports = (dom, options) ->
 
     domain = d3.extent data, (d) -> d.time
 
-    timeRegex = /(\-|\+)[0-9]+([dwMyhms])/
-
-    start = spec.display.start
-    end = spec.display.end
-
-    parse_start = (time) -> moment.utc time, moment.ISO_8601
-    parse_end = (time) -> moment.utc time, moment.ISO_8601
-
-    parse_duration = (str)->
-      sign = str.substr(0, 1) #+
-      offset = +str.substr(1, str.length - 2) #5
-      offsetunit = str.substr(str.length - 1) #h
-
-      offset = -offset if sign is '-'
-
-      duration = moment.duration offset, offsetunit
-
-    durationformats =
-      timestamp: (str) ->
-        duration =  parse_duration str
-        moment.utc().add duration
-      second: (str) ->
-        duration =  parse_duration str
-        moment.utc().startOf('second').add duration
-      minute: (str) ->
-        duration =  parse_duration str
-        moment.utc().startOf('minute').add duration
-      hour: (str) ->
-        duration =  parse_duration str
-        moment.utc().startOf('hour').add duration
-      day: (str) ->
-        duration =  parse_duration str
-        moment.utc().startOf('day').add duration
-      week: (str) ->
-        duration =  parse_duration str
-        moment.utc().startOf('week').add duration
-      month: (str) ->
-        duration =  parse_duration str
-        moment.utc().startOf('month').add duration
-      year: (str) ->
-        duration =  parse_duration str
-        moment.utc().startOf('year').add duration
-      localsecond: (str) ->
-        duration =  parse_duration str
-        moment().startOf('second').add(duration).utc()
-      localminute: (str) ->
-        duration =  parse_duration str
-        moment().startOf('minute').add(duration).utc()
-      localhour: (str) ->
-        duration =  parse_duration str
-        moment().startOf('hour').add(duration).utc()
-      localday: (str) ->
-        duration =  parse_duration str
-        moment().startOf('day').add(duration).utc()
-      localweek: (str) ->
-        duration =  parse_duration str
-        moment().startOf('week').add(duration).utc()
-      localmonth: (str) ->
-        duration =  parse_duration str
-        moment().startOf('month').add(duration).utc()
-      localyear: (str) ->
-        duration =  parse_duration str
-        moment().startOf('year').add(duration).utc()
-
-    if start?
-      if typeof start is 'string'
-        for name, parse of durationformats
-          continue if start.indexOf(name) isnt 0
-          do (name, parse) ->
-            parse_start = (time) -> parse start[name.length..]
-          break
-        domain[0] = parse_start start
-      else
-        domain[0] = start
-
-    if end?
-      if typeof start is 'string'
-        for name, parse of durationformats
-          continue if end.indexOf(name) isnt 0
-          do (name, parse) ->
-            parse_end = (time) -> parse end[name.length..]
-          break
-        domain[1] = parse_end end
-      else
-        domain[1] = end
+    # yaml supports dates, so only parse if a string
+    if spec.display.start?
+      domain[0] = spec.display.start
+      if typeof domain[0] is 'string'
+        domain[0] = timelord domain[0]
+    if spec.display.end?
+      domain[1] = spec.display.end
+      if typeof domain[1] is 'string'
+        domain[1] = timelord domain[1]
 
     poi = null
     if moment.utc().isBetween domain[0], domain[1]
