@@ -73,7 +73,7 @@ module.exports = function(dom, options) {
   components = options.components, spec = options.spec, dimensions = options.dimensions;
   items = [];
   d3.csv(spec.source.url, function(error, data) {
-    var d, domain, hub, j, k, l, len, len1, len2, parse_time, poi, ref, ref1, s, source, target, value;
+    var d, domain, hub, j, k, l, len, len1, len2, len3, m, parse_time, poi, ref, ref1, s, source, target, tz, value;
     if (spec.source.translate != null) {
       for (j = 0, len = data.length; j < len; j++) {
         d = data[j];
@@ -150,10 +150,22 @@ module.exports = function(dom, options) {
     if (moment.utc().isBetween(domain[0], domain[1])) {
       poi = moment.utc();
     }
+    if (spec.display.timezone != null) {
+      tz = spec.display.timezone;
+      domain[0] = domain[0].tz(tz);
+      domain[1] = domain[1].tz(tz);
+      for (l = 0, len2 = data.length; l < len2; l++) {
+        d = data[l];
+        d.time = d.time.tz(tz);
+      }
+      if (poi != null) {
+        poi = poi.tz(tz);
+      }
+    }
     hub = createhub();
     ref1 = spec.spec;
-    for (l = 0, len2 = ref1.length; l < len2; l++) {
-      s = ref1[l];
+    for (m = 0, len3 = ref1.length; m < len3; m++) {
+      s = ref1[m];
       if (components[s.type] == null) {
         return console.error(s.type + " component not found");
       }

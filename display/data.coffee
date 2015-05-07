@@ -109,10 +109,16 @@ module.exports = (dom, options) ->
       domain[1] = spec.display.end
       if typeof domain[1] is 'string'
         domain[1] = timelord domain[1]
-
     poi = null
     if moment.utc().isBetween domain[0], domain[1]
       poi = moment.utc()
+    if spec.display.timezone?
+      tz = spec.display.timezone
+      domain[0] = domain[0].tz tz
+      domain[1] = domain[1].tz tz
+      for d in data
+        d.time = d.time.tz tz
+      poi = poi.tz tz if poi?
 
     hub = createhub()
 
