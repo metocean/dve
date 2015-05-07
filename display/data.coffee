@@ -121,8 +121,6 @@ module.exports = (dom, options) ->
 
     hub = createhub()
 
-    console.log moment().tl('/d+1d5h').toString()
-
     for s in spec.spec
       unless components[s.type]?
         return console.error "#{s.type} component not found"

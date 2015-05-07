@@ -161,7 +161,6 @@ module.exports = function(dom, options) {
       }
     }
     hub = createhub();
-    console.log(moment().tl('/d+1d5h').toString());
     ref1 = spec.spec;
     for (m = 0, len3 = ref1.length; m < len3; m++) {
       s = ref1[m];
