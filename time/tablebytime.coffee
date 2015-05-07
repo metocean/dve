@@ -8,7 +8,6 @@ TODO: Add poi.
 ###
 
 d3 = require 'd3'
-moment = require 'moment'
 colorbrewer = require 'colorbrewer'
 
 calculate_layout = (dimensions) ->

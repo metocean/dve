@@ -10,11 +10,9 @@ Can include style for css based line styles.
 TODO: Add points of interest such as local maxima and minima.
 TODO: Push series labels to chart for overlapping adjustment.
  */
-var d3, moment, neighbours;
+var d3, neighbours;
 
 d3 = require('d3');
-
-moment = require('moment');
 
 neighbours = require('../util/neighbours');
 

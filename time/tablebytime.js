@@ -7,11 +7,9 @@ Great for visually seeing highlights.
 
 TODO: Add poi.
  */
-var calculate_layout, colorbrewer, d3, moment;
+var calculate_layout, colorbrewer, d3;
 
 d3 = require('d3');
-
-moment = require('moment');
 
 colorbrewer = require('colorbrewer');
 

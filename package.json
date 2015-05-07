@@ -48,6 +48,6 @@
     "colorbrewer": "0.*"
   },
   "dependencies": {
-    "@metocean/timelord": "1.*"
+    "@metocean/timelord": "2.*"
   }
 }

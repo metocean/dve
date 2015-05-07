@@ -60,8 +60,7 @@ Always returns utc times
 ###
 
 d3 = require 'd3'
-moment = require 'moment-timezone'
-timelord = require '@metocean/timelord'
+moment = require '@metocean/timelord'
 createhub = require '../util/hub'
 
 module.exports = (dom, options) ->
@@ -104,11 +103,11 @@ module.exports = (dom, options) ->
     if spec.display.start?
       domain[0] = spec.display.start
       if typeof domain[0] is 'string'
-        domain[0] = timelord domain[0]
+        domain[0] = moment.tl domain[0]
     if spec.display.end?
       domain[1] = spec.display.end
       if typeof domain[1] is 'string'
-        domain[1] = timelord domain[1]
+        domain[1] = moment.tl domain[1]
     poi = null
     if moment.utc().isBetween domain[0], domain[1]
       poi = moment.utc()
@@ -121,6 +120,8 @@ module.exports = (dom, options) ->
       poi = poi.tz tz if poi?
 
     hub = createhub()
+
+    console.log moment().tl('/d+1d5h').toString()
 
     for s in spec.spec
       unless components[s.type]?

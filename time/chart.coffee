@@ -23,7 +23,7 @@ TODO: Region series for areas. E.g. probabilities, min and max.
 
 
 d3 = require 'd3'
-moment = require 'moment'
+moment = require '@metocean/timelord'
 
 calculate_layout = (dimensions) ->
   dimensions =

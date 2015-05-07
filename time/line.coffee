@@ -11,7 +11,6 @@ TODO: Push series labels to chart for overlapping adjustment.
 ###
 
 d3 = require 'd3'
-moment = require 'moment'
 neighbours = require '../util/neighbours'
 
 module.exports = (dom, options) ->

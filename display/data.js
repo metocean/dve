@@ -58,13 +58,11 @@ utcmonth+1M = start of the next month in utc
 
 Always returns utc times
  */
-var createhub, d3, moment, timelord;
+var createhub, d3, moment;
 
 d3 = require('d3');
 
-moment = require('moment-timezone');
-
-timelord = require('@metocean/timelord');
+moment = require('@metocean/timelord');
 
 createhub = require('../util/hub');
 
@@ -137,13 +135,13 @@ module.exports = function(dom, options) {
     if (spec.display.start != null) {
       domain[0] = spec.display.start;
       if (typeof domain[0] === 'string') {
-        domain[0] = timelord(domain[0]);
+        domain[0] = moment.tl(domain[0]);
       }
     }
     if (spec.display.end != null) {
       domain[1] = spec.display.end;
       if (typeof domain[1] === 'string') {
-        domain[1] = timelord(domain[1]);
+        domain[1] = moment.tl(domain[1]);
       }
     }
     poi = null;
@@ -163,6 +161,7 @@ module.exports = function(dom, options) {
       }
     }
     hub = createhub();
+    console.log(moment().tl('/d+1d5h').toString());
     ref1 = spec.spec;
     for (m = 0, len3 = ref1.length; m < len3; m++) {
       s = ref1[m];
