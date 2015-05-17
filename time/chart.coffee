@@ -23,7 +23,7 @@ TODO: Region series for areas. E.g. probabilities, min and max.
 
 
 d3 = require 'd3'
-moment = require '@metocean/timelord'
+moment = require 'timespanner'
 
 calculate_layout = (dimensions) ->
   dimensions =
@@ -60,10 +60,13 @@ module.exports = (dom, options) ->
     .append 'g'
     .attr 'class', 'title'
     .append 'text'
-    .attr 'class', 'infotext'
+    #.attr 'class', 'infotext'
+    .attr 'y', 0
+    .attr 'x', 0
     .text spec.text
-    .attr 'dy', 20
-    .attr 'dx', 5
+    .style 'fill', '#142c58'
+    .attr 'dy', '20px'
+    .attr 'dx', '5px'
 
   inner = svg
     .append 'g'

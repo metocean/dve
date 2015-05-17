@@ -8,7 +8,7 @@ TODO: Same todos as line
 ###
 
 d3 = require 'd3'
-moment = require '@metocean/timelord'
+moment = require 'timespanner'
 neighbours = require '../util/neighbours'
 
 module.exports = (dom, options) ->

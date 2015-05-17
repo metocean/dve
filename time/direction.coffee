@@ -10,7 +10,7 @@ TODO: Implement more dynamic scalling.
 
 
 d3 = require 'd3'
-moment = require '@metocean/timelord'
+moment = require 'timespanner'
 neighbours = require '../util/neighbours'
 
 calculate_layout = (dimensions) ->

@@ -8,7 +8,7 @@ TODO: Merge with dayheadings
 ###
 
 d3 = require 'd3'
-moment = require '@metocean/timelord'
+moment = require 'timespanner'
 
 calculate_layout = (dimensions) ->
   margin =

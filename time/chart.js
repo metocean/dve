@@ -25,7 +25,7 @@ var calculate_layout, d3, moment;
 
 d3 = require('d3');
 
-moment = require('@metocean/timelord');
+moment = require('timespanner');
 
 calculate_layout = function(dimensions) {
   var canvas, info;
@@ -59,7 +59,7 @@ module.exports = function(dom, options) {
   components = options.components, spec = options.spec, dimensions = options.dimensions, data = options.data, domain = options.domain, hub = options.hub;
   layout = calculate_layout(dimensions);
   svg = d3.select(dom).append('svg').attr('class', 'item chart');
-  svg.append('g').attr('class', 'title').append('text').attr('class', 'infotext').text(spec.text).attr('dy', 20).attr('dx', 5);
+  svg.append('g').attr('class', 'title').append('text').attr('y', 0).attr('x', 0).text(spec.text).style('fill', '#142c58').attr('dy', '20px').attr('dx', '5px');
   inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
   inner.append('g').attr('class', 'x axis').attr('transform', "translate(0," + layout.canvas.height + ")");
   inner.append('g').attr('class', 'y axis');

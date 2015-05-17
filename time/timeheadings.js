@@ -11,7 +11,7 @@ var calculate_layout, d3, moment;
 
 d3 = require('d3');
 
-moment = require('@metocean/timelord');
+moment = require('timespanner');
 
 calculate_layout = function(dimensions) {
   var canvas, info, margin, title;

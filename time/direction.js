@@ -13,7 +13,7 @@ var calculate_layout, d3, moment, neighbours,
 
 d3 = require('d3');
 
-moment = require('@metocean/timelord');
+moment = require('timespanner');
 
 neighbours = require('../util/neighbours');
 
