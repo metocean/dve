@@ -31,9 +31,9 @@
     "watchify": "^2.4.0"
   },
   "dependencies": {
-    "colorbrewer": "0.0.2",
+    "colorbrewer": "^0.0.2",
     "d3": "^3.5.5",
-    "dve": "^0.1.0",
+    "dve": "^0.2.1",
     "js-yaml": "^3.3.0",
     "moment": "^2.10.2",
     "moment-timezone": "^0.3.1"
