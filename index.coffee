@@ -13,8 +13,9 @@ module.exports =
   title: require './display/title'
   space: require './display/space'
   # data set
-  data: require './display/data'
+  data: require './display/odoql'
   report: require './display/report'
+  timedomain: require './display/timedomain'
 
   # navigation
   timeheadings: require './time/timeheadings'

@@ -32,29 +32,29 @@ calculate_layout = (dimensions) =>
   dimensions: dimensions
   canvas: canvas
 
-module.exports = (dom, options) ->
-  { spec, dimensions } = options
-  layout = calculate_layout dimensions
+module.exports = (spec, components) ->
+  svg = null
+  title =
+    render: (dom, state, params) ->
+      layout = calculate_layout params.dimensions
 
-  svg = d3.select dom
-    .append 'svg'
-    .attr 'class', 'item title'
-  svg
-    .append 'g'
-    .attr 'class', 'title'
-    .attr 'transform', "translate(#{layout.canvas.left},#{layout.canvas.top})"
-    .append 'text'
-    .attr 'class', 'infotext'
-    .attr 'dy', 20
-    .attr 'dx', 5
-    .text spec.text
+      svg = d3.select dom
+        .append 'svg'
+        .attr 'class', 'item title'
+      svg
+        .append 'g'
+        .attr 'class', 'title'
+        .attr 'transform', "translate(#{layout.canvas.left},#{layout.canvas.top})"
+        .append 'text'
+        .attr 'class', 'infotext'
+        .attr 'dy', 20
+        .attr 'dx', 5
+        .text spec.text
 
-  resize = (dimensions) ->
-    layout = calculate_layout dimensions
-    svg
-      .attr 'width', layout.dimensions.width
-      .attr 'height', layout.dimensions.height
+      title.resize params.dimensions
 
-  resize dimensions
-
-  resize: resize
+    resize: (dimensions) ->
+      layout = calculate_layout dimensions
+      svg
+        .attr 'width', layout.dimensions.width
+        .attr 'height', layout.dimensions.height

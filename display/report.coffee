@@ -9,8 +9,5 @@ TODO: metadata
 
 mount = require './mount'
 
-module.exports = (dom, options) ->
-  { components, spec } = options
-  mount dom,
-    components: components
-    spec: spec.spec
+module.exports = (spec, components) ->
+  mount spec.spec, components

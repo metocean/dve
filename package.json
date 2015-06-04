@@ -41,13 +41,12 @@
     "vinyl-source-stream": "^1.0.0",
     "watchify": "^2.4.0"
   },
-  "peerDependencies": {
-    "d3": "3.*",
+  "dependencies": {
+    "colorbrewer": "0.*",
+    "d3": "^3.*",
+    "extend": "^2.0.1",
     "moment": "^2.10.3",
     "moment-timezone": "^0.3.1",
-    "colorbrewer": "0.*"
-  },
-  "dependencies": {
     "timespanner": "^2.0.1"
   }
 }

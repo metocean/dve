@@ -45,11 +45,7 @@ calculate_layout = (dimensions) ->
   title: title
   canvas: canvas
 
-module.exports = (dom, options) ->
-  { components, spec, dimensions, data, domain, hub } = options
-  layout = calculate_layout dimensions
-  sections = null
-
+module.exports = (spec, components) ->
   drawArrow = (dir, section) ->
     section
       .selectAll '*'
@@ -79,89 +75,6 @@ module.exports = (dom, options) ->
       .attr 'text-anchor', 'middle'
       .attr 'transform', "translate(0,35)"
 
-  create_directions = ->
-    bisector = d3.bisector((d) -> d.time).left
-    data = scale
-      .ticks d3.time.hour, 3
-      .map (d) ->
-        index = bisector filteredData, d
-        filteredData[index]
-      .filter (d) -> d?
-
-    sections = svg
-      .select '.inner'
-      .selectAll '.section'
-      .data data
-
-    section = sections
-      .enter()
-      .append 'g'
-      .attr 'class', (d) ->
-        hour = d.time.local().get('hour')
-        if hour % 12 is 0
-          'section priority1'
-        else if hour % 6 is 0
-          'section priority2'
-        else if hour % 3 is 0
-          'section priority3'
-
-    arrow = section
-      .append 'g'
-      .attr 'transform', (d) -> "rotate(#{d[spec.field] + 180}, 0, 9)"
-    arrow
-      .append 'path'
-      .attr 'class', 'arrowhead'
-      .attr 'd', d3.svg.symbol().type('triangle-up').size 20
-
-    arrow
-      .append 'line'
-      .attr 'class', 'arrowline'
-      .attr 'x1', 0
-      .attr 'x2', 0
-      .attr 'y1', 3
-      .attr 'y2', 20
-
-    section
-      .append 'text'
-      .attr 'class', 'label'
-      .text (d) -> calculate_direction d[spec.field]
-      .attr 'text-anchor', 'middle'
-      .attr 'transform', "translate(0,40)"
-
-  resize = (dimensions) ->
-    layout = calculate_layout dimensions
-
-    svg
-      .attr 'width', layout.dimensions.width
-      .attr 'height', layout.dimensions.height
-
-    scale.range [0, layout.canvas.width]
-
-    sections
-      .attr 'transform', (d) -> "translate(#{scale(d.time)}, 10)"
-
-    p1 = inner.selectAll '.priority1'
-    p2 = inner.selectAll '.priority2'
-    p3 = inner.selectAll '.priority3'
-
-    minLabelWidth = 31
-    p1widths = p1[0].length * minLabelWidth
-    p2widths = p2[0].length * minLabelWidth
-    p3widths = p3[0].length * minLabelWidth
-
-    switch
-      when p1widths + p2widths + p3widths <= layout.canvas.width
-        p2.attr 'display', 'inline'
-        p3.attr 'display', 'inline'
-      when p1widths + p2widths <= layout.canvas.width
-        p2.attr 'display', 'inline'
-        p3.attr 'display', 'none'
-      when p1widths <= layout.canvas.width
-        p3.attr 'display', 'none'
-        p2.attr 'display', 'none'
-
-    updatepoi()
-
   calculate_direction = (degree) ->
     direction = Math.floor (degree/22.5) + 0.5
     text = [
@@ -182,183 +95,272 @@ module.exports = (dom, options) ->
       'NW',
       'NNW'
     ]
-
     textDirection = text[(direction %% 16)]
 
-  svg = d3.select dom
-    .append 'svg'
-    .attr 'class', 'item direction'
+  svg = null
+  inner = null
+  scale = null
+  axis = null
+  focus = null
+  updatepoi = null
+  data = null
+  sections = null
+  result =
+    render: (dom, state, params) ->
+      layout = calculate_layout params.dimensions
 
-  data = data.map (d) ->
-    result = time: d.time
-    result[spec.field] = +d[spec.field]
-    result
+      svg = d3.select dom
+        .append 'svg'
+        .attr 'class', 'item direction'
 
-  svg
-    .append 'g'
-    .attr 'class', 'title'
-    .attr 'transform', "translate(#{layout.title.left},#{layout.title.top})"
-    .append 'text'
-    .attr 'class', 'infotext'
-    .text spec.text
-    .attr 'dy', 18
-    .attr 'dx', 5
+      data = state.data.map (d) ->
+        res = time: d.time
+        res[spec.field] = +d[spec.field]
+        res
 
-  inner = svg
-    .append 'g'
-    .attr 'class', 'inner'
-    .attr 'transform', "translate(#{layout.canvas.left},#{layout.canvas.top})"
+      svg
+        .append 'g'
+        .attr 'class', 'title'
+        .attr 'transform', "translate(#{layout.title.left},#{layout.title.top})"
+        .append 'text'
+        .attr 'class', 'infotext'
+        .text spec.text
+        .attr 'dy', 18
+        .attr 'dx', 5
 
-  inner
-    .append 'line'
-    .attr 'class', 'divider'
-    .attr 'x1', 0
-    .attr 'x2', 0
-    .attr 'y1', 0
-    .attr 'y2', layout.dimensions.height
+      inner = svg
+        .append 'g'
+        .attr 'class', 'inner'
+        .attr 'transform', "translate(#{layout.canvas.left},#{layout.canvas.top})"
 
-  filteredData = data.filter (d) ->
-    +d.time >= +domain[0] and +d.time <= +domain[1]
+      inner
+        .append 'line'
+        .attr 'class', 'divider'
+        .attr 'x1', 0
+        .attr 'x2', 0
+        .attr 'y1', 0
+        .attr 'y2', layout.dimensions.height
 
-  scale = d3.time.scale().domain domain
-    .range [0, layout.canvas.width]
+      filteredData = data.filter (d) ->
+        +d.time >= +params.domain[0] and +d.time <= +params.domain[1]
 
-  create_directions()
+      scale = d3.time.scale().domain params.domain
+        .range [0, layout.canvas.width]
 
-  focus = inner
-    .append 'g'
-    .attr 'class', 'focus'
+      bisector = d3.bisector((d) -> d.time).left
+      data = scale
+        .ticks d3.time.hour, 3
+        .map (d) ->
+          index = bisector filteredData, d
+          filteredData[index]
+        .filter (d) -> d?
 
-  focus
-    .append 'line'
-    .attr 'class', 'poi'
-    .attr 'display', 'none'
-    .attr 'y1', 0
-    .attr 'y2', layout.dimensions.height
+      sections = svg
+        .select '.inner'
+        .selectAll '.section'
+        .data data
 
-  focus
-    .append 'circle'
-    .attr 'class', 'arrow-background'
-    .attr 'r', 25
-    .attr 'display', 'none'
+      section = sections
+        .enter()
+        .append 'g'
+        .attr 'class', (d) ->
+          hour = d.time.local().get('hour')
+          if hour % 12 is 0
+            'section priority1'
+          else if hour % 6 is 0
+            'section priority2'
+          else if hour % 3 is 0
+            'section priority3'
 
-  focus
-    .append 'g'
-    .attr 'class', 'foc-section'
-    .attr 'display', 'none'
+      arrow = section
+        .append 'g'
+        .attr 'transform', (d) -> "rotate(#{d[spec.field] + 180}, 0, 9)"
+      arrow
+        .append 'path'
+        .attr 'class', 'arrowhead'
+        .attr 'd', d3.svg.symbol().type('triangle-up').size 20
 
-  poi = null
-  hub.on 'poi', (p) ->
-    poi = p
-    updatepoi()
+      arrow
+        .append 'line'
+        .attr 'class', 'arrowline'
+        .attr 'x1', 0
+        .attr 'x2', 0
+        .attr 'y1', 3
+        .attr 'y2', 20
 
-  poifsm =
-    hide: ->
-      return if poi is null
-      hub.emit 'poi', null
+      section
+        .append 'text'
+        .attr 'class', 'label'
+        .text (d) -> calculate_direction d[spec.field]
+        .attr 'text-anchor', 'middle'
+        .attr 'transform', "translate(0,40)"
 
-    show: (x) ->
-      range = scale.range()
-      return poifsm.hide() if range[0] > x or range[1] < x
-      d = scale.invert x
+      focus = inner
+        .append 'g'
+        .attr 'class', 'focus'
 
-      return if poi is d
-      hub.emit 'poi', moment.utc d
-
-    update: ->
-      x = d3.mouse(inner.node())[0]
-      # Only update if enough drag
-      if poifsm.startx?
-        dist = Math.abs poifsm.startx - x
-        return if dist < 10
-      poifsm.startx = null
-      poifsm.show x
-    mousedown: ->
-      x = d3.mouse(inner.node())[0]
-      return poifsm.show x if !poifsm.currentx?
-      poifsm.startx = x
-    mouseup: ->
-      return if !poifsm.startx?
-      if !poifsm.currentx
-        poifsm.startx = null
-        return poifsm.hide()
-      dist = Math.abs poifsm.startx - poifsm.currentx
-      if dist < 10
-        poifsm.startx = null
-        return poifsm.hide()
-      x = d3.mouse(inner.node())[0]
-      poifsm.show x
-
-  drag = d3.behavior.drag()
-    .on 'drag', poifsm.update
-
-  focus
-    .append 'rect'
-    .attr 'class', 'foreground'
-    .attr 'height', layout.canvas.height
-    .attr 'width', layout.canvas.width
-    .style 'fill', 'none'
-    .on 'mousedown', poifsm.mousedown
-    .on 'mouseup', poifsm.mouseup
-    .call drag
-
-  updatepoi = ->
-    if !poi?
       focus
-        .select 'line.poi'
+        .append 'line'
+        .attr 'class', 'poi'
         .attr 'display', 'none'
+        .attr 'y1', 0
+        .attr 'y2', layout.dimensions.height
+
       focus
-        .select '.foc-section'
+        .append 'circle'
+        .attr 'class', 'arrow-background'
+        .attr 'r', 25
         .attr 'display', 'none'
+
       focus
-        .select '.arrow-background'
+        .append 'g'
+        .attr 'class', 'foc-section'
         .attr 'display', 'none'
-      return
 
-    poifsm.currentx = scale poi
+      poi = null
+      params.hub.on 'poi', (p) ->
+        poi = p
+        updatepoi()
 
-    focus
-      .select 'line.poi'
-      .attr 'display', null
-      .attr 'x1', scale poi
-      .attr 'x2', scale poi
+      poifsm =
+        hide: ->
+          return if poi is null
+          params.hub.emit 'poi', null
 
-    Neighbours = neighbours filteredData, (d) -> d.time
-    poiNeighbours = Neighbours poi
+        show: (x) ->
+          range = scale.range()
+          return poifsm.hide() if range[0] > x or range[1] < x
+          d = scale.invert x
 
-    d
+          return if poi is d
+          params.hub.emit 'poi', moment.utc d
 
-    if poiNeighbours.length is 1
-      d = poiNeighbours[0]
-    else if +poiNeighbours[0].time < +domain[0]
-      d = poiNeighbours[1]
-    else if +poiNeighbours[1].time > +domain[1]
-      d = poiNeighbours[0]
-    else
-      d0 = poiNeighbours[0]
-      d1 = poiNeighbours[1]
-      halfway = d0.time + (d1.time - d0.time)/2
-      d = if poi.isBefore(halfway) then d0 else d1
+        update: ->
+          x = d3.mouse(inner.node())[0]
+          # Only update if enough drag
+          if poifsm.startx?
+            dist = Math.abs poifsm.startx - x
+            return if dist < 10
+          poifsm.startx = null
+          poifsm.show x
+        mousedown: ->
+          x = d3.mouse(inner.node())[0]
+          return poifsm.show x if !poifsm.currentx?
+          poifsm.startx = x
+        mouseup: ->
+          return if !poifsm.startx?
+          if !poifsm.currentx
+            poifsm.startx = null
+            return poifsm.hide()
+          dist = Math.abs poifsm.startx - poifsm.currentx
+          if dist < 10
+            poifsm.startx = null
+            return poifsm.hide()
+          x = d3.mouse(inner.node())[0]
+          poifsm.show x
 
-    drawArrow d[spec.field], focus.select '.foc-section'
+      drag = d3.behavior.drag()
+        .on 'drag', poifsm.update
 
-    if (layout.canvas.width - scale poi) < 27
-      xVal = layout.canvas.width - 27
-    else if (layout.canvas.left + scale poi) < 227
-      xVal =  27
-    else
-      xVal = scale d.time
+      focus
+        .append 'rect'
+        .attr 'class', 'foreground'
+        .attr 'height', layout.canvas.height
+        .attr 'width', layout.canvas.width
+        .style 'fill', 'none'
+        .on 'mousedown', poifsm.mousedown
+        .on 'mouseup', poifsm.mouseup
+        .call drag
 
-    focus
-      .select '.arrow-background'
-      .attr 'display', null
-      .attr 'transform', "translate(#{xVal}, #{layout.canvas.height/2})"
+      updatepoi = ->
+        if !poi?
+          focus
+            .select 'line.poi'
+            .attr 'display', 'none'
+          focus
+            .select '.foc-section'
+            .attr 'display', 'none'
+          focus
+            .select '.arrow-background'
+            .attr 'display', 'none'
+          return
 
-    focus
-      .select '.foc-section'
-      .attr 'display', null
-      .attr 'transform', "translate(#{xVal}, #{(layout.canvas.height/2)- 17})"
+        poifsm.currentx = scale poi
 
-  resize dimensions
+        focus
+          .select 'line.poi'
+          .attr 'display', null
+          .attr 'x1', scale poi
+          .attr 'x2', scale poi
 
-  resize: resize
+        Neighbours = neighbours filteredData, (d) -> d.time
+        poiNeighbours = Neighbours poi
+
+        d
+
+        if poiNeighbours.length is 1
+          d = poiNeighbours[0]
+        else if +poiNeighbours[0].time < +params.domain[0]
+          d = poiNeighbours[1]
+        else if +poiNeighbours[1].time > +params.domain[1]
+          d = poiNeighbours[0]
+        else
+          d0 = poiNeighbours[0]
+          d1 = poiNeighbours[1]
+          halfway = d0.time + (d1.time - d0.time)/2
+          d = if poi.isBefore(halfway) then d0 else d1
+
+        drawArrow d[spec.field], focus.select '.foc-section'
+
+        if (layout.canvas.width - scale poi) < 27
+          xVal = layout.canvas.width - 27
+        else if (layout.canvas.left + scale poi) < 227
+          xVal =  27
+        else
+          xVal = scale d.time
+
+        focus
+          .select '.arrow-background'
+          .attr 'display', null
+          .attr 'transform', "translate(#{xVal}, #{layout.canvas.height/2})"
+
+        focus
+          .select '.foc-section'
+          .attr 'display', null
+          .attr 'transform', "translate(#{xVal}, #{(layout.canvas.height/2)- 17})"
+
+      result.resize params.dimensions
+
+    resize: (dimensions) ->
+      layout = calculate_layout dimensions
+
+      svg
+        .attr 'width', layout.dimensions.width
+        .attr 'height', layout.dimensions.height
+
+      scale.range [0, layout.canvas.width]
+
+      sections
+        .attr 'transform', (d) -> "translate(#{scale(d.time)}, 10)"
+
+      p1 = inner.selectAll '.priority1'
+      p2 = inner.selectAll '.priority2'
+      p3 = inner.selectAll '.priority3'
+
+      minLabelWidth = 31
+      p1widths = p1[0].length * minLabelWidth
+      p2widths = p2[0].length * minLabelWidth
+      p3widths = p3[0].length * minLabelWidth
+
+      switch
+        when p1widths + p2widths + p3widths <= layout.canvas.width
+          p2.attr 'display', 'inline'
+          p3.attr 'display', 'inline'
+        when p1widths + p2widths <= layout.canvas.width
+          p2.attr 'display', 'inline'
+          p3.attr 'display', 'none'
+        when p1widths <= layout.canvas.width
+          p3.attr 'display', 'none'
+          p2.attr 'display', 'none'
+
+      updatepoi()
