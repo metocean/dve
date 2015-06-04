@@ -113,10 +113,7 @@ module.exports = (spec, components) ->
         .append 'svg'
         .attr 'class', 'item direction'
 
-      data = state.data.map (d) ->
-        res = time: d.time
-        res[spec.field] = +d[spec.field]
-        res
+      data = state.data
 
       svg
         .append 'g'

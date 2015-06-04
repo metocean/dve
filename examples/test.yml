@@ -18,6 +18,19 @@ spec:
       text: Wind Direction (from)
       field: wd
       units: °
+    - type: chart
+      text: Wind Speed
+      spec:
+      - type: line
+        style: primary
+        text: Wind Speed 10m
+        field: wsp
+        units: kts
+      - type: line
+        style: secondary
+        text: Gust 10m
+        field: gst
+        units: kts
 
 # - type: data
 #   source:
