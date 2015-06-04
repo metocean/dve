@@ -24,6 +24,7 @@ TODO: Region series for areas. E.g. probabilities, min and max.
 
 d3 = require 'd3'
 moment = require 'timespanner'
+extend = require 'extend'
 
 calculate_layout = (dimensions) ->
   dimensions =
@@ -71,7 +72,7 @@ module.exports = (spec, components) ->
         .append 'g'
         .attr 'class', 'title'
         .append 'text'
-        #.attr 'class', 'infotext'
+        .attr 'class', 'infotext'
         .attr 'y', 0
         .attr 'x', 0
         .text spec.text
@@ -164,15 +165,11 @@ module.exports = (spec, components) ->
       for s in spec.spec
         unless components[s.type]?
           return console.error "#{s.type} component not found"
-        item = components[s.type] chart,
-          components: components
-          spec: s
-          dimensions: params.dimensions
-          hub: params.hub
-          data: state.data
-          domain: params.domain
+        newparams = extend {}, params,
           axis: axis
           scale: scale
+        item = components[s.type] s, components
+        item.render chart, state, newparams
         maxDomains.push item.provideMax()
         items.push item
 

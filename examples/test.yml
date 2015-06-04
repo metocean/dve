@@ -21,7 +21,7 @@ spec:
     - type: chart
       text: Wind Speed
       spec:
-      - type: line
+      - type: scatter
         style: primary
         text: Wind Speed 10m
         field: wsp

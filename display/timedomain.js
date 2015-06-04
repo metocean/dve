@@ -16,7 +16,7 @@ module.exports = function(spec, components) {
   list = listcomponent(spec.spec, components);
   return timedomain = {
     render: function(dom, state, params) {
-      var d, data, domain, hub, i, j, len, len1, poi, tz;
+      var d, data, domain, hub, i, j, len, len1, newparams, poi, tz;
       data = state[spec.dataset];
       for (i = 0, len = data.length; i < len; i++) {
         d = data[i];
@@ -57,11 +57,11 @@ module.exports = function(spec, components) {
       state = extend({}, state, {
         data: data
       });
-      params = extend({}, params, {
+      newparams = extend({}, params, {
         domain: domain,
         hub: hub
       });
-      list.render(dom, state, params);
+      list.render(dom, state, newparams);
       return hub.emit('poi', poi);
     },
     resize: function(dimensions) {

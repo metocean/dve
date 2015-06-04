@@ -21,11 +21,13 @@ TODO: Region series for areas. E.g. probabilities, min and max.
     field: gst
     units: kts
  */
-var calculate_layout, d3, moment;
+var calculate_layout, d3, extend, moment;
 
 d3 = require('d3');
 
 moment = require('timespanner');
+
+extend = require('extend');
 
 calculate_layout = function(dimensions) {
   var canvas, info;
@@ -68,10 +70,10 @@ module.exports = function(spec, components) {
   maxDomains = [];
   return result = {
     render: function(dom, state, params) {
-      var clipId, drag, item, j, layout, len, poi, poifsm, ref, s;
+      var clipId, drag, item, j, layout, len, newparams, poi, poifsm, ref, s;
       layout = calculate_layout(params.dimensions);
       svg = d3.select(dom).append('svg').attr('class', 'item chart');
-      svg.append('g').attr('class', 'title').append('text').attr('y', 0).attr('x', 0).text(spec.text).style('fill', '#142c58').attr('dy', '20px').attr('dx', '5px');
+      svg.append('g').attr('class', 'title').append('text').attr('class', 'infotext').attr('y', 0).attr('x', 0).text(spec.text).style('fill', '#142c58').attr('dy', '20px').attr('dx', '5px');
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
       inner.append('g').attr('class', 'x axis').attr('transform', "translate(0," + layout.canvas.height + ")");
       inner.append('g').attr('class', 'y axis');
@@ -155,16 +157,12 @@ module.exports = function(spec, components) {
         if (components[s.type] == null) {
           return console.error(s.type + " component not found");
         }
-        item = components[s.type](chart, {
-          components: components,
-          spec: s,
-          dimensions: params.dimensions,
-          hub: params.hub,
-          data: state.data,
-          domain: params.domain,
+        newparams = extend({}, params, {
           axis: axis,
           scale: scale
         });
+        item = components[s.type](s, components);
+        item.render(chart, state, newparams);
         maxDomains.push(item.provideMax());
         items.push(item);
       }

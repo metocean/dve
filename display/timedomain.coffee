@@ -34,10 +34,10 @@ module.exports = (spec, components) ->
         poi = poi.tz tz if poi?
       hub = createhub()
       state = extend {}, state, data: data
-      params = extend {}, params,
+      newparams = extend {}, params,
         domain: domain
         hub: hub
-      list.render dom, state, params
+      list.render dom, state, newparams
       hub.emit 'poi', poi
     resize: (dimensions) ->
       list.resize dimensions
