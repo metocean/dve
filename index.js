@@ -10,7 +10,7 @@ module.exports = {
   mount: require('./display/mount'),
   title: require('./display/title'),
   space: require('./display/space'),
-  data: require('./display/odoql'),
+  data: require('./display/data'),
   report: require('./display/report'),
   timedomain: require('./display/timedomain'),
   timeheadings: require('./time/timeheadings'),
