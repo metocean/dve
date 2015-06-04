@@ -21,69 +21,29 @@ spec:
     - type: chart
       text: Wind Speed
       spec:
-      - type: scatter
+      - type: line
         style: primary
         text: Wind Speed 10m
         field: wsp
         units: kts
-      - type: line
+      - type: scatter
         style: secondary
         text: Gust 10m
         field: gst
         units: kts
-
-# - type: data
-#   source:
-#     type: csv
-#     url: example2.csv
-#     translate:
-#       time: DateTime
-#       wsp: WSpd10m
-#       gst: Gust10m
-#       wd: WindDir
-#       location: Location
-#     timeformat: DD-MM-YYYY HH:mm
-#     include:
-#       location: Location 1
-#   display:
-#     timezone: Australia/Sydney
-#     start: (Australia/Sydney)/y-22d
-#     end: (Australia/Sydney)/y-18d
-#   spec:
-#   - type: dayheadings
-#     text: Date
-#   - type: timeheadings
-#     text: Time
-#   - type: direction
-#     text: Wind Direction (from)
-#     field: wd
-#     units: °
-#   - type: chart
-#     text: Wind Speed
-#     spec:
-#     - type: line
-#       style: primary
-#       text: Wind Speed 10m
-#       field: wsp
-#       units: kts
-#     - type: line
-#       style: secondary
-#       text: Gust 10m
-#       field: gst
-#       units: kts
-#   - type: tablebytime
-#     text: Wind Speed
-#     field: wsp
-#     units: kts
-#   - type: histogram
-#     text: Wind Direction
-#     field: wd
-#     units: °
-#   - type: windrose
-#     text: Wind Rose
-#     field: wd
-#     units: °
-#   - type: table
-#     text: Wind Speed
-#     field: wsp
-#     units: °
+    - type: tablebytime
+      text: Wind Speed
+      field: wsp
+      units: kts
+    - type: histogram
+      text: Wind Direction
+      field: wd
+      units: °
+    - type: windrose
+      text: Wind Rose
+      field: wd
+      units: °
+    - type: table
+      text: Wind Speed
+      field: wsp
+      units: °

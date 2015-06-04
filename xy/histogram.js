@@ -48,197 +48,22 @@ calculate_layout = function(dimensions) {
   };
 };
 
-module.exports = function(dom, options) {
-  var _speedArray, angle, axis, calculate_direction, calculate_speed_category, cat, chart, clipId, colorScale, components, d, data, dimensions, dir, domain, filteredData, frequency, getMaxObj, getSpeeds, groupedData, hub, i, inner, item, items, j, k, layout, len, len1, max, maxItem, ref, resize, scale, spec, svg, textcolorScale;
-  components = options.components, spec = options.spec, dimensions = options.dimensions, data = options.data, domain = options.domain, hub = options.hub;
-  layout = calculate_layout(dimensions);
-  svg = d3.select(dom).append('svg').attr('class', 'item histogram');
-  data = data.map(function(d) {
-    var result;
-    result = {
-      time: d.time,
-      wsp: +d.wsp,
-      wd: +d.wd
-    };
-    return result;
-  });
-  data = data.filter(function(d) {
-    if ((d.wd != null) && (d.wsp != null)) {
-      return d;
-    }
-  });
-  filteredData = data.filter(function(d) {
-    return +d.time >= +domain[0] && +d.time <= +domain[1];
-  });
-  svg.append('g').attr('class', 'title').attr('transform', "translate(" + layout.title.left + "," + layout.title.top + ")").append('text').attr('class', 'infotext').text("" + spec.text).attr('dy', 20).attr('dx', 5);
-  inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
-  inner.append('line').attr('class', 'divider').attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', layout.dimensions.height);
-  inner.append('g').attr('class', 'x axis').attr('transform', "translate(0," + layout.canvas.height + ")");
-  inner.append('g').attr('class', 'y axis');
-  clipId = "clip-" + (Math.floor(Math.random() * 1000000));
-  chart = inner.append('g').attr('class', 'chart');
-  chart.append('defs').append('rect').attr('x', '0').attr('y', '0').attr('width', layout.canvas.width).attr('height', layout.canvas.height);
-  frequency = {
-    N: [],
-    NNE: [],
-    NE: [],
-    ENE: [],
-    E: [],
-    ESE: [],
-    SE: [],
-    SSE: [],
-    S: [],
-    SSW: [],
-    SW: [],
-    WSW: [],
-    W: [],
-    WNW: [],
-    NW: [],
-    NNW: []
-  };
-  colorScale = d3.scale.quantize().range(['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']).domain([0, 13]);
-  textcolorScale = d3.scale.quantize().range(['#000000', '#000000', '#ffffff', '#ffffff']).domain([0, 13]);
-  calculate_direction = function(degree) {
-    var direction, text, textDirection;
-    direction = Math.floor((degree / 22.5) + 0.5);
-    text = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
-    return textDirection = text[modulo(direction, 16)];
-  };
-  for (j = 0, len = filteredData.length; j < len; j++) {
-    d = filteredData[j];
-    dir = calculate_direction(d.wd);
-    frequency[dir].push(d);
-  }
-  _speedArray = {
-    '0-4': [],
-    '5-9': [],
-    '10-14': [],
-    '15-19': [],
-    '20-24': [],
-    '25-29': [],
-    '30-34': [],
-    '35-39': [],
-    '40-44': [],
-    '45-49': [],
-    '50-54': [],
-    '55-59': [],
-    '60-64': [],
-    '65+': []
-  };
-  calculate_speed_category = function(speed) {
-    var cat;
-    return cat = (function() {
-      switch (false) {
-        case !(speed < 5):
-          return '0-4';
-        case !(speed < 10):
-          return '5-9';
-        case !(speed < 15):
-          return '10-14';
-        case !(speed < 20):
-          return '15-19';
-        case !(speed < 25):
-          return '20-24';
-        case !(speed < 30):
-          return '25-29';
-        case !(speed < 35):
-          return '30-34';
-        case !(speed < 45):
-          return '35-39';
-        case !(speed < 50):
-          return '40-44';
-        case !(speed < 55):
-          return '45-49';
-        case !(speed < 60):
-          return '50-54';
-        case !(speed < 65):
-          return '55-59';
-        case !(speed < 70):
-          return '60-64';
-        default:
-          return '65+';
-      }
-    })();
-  };
-  getSpeeds = function(dir, items) {
-    var _, bits, cat, count, i, k, len1, result, results, speedArray, start;
-    speedArray = {};
-    for (cat in _speedArray) {
-      _ = _speedArray[cat];
-      speedArray[cat] = [];
-    }
-    for (k = 0, len1 = items.length; k < len1; k++) {
-      i = items[k];
-      cat = calculate_speed_category(i.wsp);
-      speedArray[cat].push(i);
-    }
-    start = 0;
-    count = 0;
-    results = [];
-    for (cat in speedArray) {
-      bits = speedArray[cat];
-      result = {
-        index: count,
-        start: start,
-        end: start + bits.length,
-        value: bits.length
-      };
-      start = result.end;
-      count++;
-      results.push(result);
-    }
-    return results;
-  };
-  groupedData = [];
-  angle = 0;
-  for (dir in frequency) {
-    items = frequency[dir];
-    groupedData.push({
-      key: angle,
-      value: dir,
-      count: items.length,
-      speeds: getSpeeds(dir, items)
-    });
-    angle += 22.5;
-  }
-  ref = Object.keys(_speedArray);
-  for (i in ref) {
-    cat = ref[i];
-    max = null;
-    maxItem = null;
-    for (k = 0, len1 = groupedData.length; k < len1; k++) {
-      dir = groupedData[k];
-      item = dir.speeds[i];
-      if (item.value !== 0) {
-        if (maxItem === null || item.value > max) {
-          max = item.value;
-          maxItem = item;
-        }
-      }
-    }
-    if (maxItem != null) {
-      maxItem.legend = cat;
-    }
-  }
-  scale = {
-    x: d3.scale.ordinal().domain(groupedData.map(function(d) {
-      return d.value;
-    })),
-    y: d3.scale.linear().domain([
-      0, 1.1 * d3.max(groupedData, function(d) {
-        return d.count;
-      })
-    ])
-  };
-  axis = {
-    x: d3.svg.axis().scale(scale.x).orient('bottom'),
-    y: d3.svg.axis().scale(scale.y).orient('left')
-  };
-  chart.append('text').attr('class', 'legend').attr('text-anchor', 'end');
+module.exports = function(spec, components) {
+  var axis, chart, colorScale, data, filteredData, getMaxObj, groupedData, inner, result, scale, svg, textcolorScale;
+  svg = null;
+  data = null;
+  filteredData = null;
+  inner = null;
+  scale = null;
+  axis = null;
+  chart = null;
+  groupedData = null;
+  colorScale = null;
+  textcolorScale = null;
   getMaxObj = function() {
-    var l, len2;
-    for (l = 0, len2 = groupedData.length; l < len2; l++) {
-      d = groupedData[l];
+    var d, j, len;
+    for (j = 0, len = groupedData.length; j < len; j++) {
+      d = groupedData[j];
       if (d.count === (d3.max(groupedData, function(d) {
         return d.count;
       }))) {
@@ -246,50 +71,234 @@ module.exports = function(dom, options) {
       }
     }
   };
-  resize = function(dimensions) {
-    var bars;
-    layout = calculate_layout(dimensions);
-    svg.attr('width', layout.dimensions.width).attr('height', layout.dimensions.height);
-    scale.x.rangeRoundBands([0, layout.canvas.width], 0.05);
-    scale.y.range([layout.canvas.height, 0]);
-    bars = chart.selectAll('.bar').data(groupedData).enter().append('g').attr('class', 'bar').attr('transform', function(d) {
-      return "translate(" + (scale.x(d.value)) + ", 0)";
-    });
-    bars.selectAll('rect').data(function(d) {
-      return d.speeds;
-    }).enter().append('rect').attr('x', 0).attr('y', function(d) {
-      return scale.y(d.end);
-    }).attr("width", scale.x.rangeBand()).attr('height', function(d) {
-      return scale.y(d.start) - scale.y(d.end);
-    }).style('fill', function(d) {
-      return colorScale(d.index);
-    });
-    bars.selectAll('text').data(function(d) {
-      return d.speeds.filter(function(s) {
-        return s.legend;
+  return result = {
+    render: function(dom, state, params) {
+      var _speedArray, angle, calculate_direction, calculate_speed_category, cat, clipId, d, dir, frequency, getSpeeds, i, item, items, j, k, layout, len, len1, max, maxItem, ref;
+      layout = calculate_layout(params.dimensions);
+      svg = d3.select(dom).append('svg').attr('class', 'item histogram');
+      data = state.data.map(function(d) {
+        return {
+          time: d.time,
+          wsp: +d.wsp,
+          wd: +d.wd
+        };
       });
-    }).enter().append('text').attr('x', scale.x.rangeBand() / 2).attr('y', function(d) {
-      return scale.y(d.end);
-    }).attr('dy', '1.1em').style('text-anchor', 'middle').style('fill', function(d) {
-      return textcolorScale(d.index);
-    }).text(function(d) {
-      return d.legend;
-    });
-    inner.select('.x.axis').call(axis.x);
-    inner.select('.y.axis').call(axis.y.tickSize(-layout.canvas.width, 0, 0));
-    inner.selectAll('.y.axis .tick line').data(scale.y.ticks(axis.y.ticks()[0])).attr('class', function(d) {
-      if (d === 0) {
-        return 'zero';
-      } else {
-        return null;
+      data = data.filter(function(d) {
+        if ((d.wd != null) && (d.wsp != null)) {
+          return d;
+        }
+      });
+      filteredData = data.filter(function(d) {
+        return +d.time >= +params.domain[0] && +d.time <= +params.domain[1];
+      });
+      svg.append('g').attr('class', 'title').attr('transform', "translate(" + layout.title.left + "," + layout.title.top + ")").append('text').attr('class', 'infotext').text("" + spec.text).attr('dy', 20).attr('dx', 5);
+      inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
+      inner.append('line').attr('class', 'divider').attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', layout.dimensions.height);
+      inner.append('g').attr('class', 'x axis').attr('transform', "translate(0," + layout.canvas.height + ")");
+      inner.append('g').attr('class', 'y axis');
+      clipId = "clip-" + (Math.floor(Math.random() * 1000000));
+      chart = inner.append('g').attr('class', 'chart');
+      chart.append('defs').append('rect').attr('x', '0').attr('y', '0').attr('width', layout.canvas.width).attr('height', layout.canvas.height);
+      frequency = {
+        N: [],
+        NNE: [],
+        NE: [],
+        ENE: [],
+        E: [],
+        ESE: [],
+        SE: [],
+        SSE: [],
+        S: [],
+        SSW: [],
+        SW: [],
+        WSW: [],
+        W: [],
+        WNW: [],
+        NW: [],
+        NNW: []
+      };
+      colorScale = d3.scale.quantize().range(['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']).domain([0, 13]);
+      textcolorScale = d3.scale.quantize().range(['#000000', '#000000', '#ffffff', '#ffffff']).domain([0, 13]);
+      calculate_direction = function(degree) {
+        var direction, text, textDirection;
+        direction = Math.floor((degree / 22.5) + 0.5);
+        text = ['N', 'NNE', 'NE', 'ENE', 'E', 'ESE', 'SE', 'SSE', 'S', 'SSW', 'SW', 'WSW', 'W', 'WNW', 'NW', 'NNW'];
+        return textDirection = text[modulo(direction, 16)];
+      };
+      for (j = 0, len = filteredData.length; j < len; j++) {
+        d = filteredData[j];
+        dir = calculate_direction(d.wd);
+        frequency[dir].push(d);
       }
-    });
-    inner.select('.y.axis .domain').remove();
-    max = getMaxObj();
-    return chart.select('.legend').attr('x', scale.x(max.value)).attr('y', scale.y(max.count)).text("" + max.count);
-  };
-  resize(dimensions);
-  return {
-    resize: resize
+      _speedArray = {
+        '0-4': [],
+        '5-9': [],
+        '10-14': [],
+        '15-19': [],
+        '20-24': [],
+        '25-29': [],
+        '30-34': [],
+        '35-39': [],
+        '40-44': [],
+        '45-49': [],
+        '50-54': [],
+        '55-59': [],
+        '60-64': [],
+        '65+': []
+      };
+      calculate_speed_category = function(speed) {
+        var cat;
+        return cat = (function() {
+          switch (false) {
+            case !(speed < 5):
+              return '0-4';
+            case !(speed < 10):
+              return '5-9';
+            case !(speed < 15):
+              return '10-14';
+            case !(speed < 20):
+              return '15-19';
+            case !(speed < 25):
+              return '20-24';
+            case !(speed < 30):
+              return '25-29';
+            case !(speed < 35):
+              return '30-34';
+            case !(speed < 45):
+              return '35-39';
+            case !(speed < 50):
+              return '40-44';
+            case !(speed < 55):
+              return '45-49';
+            case !(speed < 60):
+              return '50-54';
+            case !(speed < 65):
+              return '55-59';
+            case !(speed < 70):
+              return '60-64';
+            default:
+              return '65+';
+          }
+        })();
+      };
+      getSpeeds = function(dir, items) {
+        var _, bits, cat, count, i, k, len1, res, results, speedArray, start;
+        speedArray = {};
+        for (cat in _speedArray) {
+          _ = _speedArray[cat];
+          speedArray[cat] = [];
+        }
+        for (k = 0, len1 = items.length; k < len1; k++) {
+          i = items[k];
+          cat = calculate_speed_category(i.wsp);
+          speedArray[cat].push(i);
+        }
+        start = 0;
+        count = 0;
+        results = [];
+        for (cat in speedArray) {
+          bits = speedArray[cat];
+          res = {
+            index: count,
+            start: start,
+            end: start + bits.length,
+            value: bits.length
+          };
+          start = res.end;
+          count++;
+          results.push(res);
+        }
+        return results;
+      };
+      groupedData = [];
+      angle = 0;
+      for (dir in frequency) {
+        items = frequency[dir];
+        groupedData.push({
+          key: angle,
+          value: dir,
+          count: items.length,
+          speeds: getSpeeds(dir, items)
+        });
+        angle += 22.5;
+      }
+      ref = Object.keys(_speedArray);
+      for (i in ref) {
+        cat = ref[i];
+        max = null;
+        maxItem = null;
+        for (k = 0, len1 = groupedData.length; k < len1; k++) {
+          dir = groupedData[k];
+          item = dir.speeds[i];
+          if (item.value !== 0) {
+            if (maxItem === null || item.value > max) {
+              max = item.value;
+              maxItem = item;
+            }
+          }
+        }
+        if (maxItem != null) {
+          maxItem.legend = cat;
+        }
+      }
+      scale = {
+        x: d3.scale.ordinal().domain(groupedData.map(function(d) {
+          return d.value;
+        })),
+        y: d3.scale.linear().domain([
+          0, 1.1 * d3.max(groupedData, function(d) {
+            return d.count;
+          })
+        ])
+      };
+      axis = {
+        x: d3.svg.axis().scale(scale.x).orient('bottom'),
+        y: d3.svg.axis().scale(scale.y).orient('left')
+      };
+      chart.append('text').attr('class', 'legend').attr('text-anchor', 'end');
+      return result.resize(params.dimensions);
+    },
+    resize: function(dimensions) {
+      var bars, layout, max;
+      layout = calculate_layout(dimensions);
+      svg.attr('width', layout.dimensions.width).attr('height', layout.dimensions.height);
+      scale.x.rangeRoundBands([0, layout.canvas.width], 0.05);
+      scale.y.range([layout.canvas.height, 0]);
+      bars = chart.selectAll('.bar').data(groupedData).enter().append('g').attr('class', 'bar').attr('transform', function(d) {
+        return "translate(" + (scale.x(d.value)) + ", 0)";
+      });
+      bars.selectAll('rect').data(function(d) {
+        return d.speeds;
+      }).enter().append('rect').attr('x', 0).attr('y', function(d) {
+        return scale.y(d.end);
+      }).attr("width", scale.x.rangeBand()).attr('height', function(d) {
+        return scale.y(d.start) - scale.y(d.end);
+      }).style('fill', function(d) {
+        return colorScale(d.index);
+      });
+      bars.selectAll('text').data(function(d) {
+        return d.speeds.filter(function(s) {
+          return s.legend;
+        });
+      }).enter().append('text').attr('x', scale.x.rangeBand() / 2).attr('y', function(d) {
+        return scale.y(d.end);
+      }).attr('dy', '1.1em').style('text-anchor', 'middle').style('fill', function(d) {
+        return textcolorScale(d.index);
+      }).text(function(d) {
+        return d.legend;
+      });
+      inner.select('.x.axis').call(axis.x);
+      inner.select('.y.axis').call(axis.y.tickSize(-layout.canvas.width, 0, 0));
+      inner.selectAll('.y.axis .tick line').data(scale.y.ticks(axis.y.ticks()[0])).attr('class', function(d) {
+        if (d === 0) {
+          return 'zero';
+        } else {
+          return null;
+        }
+      });
+      inner.select('.y.axis .domain').remove();
+      max = getMaxObj();
+      return chart.select('.legend').attr('x', scale.x(max.value)).attr('y', scale.y(max.count)).text("" + max.count);
+    }
   };
 };

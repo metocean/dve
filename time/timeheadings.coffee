@@ -128,7 +128,7 @@ module.exports = (spec, components) ->
 
       svg
         .select '.infotext'
-        .text spec.text + ' (GMT' + getTimezone.format('Z') + ')' # or ZZ for +1300
+        .text "#{spec.text} #{getTimezone.format('ZZ')}" # or ZZ for +1300
 
       poi = null
       params.hub.on 'poi', (p) ->

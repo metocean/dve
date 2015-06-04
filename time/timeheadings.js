@@ -80,7 +80,7 @@ module.exports = function(spec, components) {
       focus.append('text').attr('class', 'poi-y-val-shad').attr('display', 'none').attr('dx', '-1.3em').attr('dy', 2);
       focus.append('text').attr('class', 'poi-y-val').attr('display', 'none').attr('dx', '-1.3em');
       getTimezone = moment(scale.domain()[0]);
-      svg.select('.infotext').text(spec.text + ' (GMT' + getTimezone.format('Z') + ')');
+      svg.select('.infotext').text(spec.text + " " + (getTimezone.format('ZZ')));
       poi = null;
       params.hub.on('poi', function(p) {
         poi = p;
