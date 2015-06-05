@@ -3,40 +3,39 @@
 Mount a component or group of components into the dom.
 Keep them resized based on window resize events.
 
-TODO: Optional offset (e.g. remove hardcoded 42)
-
 ###
 
 d3 = require 'd3'
-windowdimensions = require '../util/windowdimensions'
+domdimensions = require '../util/domdimensions'
 debounce = require '../util/debounce'
+extend = require 'extend'
+listcomponent = require './list'
 
-getwindowdimensions = ->
-  dimensions = windowdimensions()
-  dimensions[0] -= 42
-  dimensions
+module.exports = (spec, components) ->
+  list = listcomponent spec, components
 
-module.exports = (dom, options) ->
-  { components, spec } = options
+  mount =
+    render: (dom, state, params) ->
+      params = extend {}, params,
+        dimensions: domdimensions dom
 
-  dimensions = getwindowdimensions()
+      list.render dom, state, params
 
-  unless spec instanceof Array
-    spec = [spec]
+      d3
+        .select window
+        .on 'resize', debounce 125, ->
+          dimensions = domdimensions dom
+          mount.resize dimensions
 
-  items = []
-  for s in spec
-    unless components[s.type]?
-      return console.error "#{s.type} component not found"
-    items.push components[s.type] dom,
-      components: components
-      spec: s
-      dimensions: dimensions
+      # hack to take into account the scrollbar if our content extends past the bottom
+      setTimeout(->
+        dimensions = domdimensions dom
+        mount.resize dimensions
+      , 1000)
 
-  d3
-    .select window
-    .on 'resize', debounce 125, ->
-      dimensions = getwindowdimensions()
-      for i in items
-        continue unless i.resize?
-        i.resize dimensions
+    resize: (dimensions) ->
+      list.resize dimensions
+    query: (params) ->
+      list.query params
+
+  mount

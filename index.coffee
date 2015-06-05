@@ -15,6 +15,7 @@ module.exports =
   # data set
   data: require './display/data'
   report: require './display/report'
+  timedomain: require './display/timedomain'
 
   # navigation
   timeheadings: require './time/timeheadings'

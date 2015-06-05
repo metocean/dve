@@ -49,199 +49,204 @@ calculate_layout = (dimensions) ->
   title: title
   canvas: canvas
 
-module.exports = (dom, options) ->
-  { components, spec, dimensions, data, domain, hub } = options
-  layout = calculate_layout dimensions
+module.exports = (spec, components) ->
+  svg = null
+  inner = null
+  scale = null
+  axis = null
+  focus = null
+  updatepoi = null
+  timeheadings =
+    render: (dom, state, params) ->
+      layout = calculate_layout params.dimensions
 
-  svg = d3.select dom
-    .append 'svg'
-    .attr 'class', 'item timeheadings'
+      svg = d3.select dom
+        .append 'svg'
+        .attr 'class', 'item timeheadings'
 
-  svg
-    .append 'g'
-    .attr 'class', 'title'
-    .attr 'transform', "translate(#{layout.title.left},#{layout.title.top})"
-    .append 'text'
-    .attr 'class', 'infotext'
-    .attr 'dy', 20
-    .attr 'dx', 5
+      svg
+        .append 'g'
+        .attr 'class', 'title'
+        .attr 'transform', "translate(#{layout.title.left},#{layout.title.top})"
+        .append 'text'
+        .attr 'class', 'infotext'
+        .attr 'dy', 20
+        .attr 'dx', 5
 
-  inner = svg
-    .append 'g'
-    .attr 'class', 'inner'
-    .attr 'transform', "translate(#{layout.canvas.left},#{layout.canvas.top})"
+      inner = svg
+        .append 'g'
+        .attr 'class', 'inner'
+        .attr 'transform', "translate(#{layout.canvas.left},#{layout.canvas.top})"
 
-  inner
-    .append 'line'
-    .attr 'class', 'divider'
-    .attr 'x1', 0
-    .attr 'x2', 0
-    .attr 'y1', 0
-    .attr 'y2', layout.dimensions.height
+      inner
+        .append 'line'
+        .attr 'class', 'divider'
+        .attr 'x1', 0
+        .attr 'x2', 0
+        .attr 'y1', 0
+        .attr 'y2', layout.dimensions.height
 
-  inner
-    .append 'g'
-    .attr 'class', 'axis'
-    .attr "transform", "translate(0,#{-layout.canvas.top})"
+      inner
+        .append 'g'
+        .attr 'class', 'axis'
+        .attr "transform", "translate(0,#{-layout.canvas.top})"
 
-  scale = d3.time.scale().domain domain
+      scale = d3.time.scale().domain params.domain
 
-  axis = d3
-    .svg
-    .axis()
-    .scale scale
-    .ticks(d3.time.hour, 6)
-    .tickFormat(d3.time.format '%H')
+      axis = d3
+        .svg
+        .axis()
+        .scale scale
+        .ticks(d3.time.hour, 6)
+        .tickFormat(d3.time.format '%H')
 
-  focus = inner
-    .append 'g'
-    .attr 'class', 'focus'
-
-  focus
-    .append 'line'
-    .attr 'class', 'poi'
-    .attr 'display', 'none'
-    .attr 'y1', 0
-    .attr 'y2', layout.dimensions.height
-
-  focus
-    .append 'text'
-    .attr 'class', 'poi-y-val-shad'
-    .attr 'display', 'none'
-    .attr 'dx', '-1.3em'
-    .attr 'dy', 2
-
-  focus
-    .append 'text'
-    .attr 'class', 'poi-y-val'
-    .attr 'display', 'none'
-    .attr 'dx', '-1.3em'
-
-  getTimezone = moment scale.domain()[0]
-
-  svg
-    .select '.infotext'
-    .text spec.text + ' (GMT' + getTimezone.format('Z') + ')' # or ZZ for +1300
-
-  poi = null
-  hub.on 'poi', (p) ->
-    poi = p
-    updatepoi()
-
-  poifsm =
-    hide: ->
-      return if poi is null
-      hub.emit 'poi', null
-
-    show: (x) ->
-      range = scale.range()
-      return poifsm.hide() if range[0] > x or range[1] < x
-      d = scale.invert x
-
-      return if poi is d
-      hub.emit 'poi', moment d
-
-    update: ->
-      x = d3.mouse(inner.node())[0]
-      # Only update if enough drag
-      if poifsm.startx?
-        dist = Math.abs poifsm.startx - x
-        return if dist < 10
-      poifsm.startx = null
-      poifsm.show x
-    mousedown: ->
-      x = d3.mouse(inner.node())[0]
-      return poifsm.show x if !poifsm.currentx?
-      poifsm.startx = x
-    mouseup: ->
-      return if !poifsm.startx?
-      if !poifsm.currentx
-        poifsm.startx = null
-        return poifsm.hide()
-      dist = Math.abs poifsm.startx - poifsm.currentx
-      if dist < 10
-        poifsm.startx = null
-        return poifsm.hide()
-      x = d3.mouse(inner.node())[0]
-      poifsm.show x
-
-  drag = d3.behavior.drag()
-    .on 'drag', poifsm.update
-
-  focus
-    .append 'rect'
-    .attr 'class', 'foreground'
-    .style 'fill', 'none'
-    .on 'mousedown', poifsm.mousedown
-    .on 'mouseup', poifsm.mouseup
-    .call drag
-
-  updatepoi = ->
-    if !poi?
-      poifsm.currentx = scale poi
-      focus
-        .select 'line.poi'
-        .attr 'display', 'none'
+      focus = inner
+        .append 'g'
+        .attr 'class', 'focus'
 
       focus
-        .select '.poi-y-val-shad'
+        .append 'line'
+        .attr 'class', 'poi'
         .attr 'display', 'none'
+        .attr 'y1', 0
+        .attr 'y2', layout.dimensions.height
 
       focus
-        .select '.poi-y-val'
+        .append 'text'
+        .attr 'class', 'poi-y-val-shad'
         .attr 'display', 'none'
-      return
+        .attr 'dx', '-1.3em'
+        .attr 'dy', 2
 
-    poifsm.currentx = scale poi
+      focus
+        .append 'text'
+        .attr 'class', 'poi-y-val'
+        .attr 'display', 'none'
+        .attr 'dx', '-1.3em'
 
-    focus
-      .select 'line.poi'
-      .attr 'display', null
-      .attr 'x1', scale poi
-      .attr 'x2', scale poi
+      getTimezone = moment scale.domain()[0]
 
-    if (layout.canvas.width - scale poi) < 20
-      xVal = layout.canvas.width - 20
-    else if (layout.canvas.left + scale poi) < 225
-      xVal =  25
-    else
-      xVal = scale poi
+      svg
+        .select '.infotext'
+        .text "#{spec.text} #{getTimezone.format('ZZ')}" # or ZZ for +1300
 
-    focus
-      .select '.poi-y-val-shad'
-      .attr 'display', null
-      .attr 'transform', "translate(#{xVal},#{layout.canvas.height - 6})"
-      .text poi.format('HH:mm')
+      poi = null
+      params.hub.on 'poi', (p) ->
+        poi = p
+        updatepoi()
 
-    focus
-      .select '.poi-y-val'
-      .attr 'display', null
-      .attr 'transform', "translate(#{xVal},#{layout.canvas.height - 6})"
-      .text poi.format('HH:mm')
+      poifsm =
+        hide: ->
+          return if poi is null
+          params.hub.emit 'poi', null
 
-  resize = (dimensions) ->
-    layout = calculate_layout dimensions
+        show: (x) ->
+          range = scale.range()
+          return poifsm.hide() if range[0] > x or range[1] < x
+          d = scale.invert x
 
-    svg
-      .attr 'width', layout.dimensions.width
-      .attr 'height', layout.dimensions.height
+          return if poi is d
+          params.hub.emit 'poi', moment d
 
-    scale.range [0, layout.canvas.width]
+        update: ->
+          x = d3.mouse(inner.node())[0]
+          # Only update if enough drag
+          if poifsm.startx?
+            dist = Math.abs poifsm.startx - x
+            return if dist < 10
+          poifsm.startx = null
+          poifsm.show x
+        mousedown: ->
+          x = d3.mouse(inner.node())[0]
+          return poifsm.show x if !poifsm.currentx?
+          poifsm.startx = x
+        mouseup: ->
+          return if !poifsm.startx?
+          if !poifsm.currentx
+            poifsm.startx = null
+            return poifsm.hide()
+          dist = Math.abs poifsm.startx - poifsm.currentx
+          if dist < 10
+            poifsm.startx = null
+            return poifsm.hide()
+          x = d3.mouse(inner.node())[0]
+          poifsm.show x
 
-    inner
-      .select '.axis'
-      .call (axis.tickSize layout.canvas.height/4, -layout.canvas.height)
+      drag = d3.behavior.drag()
+        .on 'drag', poifsm.update
 
-    focus
-      .select '.foreground'
-      .attr 'height', layout.canvas.height
-      .attr 'width', layout.canvas.width
+      focus
+        .append 'rect'
+        .attr 'class', 'foreground'
+        .style 'fill', 'none'
+        .on 'mousedown', poifsm.mousedown
+        .on 'mouseup', poifsm.mouseup
+        .call drag
 
-    inner.select '.axis .domain'
-      .remove()
+      updatepoi = ->
+        if !poi?
+          poifsm.currentx = scale poi
+          focus
+            .select 'line.poi'
+            .attr 'display', 'none'
 
-    updatepoi()
+          focus
+            .select '.poi-y-val-shad'
+            .attr 'display', 'none'
 
-  resize dimensions
+          focus
+            .select '.poi-y-val'
+            .attr 'display', 'none'
+          return
 
-  resize: resize
+        poifsm.currentx = scale poi
+
+        focus
+          .select 'line.poi'
+          .attr 'display', null
+          .attr 'x1', scale poi
+          .attr 'x2', scale poi
+
+        if (layout.canvas.width - scale poi) < 20
+          xVal = layout.canvas.width - 20
+        else if (layout.canvas.left + scale poi) < 225
+          xVal =  25
+        else
+          xVal = scale poi
+
+        focus
+          .select '.poi-y-val-shad'
+          .attr 'display', null
+          .attr 'transform', "translate(#{xVal},#{layout.canvas.height - 6})"
+          .text poi.format('HH:mm')
+
+        focus
+          .select '.poi-y-val'
+          .attr 'display', null
+          .attr 'transform', "translate(#{xVal},#{layout.canvas.height - 6})"
+          .text poi.format('HH:mm')
+
+      timeheadings.resize params.dimensions
+
+    resize: (dimensions) ->
+      layout = calculate_layout dimensions
+
+      svg
+        .attr 'width', layout.dimensions.width
+        .attr 'height', layout.dimensions.height
+
+      scale.range [0, layout.canvas.width]
+
+      inner
+        .select '.axis'
+        .call (axis.tickSize layout.canvas.height/4, -layout.canvas.height)
+
+      focus
+        .select '.foreground'
+        .attr 'height', layout.canvas.height
+        .attr 'width', layout.canvas.width
+
+      inner.select '.axis .domain'
+        .remove()
+
+      updatepoi()
