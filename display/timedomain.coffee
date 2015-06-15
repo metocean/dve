@@ -9,7 +9,7 @@ module.exports = (spec, components) ->
 
   timedomain =
     render: (dom, state, params) ->
-      data = state[spec.dataset]
+      data = state.data
       for d in data
         d.time = moment.utc d.time, moment.ISO_8601
       domain = d3.extent data, (d) -> d.time
@@ -33,7 +33,6 @@ module.exports = (spec, components) ->
           d.time = d.time.tz tz
         poi = poi.tz tz if poi?
       hub = createhub()
-      state = extend {}, state, data: data
       newparams = extend {}, params,
         domain: domain
         hub: hub

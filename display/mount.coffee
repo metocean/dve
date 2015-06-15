@@ -37,5 +37,3 @@ module.exports = (spec, components) ->
       list.resize dimensions
     query: (params) ->
       list.query params
-
-  mount

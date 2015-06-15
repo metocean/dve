@@ -9,15 +9,16 @@ module.exports = (spec, components) ->
     spec = [spec]
 
   items = []
+  for s in spec
+    unless components[s.type]?
+      return console.error "#{s.type} component not found"
+    item = components[s.type] s, components
+    items.push item
 
   list =
     render: (dom, state, params) ->
-      for s in spec
-        unless components[s.type]?
-          return console.error "#{s.type} component not found"
-        item = components[s.type] s, components
+      for item in items
         item.render dom, state, params
-        items.push item
     resize: (dimensions) ->
       for i in items
         continue unless i.resize?

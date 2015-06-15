@@ -14,6 +14,7 @@ module.exports =
   space: require './display/space'
   # data set
   data: require './display/data'
+  select: require './display/select'
   report: require './display/report'
   timedomain: require './display/timedomain'
 

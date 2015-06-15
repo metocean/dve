@@ -20,7 +20,7 @@ listcomponent = require('./list');
 module.exports = function(spec, components) {
   var list, mount;
   list = listcomponent(spec, components);
-  mount = {
+  return mount = {
     render: function(dom, state, params) {
       params = extend({}, params, {
         dimensions: domdimensions(dom)
@@ -44,5 +44,4 @@ module.exports = function(spec, components) {
       return list.query(params);
     }
   };
-  return mount;
 };

@@ -58,8 +58,7 @@ module.exports = (spec, components) ->
 
       data = data.filter (d) -> return d if d.wd? and d.wsp?
 
-      filteredData = data.filter (d) ->
-        +d.time >= +params.domain[0] and +d.time <= +params.domain[1]
+      filteredData = data
 
       svg
         .attr 'width', layout.dimensions.width

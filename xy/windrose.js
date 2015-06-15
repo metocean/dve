@@ -67,9 +67,7 @@ module.exports = function(spec, components) {
           return d;
         }
       });
-      filteredData = data.filter(function(d) {
-        return +d.time >= +params.domain[0] && +d.time <= +params.domain[1];
-      });
+      filteredData = data;
       svg.attr('width', layout.dimensions.width).attr('height', layout.dimensions.height);
       svg.append('g').attr('class', 'title').attr('transform', "translate(" + layout.title.left + "," + layout.title.top + ")").append('text').attr('class', 'infotext').text(spec.text).attr('dy', 18).attr('dx', 5);
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + (layout.canvas.left + layout.canvas.width / 2) + "," + (layout.canvas.top + layout.canvas.height / 2) + ")");

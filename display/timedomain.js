@@ -17,7 +17,7 @@ module.exports = function(spec, components) {
   return timedomain = {
     render: function(dom, state, params) {
       var d, data, domain, hub, i, j, len, len1, newparams, poi, tz;
-      data = state[spec.dataset];
+      data = state.data;
       for (i = 0, len = data.length; i < len; i++) {
         d = data[i];
         d.time = moment.utc(d.time, moment.ISO_8601);
@@ -54,9 +54,6 @@ module.exports = function(spec, components) {
         }
       }
       hub = createhub();
-      state = extend({}, state, {
-        data: data
-      });
       newparams = extend({}, params, {
         domain: domain,
         hub: hub

@@ -88,9 +88,7 @@ module.exports = function(spec, components) {
           return d;
         }
       });
-      filteredData = data.filter(function(d) {
-        return +d.time >= +params.domain[0] && +d.time <= +params.domain[1];
-      });
+      filteredData = data;
       svg.append('g').attr('class', 'title').attr('transform', "translate(" + layout.title.left + "," + layout.title.top + ")").append('text').attr('class', 'infotext').text("" + spec.text).attr('dy', 20).attr('dx', 5);
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
       inner.append('line').attr('class', 'divider').attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', layout.dimensions.height);

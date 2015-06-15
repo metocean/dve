@@ -5,29 +5,34 @@
 List components.
  */
 module.exports = function(spec, components) {
-  var items, list;
+  var item, items, j, len, list, s;
   if (!(spec instanceof Array)) {
     spec = [spec];
   }
   items = [];
+  for (j = 0, len = spec.length; j < len; j++) {
+    s = spec[j];
+    if (components[s.type] == null) {
+      return console.error(s.type + " component not found");
+    }
+    item = components[s.type](s, components);
+    items.push(item);
+  }
   return list = {
     render: function(dom, state, params) {
-      var item, j, len, s;
-      for (j = 0, len = spec.length; j < len; j++) {
-        s = spec[j];
-        if (components[s.type] == null) {
-          return console.error(s.type + " component not found");
-        }
-        item = components[s.type](s, components);
-        item.render(dom, state, params);
-        items.push(item);
+      var k, len1, results;
+      results = [];
+      for (k = 0, len1 = items.length; k < len1; k++) {
+        item = items[k];
+        results.push(item.render(dom, state, params));
       }
+      return results;
     },
     resize: function(dimensions) {
-      var i, j, len, results;
+      var i, k, len1, results;
       results = [];
-      for (j = 0, len = items.length; j < len; j++) {
-        i = items[j];
+      for (k = 0, len1 = items.length; k < len1; k++) {
+        i = items[k];
         if (i.resize == null) {
           continue;
         }
@@ -36,10 +41,10 @@ module.exports = function(spec, components) {
       return results;
     },
     query: function(params) {
-      var item, j, key, len, query, ref, result;
+      var k, key, len1, query, ref, result;
       result = {};
-      for (j = 0, len = items.length; j < len; j++) {
-        item = items[j];
+      for (k = 0, len1 = items.length; k < len1; k++) {
+        item = items[k];
         if (item.query != null) {
           ref = item.query(params);
           for (key in ref) {

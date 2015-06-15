@@ -11,6 +11,7 @@ module.exports = {
   title: require('./display/title'),
   space: require('./display/space'),
   data: require('./display/data'),
+  select: require('./display/select'),
   report: require('./display/report'),
   timedomain: require('./display/timedomain'),
   timeheadings: require('./time/timeheadings'),
