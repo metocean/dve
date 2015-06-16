@@ -8,7 +8,6 @@ merge = require 'merge-stream'
 sourcemaps = require 'gulp-sourcemaps'
 npmpackage = require './package.json'
 livereload = require 'gulp-livereload'
-livereload auto: false
 
 # interactive builds
 gulp.task 'watch', ['watchcoffee', 'html', 'style'], ->
@@ -27,7 +26,7 @@ cssimport = require 'gulp-cssimport'
 
 # compress stylus files and library css together
 gulp.task 'style', ->
-  styl = gulp.src 'style/dve.styl'
+  styl = gulp.src 'style/index.styl'
     .pipe sourcemaps.init()
     .pipe stylus()
     .pipe autoprefixer browsers: ['last 2 versions', 'ie >= 10']

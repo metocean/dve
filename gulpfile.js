@@ -17,10 +17,6 @@ npmpackage = require('./package.json');
 
 livereload = require('gulp-livereload');
 
-livereload({
-  auto: false
-});
-
 gulp.task('watch', ['watchcoffee', 'html', 'style'], function() {
   livereload.listen();
   gulp.watch('style/*.styl', ['style']);
@@ -39,7 +35,7 @@ cssimport = require('gulp-cssimport');
 
 gulp.task('style', function() {
   var styl;
-  return styl = gulp.src('style/dve.styl').pipe(sourcemaps.init()).pipe(stylus()).pipe(autoprefixer({
+  return styl = gulp.src('style/index.styl').pipe(sourcemaps.init()).pipe(stylus()).pipe(autoprefixer({
     browsers: ['last 2 versions', 'ie >= 10']
   })).pipe(cssimport()).pipe(rename(npmpackage.name + "-" + npmpackage.version + ".css")).pipe(gulp.dest('dist')).pipe(minifycss({
     compatibility: '*,-properties.zeroUnits'

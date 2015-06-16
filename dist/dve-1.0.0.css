@@ -1,15 +1,50 @@
-.arrowhead {
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+svg {
+  border: 1px solid #d5e2ed;
+  margin-top: -1px;
+}
+svg.space {
+  border: none;
+}
+body {
+  margin: 20px;
+  font: 10px sans-serif;
+}
+line {
+  stroke: #000;
+}
+text {
+  fill: #142c58;
+}
+path {
+  fill: none;
+  stroke: #000;
+}
+path.primary {
+  stroke: #142c58;
+  stroke-width: 2;
+}
+path.secondary {
+  stroke-dasharray: 10, 10;
+  stroke: #142c58;
+  stroke-width: 2;
+}
+.dev-container .arrowhead {
   fill: #142c58;
   stroke: #142c58;
 }
-.arrowline {
+.dev-container .arrowline {
   stroke-width: 3;
   stroke: #142c58;
 }
-.arrowline rect.background {
+.dev-container .arrowline rect.background {
   fill: #2b6ca7;
 }
-.arrowline rect.foreground {
+.dev-container .arrowline rect.foreground {
   fill: rgba(0,0,0,0);
   -webkit-touch-callout: none;
   -webkit-user-select: none;
@@ -20,133 +55,133 @@
   cursor: ew-resize;
   cursor: col-resize;
 }
-.arrowline .line,
-.arrowline .sep {
+.dev-container .arrowline .line,
+.dev-container .arrowline .sep {
   stroke: #fff;
 }
-line.poi {
+.dev-container line.poi {
   stroke: #d8222a;
   stroke-width: 0.75;
 }
-.inner .divider {
+.dev-container .inner .divider {
   stroke: #d5e2ed;
   shape-rendering: crispEdges;
 }
-.axis line {
+.dev-container .axis line {
   shape-rendering: crispEdges;
   stroke: #d5e2ed;
   stroke-width: 2;
 }
-.axis path {
+.dev-container .axis path {
   shape-rendering: crispEdges;
   stroke: #d5e2ed;
   stroke-width: 1;
 }
-.inner {
+.dev-container .inner {
   pointer-events: all;
 }
-.inner .x.axis .tick line.major {
+.dev-container .inner .x.axis .tick line.major {
   shape-rendering: crispEdges;
   stroke: #d5e2ed;
   stroke-width: 2;
 }
-.inner .x.axis .tick line.minor {
+.dev-container .inner .x.axis .tick line.minor {
   shape-rendering: crispEdges;
   stroke: rgba(213,226,237,0.5);
 }
-.inner .x.axis .tick line.sub-minor {
+.dev-container .inner .x.axis .tick line.sub-minor {
   stroke: none;
 }
-.axis.y .tick line {
+.dev-container .axis.y .tick line {
   shape-rendering: crispEdges;
   stroke-dasharray: 10, 10;
   stroke: rgba(42,108,167,0.5);
   stroke-width: 1;
 }
-.axis.y .tick line.zero {
+.dev-container .axis.y .tick line.zero {
   stroke: #142c58;
   stroke-dasharray: none;
 }
-.poi-circle {
+.dev-container .poi-circle {
   fill: #d8222a;
 }
-.infotext {
+.dev-container .infotext {
   font-size: 17px;
 }
-.label-shad,
-.poi-y-val-shad {
+.dev-container .label-shad,
+.dev-container .poi-y-val-shad {
   stroke: #fff;
   stroke-width: 3.5;
   opacity: 0.9;
   font-size: 12px;
 }
-.arrow-background {
+.dev-container .arrow-background {
   stroke: rgba(216,34,42,0.5);
   stroke-width: 1;
   fill: rgba(255,255,255,0.9);
 }
-.section .label {
+.dev-container .section .label {
   font-size: 12px;
 }
-.focus .label,
-.poi-y-val {
+.dev-container .focus .label,
+.dev-container .poi-y-val {
   fill: #d8222a;
   font-size: 14px;
   font-weight: 600;
 }
-.poi-y-val-shad {
+.dev-container .poi-y-val-shad {
   stroke: #fff;
   stroke-width: 5.75;
   font-size: 16px;
   opacity: 0.9;
 }
-.foc-section .arrowhead,
-.foc-section .arrowline {
+.dev-container .foc-section .arrowhead,
+.dev-container .foc-section .arrowline {
   stroke: #d8222a;
   fill: #d8222a;
 }
-.dot {
+.dev-container .dot {
   fill: #142c58;
 }
-.windrose path {
+.dev-container .windrose path {
   shape-rendering: inherit;
   fill: currentColor;
   stroke: none;
 }
-.windrose .circlecontainer circle {
+.dev-container .windrose .circlecontainer circle {
   stroke-dasharray: 5, 5;
   fill: none;
   stroke: #2b6ca7;
   stroke-width: 0.5;
 }
-.windrose .spoke {
+.dev-container .windrose .spoke {
   stroke-dasharray: 5, 5;
   stroke-width: 1;
   stroke: rgba(43,108,167,0.45);
 }
-.histogram .bar {
+.dev-container .histogram .bar {
   fill: #142c58;
   shape-rendering: crispEdges;
   stroke: none;
 }
-.table .inner,
-.tablebytime .inner {
+.dev-container .table .inner,
+.dev-container .tablebytime .inner {
   vertical-align: middle;
   background: rgba(255,255,255,0.2);
   box-shadow: inset 0 0 3px 0px #cecece;
 }
-.table .header rect,
-.tablebytime .header rect {
+.dev-container .table .header rect,
+.dev-container .tablebytime .header rect {
   fill: none;
 }
-.table .header text,
-.tablebytime .header text {
+.dev-container .table .header text,
+.dev-container .tablebytime .header text {
   font: 10px sans-serif;
   text-anchor: middle;
   font-weight: bold;
 }
-.table .cell text,
-.tablebytime .cell text {
+.dev-container .table .cell text,
+.dev-container .tablebytime .cell text {
   font: 10px sans-serif;
   text-anchor: middle;
   font-weight: bold;
