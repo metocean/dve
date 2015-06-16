@@ -1,39 +1,3 @@
-/*html,
-body {
-  padding: 0;
-  margin: 0;
-}
-svg {
-  border: 1px solid #d5e2ed;
-  margin-top: -1px;
-}
-svg.space {
-  border: none;
-}
-body {
-  margin: 20px;
-  font: 10px sans-serif;
-  line-height: 0px;
-}
-line {
-  stroke: #000;
-}
-text {
-  fill: #142c58;
-}
-path {
-  fill: none;
-  stroke: #000;
-}*/
-path.primary {
-  stroke: #142c58;
-  stroke-width: 2;
-}
-path.secondary {
-  stroke-dasharray: 10, 10;
-  stroke: #142c58;
-  stroke-width: 2;
-}
 .arrowhead {
   fill: #142c58;
   stroke: #142c58;
