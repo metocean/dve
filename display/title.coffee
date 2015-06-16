@@ -48,7 +48,6 @@ module.exports = (spec, components) ->
         .append 'text'
         .attr 'class', 'infotext'
         .attr 'dy', 20
-        .attr 'dx', 5
         .text spec.text
 
       title.resize params.dimensions

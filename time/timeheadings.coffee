@@ -71,7 +71,6 @@ module.exports = (spec, components) ->
         .append 'text'
         .attr 'class', 'infotext'
         .attr 'dy', 20
-        .attr 'dx', 5
 
       inner = svg
         .append 'g'
