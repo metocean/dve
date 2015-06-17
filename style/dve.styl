@@ -1,7 +1,31 @@
-.dev-container
-  .arrowhead
-    fill rgb(20, 44, 88)
-    stroke rgb(20, 44, 88)
+.dve-container
+
+  line
+    stroke black
+
+  // text
+  //   fill rgb(20, 44, 88)
+
+  svg
+    border 1px solid rgb(213, 226, 237)
+
+    &.space
+      border none
+
+  path
+    fill none
+    stroke black
+    &.primary
+      stroke rgb(20, 44, 88)
+      stroke-width 2
+
+    &.secondary
+      stroke-dasharray 10, 10
+      stroke rgb(20, 44, 88)
+      stroke-width 2
+    .arrowhead
+      fill rgb(20, 44, 88)
+      stroke rgb(20, 44, 88)
 
   .arrowline
     stroke-width 3

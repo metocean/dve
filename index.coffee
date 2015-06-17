@@ -12,6 +12,7 @@ module.exports =
   # formatting
   title: require './display/title'
   space: require './display/space'
+  tabs: require './display/tabs'
   # data set
   data: require './display/data'
   select: require './display/select'
