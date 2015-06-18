@@ -10,10 +10,10 @@ TODO: Allow the different categories and values to be specified.
 d3 = require 'd3'
 colorbrewer = require 'colorbrewer'
 
-calculate_layout = (dimensions) ->
+calculate_layout = (dimensions, field, rowData) ->
   dimensions =
     width: dimensions[0]
-    height: 450
+    height: field.height * (rowData.length + 2)
 
   info =
     top: 0
@@ -22,7 +22,7 @@ calculate_layout = (dimensions) ->
     left: 200
 
   canvas =
-    top: info.top
+    top: info.top + 30
     right: info.right
     bottom: info.bottom
     left: info.left
@@ -36,7 +36,47 @@ calculate_layout = (dimensions) ->
 module.exports = (spec, components) ->
   result =
     render: (dom, state, params) ->
-      layout = calculate_layout params.dimensions
+
+      cat = (d[spec.category] for d in state.data)
+      dir = {}
+      for col in spec.columns
+        dir[col] = (d[col] for d in state.data)
+      data = cat: cat, dir: dir
+      globalMin = d3.min((d3.min((+x for x in v)) for k, v of data.dir))
+      globalMax = d3.max((d3.max((+x for x in v)) for k, v of data.dir))
+
+
+      makeRows = (data) ->
+        dirkeys = Object.keys data.dir
+        for cat, index in data.cat
+          dirkeys.map (dir) -> data.dir[dir][index]
+
+      rowData = makeRows data
+
+      # Rear-strip rows that are all zeros
+      nRows = rowData.length
+      nCols = spec.columns.length
+      console.log 'nCols', nCols
+      do ->
+        zeroRows = (i for row, i in rowData when row.every (c) -> +c==0)
+        return if zeroRows.length == 0
+        finalNonZeroRow = nRows - 1
+        while finalNonZeroRow in zeroRows
+          finalNonZeroRow -= 1
+        finalRow = finalNonZeroRow + 1  # Leave one zero row
+        return if finalRow >= nRows
+        data.cat = data.cat.slice 0, finalRow+1
+        for k, v of data.dir
+          v = v.slice 0, finalRow+1
+        rowData = makeRows data
+
+
+      field =
+        height: 30
+        width: 70
+
+
+      layout = calculate_layout params.dimensions, field, rowData
 
       svg = d3.select dom
         .append 'svg'
@@ -65,6 +105,41 @@ module.exports = (spec, components) ->
         .text spec.text
         .attr 'dy', 20
 
+
+      # X label
+      svg.append 'text'
+        .attr 'x', layout.info.left + (nCols + 1) * field.width / 2
+        .attr 'y',  20 
+        # .attr 'y',  layout.canvas.height + 50 
+        .style 'text-anchor', 'middle'
+        .text spec.columnLabel
+
+      # Y label
+      svg.append 'text'
+        .attr 'text-anchor', 'middle'
+        .attr 'x', (-1 * layout.canvas.height / 2)
+        .attr 'y', layout.info.left
+        .attr 'dy', '-2em'
+        .attr 'transform', 'rotate(-90)'
+        .text spec.categoryLabel
+
+      svg.append 'a'
+        .attr 'transform', "translate(0,50)"
+        .attr 'xlink:href', 'https://hcd.metoceanview.com'
+        .append 'text'
+        .attr 'class', 'infotext'
+        .attr 'dy', 20
+        .text 'Download'
+
+      # # Y label
+      # svg.append 'text'
+      #   .attr 'text-anchor', 'middle'
+      #   .attr 'x', (-1 * layout.canvas.height / 2)
+      #   .attr 'y', layout.info.left
+      #   .attr 'dy', '-2em'
+      #   .attr 'transform', 'rotate(-90)'
+      #   .text spec.yLabel
+
       inner = svg
         .append 'g'
         .attr 'class', 'inner'
@@ -79,9 +154,7 @@ module.exports = (spec, components) ->
         .attr 'y2', layout.dimensions.height
 
        # need to make these equal to the longest string in the data set
-      field =
-        height: 30
-        width: 70
+      
 
       container =  inner
         .append 'g'
@@ -101,158 +174,13 @@ module.exports = (spec, components) ->
         .attr 'class', 'rowsGrp'
         .attr 'transform', "translate(#{field.width*0.75}, #{field.height*0.85})"
 
-      data = {
-        dir: {
-          N: [
-            0.90
-            2.74
-            3.12
-            1.98
-            0.93
-            0.42
-            0.16
-            0.03
-            0.00
-            0.00
-            0.00
-            0.00
-            0.00
-          ]
-          NE: [
-            0.89
-            3.14
-            5.51
-            4.38
-            1.68
-            0.48
-            0.09
-            0.01
-            0.00
-            0.00
-            0.00
-            0.00
-            0.00
-          ]
-          E: [
-            0.80
-            2.43
-            4.07
-            3.84
-            2.08
-            0.70
-            0.13
-            0.02
-            0.01
-            0.00
-            0.00
-            0.00
-            0.00
-          ]
-          SE: [
-            0.71
-            1.53
-            1.63
-            0.95
-            0.46
-            0.13
-            0.04
-            0.01
-            0.00
-            0.00
-            0.00
-            0.00
-            0.00
-          ]
-          S: [
-            0.67
-            1.45
-            1.73
-            1.30
-            0.70
-            0.39
-            0.16
-            0.05
-            0.01
-            0.00
-            0.00
-            0.00
-            0.00
-          ]
-          SW: [
-            0.72
-            2.35
-            3.67
-            4.05
-            3.23
-            2.18
-            1.17
-            0.47
-            0.17
-            0.05
-            0.01
-            0.00
-            0.00
-          ]
-          W: [
-            0.91
-            2.72
-            4.00
-            4.08
-            2.94
-            1.77
-            0.85
-            0.31
-            0.10
-            0.02
-            0.00
-            0.00
-            0.00
-          ]
-          NW: [
-            0.83
-            2.61
-            3.17
-            2.56
-            1.45
-            0.72
-            0.30
-            0.11
-            0.02
-            0.01
-            0.00
-            0.00
-            0.00
-          ]
-        }
-        cat: [
-          '0-5'
-          '5-10'
-          '10-15'
-          '15-20'
-          '20-25'
-          '25-30'
-          '30-35'
-          '35-40'
-          '40-45'
-          '45-50'
-          '50-55'
-          '55-60'
-          '60-65'
-        ]
-      }
-
-      rowData = []
-      dirkeys = Object.keys data.dir
-      for cat, index in data.cat
-        rowData.push dirkeys.map (dir) -> data.dir[dir][index]
-
       colorScale = d3.scale.quantize()
         .range colorbrewer.Blues[9]
-        .domain [-0.75, 9]
+        .domain [globalMin, globalMax]
 
       textcolorScale = d3.scale.quantize()
         .range ["#000000", "#000000", "#000000", "#ffffff", "#ffffff"]
-        .domain [-0.75, 9]
+        .domain [globalMin, globalMax]
 
       topheader = topheaderGrp
         .selectAll 'g'
@@ -278,7 +206,7 @@ module.exports = (spec, components) ->
         .enter()
         .append 'g'
         .attr 'class', 'header side'
-        .attr 'transform', (d, i) -> "translate(0, #{(i + 0.75)*(field.height)})"
+        .attr 'transform', (d, i) -> "translate(0, #{(i + 0.85)*(field.height)})"
 
       sideheader.append 'rect'
         .attr 'width', field.width - 1

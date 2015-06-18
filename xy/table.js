@@ -7,17 +7,18 @@ Plot an xy table with heatmap.
 TODO: Work out how to position these xy visualisations.
 TODO: Allow the different categories and values to be specified.
  */
-var calculate_layout, colorbrewer, d3;
+var calculate_layout, colorbrewer, d3,
+  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
 d3 = require('d3');
 
 colorbrewer = require('colorbrewer');
 
-calculate_layout = function(dimensions) {
+calculate_layout = function(dimensions, field, rowData) {
   var canvas, info;
   dimensions = {
     width: dimensions[0],
-    height: 450
+    height: field.height * (rowData.length + 2)
   };
   info = {
     top: 0,
@@ -26,7 +27,7 @@ calculate_layout = function(dimensions) {
     left: 200
   };
   canvas = {
-    top: info.top,
+    top: info.top + 30,
     right: info.right,
     bottom: info.bottom,
     left: info.left,
@@ -44,45 +45,142 @@ module.exports = function(spec, components) {
   var result;
   return result = {
     render: function(dom, state, params) {
-      var cat, cells, cellsEnter, colorScale, container, data, dirkeys, field, index, inner, j, layout, len, ref, row, rowData, rowsGrp, sideheader, sideheaderGrp, svg, textcolorScale, topheader, topheaderGrp;
-      layout = calculate_layout(params.dimensions);
-      svg = d3.select(dom).append('svg').attr('class', 'item table');
-      svg.attr('width', layout.dimensions.width).attr('height', layout.dimensions.height);
-      svg.append('g').attr('class', 'title').append('text').attr('class', 'infotext').text(spec.text).attr('dy', 20);
-      inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
-      inner.append('line').attr('class', 'divider').attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', layout.dimensions.height);
+      var cat, cells, cellsEnter, col, colorScale, container, d, data, dir, field, globalMax, globalMin, inner, j, k, layout, len, makeRows, nCols, nRows, ref, row, rowData, rowsGrp, sideheader, sideheaderGrp, svg, textcolorScale, topheader, topheaderGrp, v, x;
+      cat = (function() {
+        var j, len, ref, results;
+        ref = state.data;
+        results = [];
+        for (j = 0, len = ref.length; j < len; j++) {
+          d = ref[j];
+          results.push(d[spec.category]);
+        }
+        return results;
+      })();
+      dir = {};
+      ref = spec.columns;
+      for (j = 0, len = ref.length; j < len; j++) {
+        col = ref[j];
+        dir[col] = (function() {
+          var l, len1, ref1, results;
+          ref1 = state.data;
+          results = [];
+          for (l = 0, len1 = ref1.length; l < len1; l++) {
+            d = ref1[l];
+            results.push(d[col]);
+          }
+          return results;
+        })();
+      }
+      data = {
+        cat: cat,
+        dir: dir
+      };
+      globalMin = d3.min((function() {
+        var ref1, results;
+        ref1 = data.dir;
+        results = [];
+        for (k in ref1) {
+          v = ref1[k];
+          results.push(d3.min((function() {
+            var l, len1, results1;
+            results1 = [];
+            for (l = 0, len1 = v.length; l < len1; l++) {
+              x = v[l];
+              results1.push(+x);
+            }
+            return results1;
+          })()));
+        }
+        return results;
+      })());
+      globalMax = d3.max((function() {
+        var ref1, results;
+        ref1 = data.dir;
+        results = [];
+        for (k in ref1) {
+          v = ref1[k];
+          results.push(d3.max((function() {
+            var l, len1, results1;
+            results1 = [];
+            for (l = 0, len1 = v.length; l < len1; l++) {
+              x = v[l];
+              results1.push(+x);
+            }
+            return results1;
+          })()));
+        }
+        return results;
+      })());
+      makeRows = function(data) {
+        var dirkeys, index, l, len1, ref1, results;
+        dirkeys = Object.keys(data.dir);
+        ref1 = data.cat;
+        results = [];
+        for (index = l = 0, len1 = ref1.length; l < len1; index = ++l) {
+          cat = ref1[index];
+          results.push(dirkeys.map(function(dir) {
+            return data.dir[dir][index];
+          }));
+        }
+        return results;
+      };
+      rowData = makeRows(data);
+      nRows = rowData.length;
+      nCols = spec.columns.length;
+      console.log('nCols', nCols);
+      (function() {
+        var finalNonZeroRow, finalRow, i, ref1, row, zeroRows;
+        zeroRows = (function() {
+          var l, len1, results;
+          results = [];
+          for (i = l = 0, len1 = rowData.length; l < len1; i = ++l) {
+            row = rowData[i];
+            if (row.every(function(c) {
+              return +c === 0;
+            })) {
+              results.push(i);
+            }
+          }
+          return results;
+        })();
+        if (zeroRows.length === 0) {
+          return;
+        }
+        finalNonZeroRow = nRows - 1;
+        while (indexOf.call(zeroRows, finalNonZeroRow) >= 0) {
+          finalNonZeroRow -= 1;
+        }
+        finalRow = finalNonZeroRow + 1;
+        if (finalRow >= nRows) {
+          return;
+        }
+        data.cat = data.cat.slice(0, finalRow + 1);
+        ref1 = data.dir;
+        for (k in ref1) {
+          v = ref1[k];
+          v = v.slice(0, finalRow + 1);
+        }
+        return rowData = makeRows(data);
+      })();
       field = {
         height: 30,
         width: 70
       };
+      layout = calculate_layout(params.dimensions, field, rowData);
+      svg = d3.select(dom).append('svg').attr('class', 'item table');
+      svg.attr('width', layout.dimensions.width).attr('height', layout.dimensions.height);
+      svg.append('g').attr('class', 'title').append('text').attr('class', 'infotext').text(spec.text).attr('dy', 20);
+      svg.append('text').attr('x', layout.info.left + (nCols + 1) * field.width / 2).attr('y', 20).style('text-anchor', 'middle').text(spec.columnLabel);
+      svg.append('text').attr('text-anchor', 'middle').attr('x', -1 * layout.canvas.height / 2).attr('y', layout.info.left).attr('dy', '-2em').attr('transform', 'rotate(-90)').text(spec.categoryLabel);
+      svg.append('a').attr('transform', "translate(0,50)").attr('xlink:href', 'https://hcd.metoceanview.com').append('text').attr('class', 'infotext').attr('dy', 20).text('Download');
+      inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
+      inner.append('line').attr('class', 'divider').attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', layout.dimensions.height);
       container = inner.append('g').attr('class', 'container').attr('transform', "translate(10, 10)");
       topheaderGrp = container.append('g').attr('class', 'topheaderGrp');
       sideheaderGrp = container.append('g').attr('class', 'sideheaderGrp');
       rowsGrp = container.append('g').attr('class', 'rowsGrp').attr('transform', "translate(" + (field.width * 0.75) + ", " + (field.height * 0.85) + ")");
-      data = {
-        dir: {
-          N: [0.90, 2.74, 3.12, 1.98, 0.93, 0.42, 0.16, 0.03, 0.00, 0.00, 0.00, 0.00, 0.00],
-          NE: [0.89, 3.14, 5.51, 4.38, 1.68, 0.48, 0.09, 0.01, 0.00, 0.00, 0.00, 0.00, 0.00],
-          E: [0.80, 2.43, 4.07, 3.84, 2.08, 0.70, 0.13, 0.02, 0.01, 0.00, 0.00, 0.00, 0.00],
-          SE: [0.71, 1.53, 1.63, 0.95, 0.46, 0.13, 0.04, 0.01, 0.00, 0.00, 0.00, 0.00, 0.00],
-          S: [0.67, 1.45, 1.73, 1.30, 0.70, 0.39, 0.16, 0.05, 0.01, 0.00, 0.00, 0.00, 0.00],
-          SW: [0.72, 2.35, 3.67, 4.05, 3.23, 2.18, 1.17, 0.47, 0.17, 0.05, 0.01, 0.00, 0.00],
-          W: [0.91, 2.72, 4.00, 4.08, 2.94, 1.77, 0.85, 0.31, 0.10, 0.02, 0.00, 0.00, 0.00],
-          NW: [0.83, 2.61, 3.17, 2.56, 1.45, 0.72, 0.30, 0.11, 0.02, 0.01, 0.00, 0.00, 0.00]
-        },
-        cat: ['0-5', '5-10', '10-15', '15-20', '20-25', '25-30', '30-35', '35-40', '40-45', '45-50', '50-55', '55-60', '60-65']
-      };
-      rowData = [];
-      dirkeys = Object.keys(data.dir);
-      ref = data.cat;
-      for (index = j = 0, len = ref.length; j < len; index = ++j) {
-        cat = ref[index];
-        rowData.push(dirkeys.map(function(dir) {
-          return data.dir[dir][index];
-        }));
-      }
-      colorScale = d3.scale.quantize().range(colorbrewer.Blues[9]).domain([-0.75, 9]);
-      textcolorScale = d3.scale.quantize().range(["#000000", "#000000", "#000000", "#ffffff", "#ffffff"]).domain([-0.75, 9]);
+      colorScale = d3.scale.quantize().range(colorbrewer.Blues[9]).domain([globalMin, globalMax]);
+      textcolorScale = d3.scale.quantize().range(["#000000", "#000000", "#000000", "#ffffff", "#ffffff"]).domain([globalMin, globalMax]);
       topheader = topheaderGrp.selectAll('g').data(d3.keys(data.dir)).enter().append('g').attr('class', 'header top').attr('transform', function(d, i) {
         return "translate(" + ((i + 0.65) * field.width) + ",0)";
       });
@@ -91,7 +189,7 @@ module.exports = function(spec, components) {
       sideheader = sideheaderGrp.selectAll('g').data(data.cat, function(d) {
         return d3.values(d);
       }).enter().append('g').attr('class', 'header side').attr('transform', function(d, i) {
-        return "translate(0, " + ((i + 0.75) * field.height) + ")";
+        return "translate(0, " + ((i + 0.85) * field.height) + ")";
       });
       sideheader.append('rect').attr('width', field.width - 1).attr('height', field.height);
       sideheader.append('text').attr('x', field.width / 2).attr('y', field.height / 2).attr('dy', '0.35em').text(String);

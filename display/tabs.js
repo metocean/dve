@@ -33,14 +33,14 @@ module.exports = function(spec, components) {
         results = [];
         for (j = 0, len = ref.length; j < len; j++) {
           t = ref[j];
-          results.push(t.title);
+          results.push(t.text);
         }
         return results;
       })();
       if (titles.length !== unique(titles).length) {
         throw 'Tab titles must be unique';
       }
-      this.activeTitle = spec.tabs[0].title;
+      this.activeTitle = spec.tabs[1].text;
       this.dom = dom;
       this.state = state;
       this.params = params;
@@ -59,14 +59,14 @@ module.exports = function(spec, components) {
       for (i = j = 0, len = ref.length; j < len; i = ++j) {
         specTab = ref[i];
         li = document.createElement('li');
-        if (specTab.title === this.activeTitle) {
+        if (specTab.text === this.activeTitle) {
           li.classList.add('is-active');
         }
-        li.setAttribute('data-title', specTab.title);
+        li.setAttribute('data-title', specTab.text);
         a = document.createElement('a');
         a.href = '#!';
-        a.innerHTML = specTab.title;
-        a.addEventListener('click', changeTabClosure(specTab.title, this));
+        a.innerHTML = specTab.text;
+        a.addEventListener('click', changeTabClosure(specTab.text, this));
         li.appendChild(a);
         this.tabs.push(li);
       }
@@ -105,7 +105,7 @@ module.exports = function(spec, components) {
       ref = spec.tabs;
       for (j = 0, len = ref.length; j < len; j++) {
         t = ref[j];
-        if (t.title === this.activeTitle) {
+        if (t.text === this.activeTitle) {
           childSpec = t.spec;
         }
       }

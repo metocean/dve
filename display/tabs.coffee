@@ -21,11 +21,11 @@ module.exports = (spec, components) ->
   render: (dom, state, params) ->
 
     # Check titles are unique
-    titles = (t.title for t in spec.tabs)
+    titles = (t.text for t in spec.tabs)
     if titles.length != unique(titles).length
       throw 'Tab titles must be unique'
 
-    @activeTitle = spec.tabs[0].title
+    @activeTitle = spec.tabs[1].text
     @dom = dom
     @state = state
     @params = params
@@ -45,13 +45,13 @@ module.exports = (spec, components) ->
 
     for specTab, i in spec.tabs
       li = document.createElement 'li'
-      li.classList.add 'is-active' if specTab.title == @activeTitle
-      li.setAttribute 'data-title', specTab.title
+      li.classList.add 'is-active' if specTab.text == @activeTitle
+      li.setAttribute 'data-title', specTab.text
 
       a = document.createElement 'a'
       a.href = '#!'
-      a.innerHTML = specTab.title
-      a.addEventListener 'click', changeTabClosure specTab.title, @
+      a.innerHTML = specTab.text
+      a.addEventListener 'click', changeTabClosure specTab.text, @
 
       li.appendChild a
       @tabs.push li
@@ -75,7 +75,7 @@ module.exports = (spec, components) ->
 
   _updateContent: () ->
     @tabContent.innerHTML = '' if @tabContent
-    childSpec = t.spec for t in spec.tabs when t.title == @activeTitle
+    childSpec = t.spec for t in spec.tabs when t.text == @activeTitle
     childItem = mount childSpec, components
     childItem.render @tabContent, @state, @params
 
