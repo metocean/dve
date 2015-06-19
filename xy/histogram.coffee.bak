@@ -8,16 +8,17 @@ TODO: Allow the different categories and values to be specified.
 ###
 
 d3 = require 'd3'
+zip = require '../util/zip'
 
 calculate_layout = (dimensions) ->
   dimensions =
     width: dimensions[0]/1.5
-    height: 400
+    height: 600
 
   info =
     top: 0
     right: 0
-    bottom: 20
+    bottom: 200
     left: 200
 
   title =
@@ -53,27 +54,23 @@ module.exports = (spec, components) ->
   colorScale = null
   textcolorScale = null
 
-  getMaxObj = ->
-    for d in groupedData
-      if d.count == (d3.max groupedData, (d) -> d.count)
-        return d
-
   result =
     render: (dom, state, params) ->
       layout = calculate_layout params.dimensions
 
+      xData = (d[spec.bin] for d in state.data)
+      yData = (d[spec.field] for d in state.data)
+      data = [0...xData.length].map (i) ->
+        {x: xData[i], y: yData[i]}
+
+
+      colorScale = d3.scale.quantize()
+        .range ['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']
+        .domain [0, 13]
+
       svg = d3.select dom
         .append 'svg'
         .attr 'class', 'item histogram'
-
-      data = state.data.map (d) ->
-        time: d.time
-        wsp: +d.wsp
-        wd: +d.wd
-
-      data = data.filter (d) -> return d if d.wd? and d.wsp?
-
-      filteredData = data
       svg
         .append 'g'
         .attr 'class', 'title'
@@ -82,12 +79,42 @@ module.exports = (spec, components) ->
         .attr 'class', 'infotext'
         .text "#{spec.text}"
         .attr 'dy', 20
+      svg
+        .append 'g'
+        .attr 'class', 'title'
+        .attr 'transform', "translate(#{layout.title.left},50)"
+        .append 'text'
+        .attr 'class', 'infotext'
+        .text "Source: #{spec.dataSource}"
+        .attr 'dy', 20
+      svg.append("a")
+        .attr 'transform', "translate(#{layout.title.left},100)"
+        .attr 'xlink:href', 'https://hcd.metoceanview.com'
+        .append 'text'
+        .attr 'class', 'infotext'
+        .attr 'dy', 20
+        .text 'Download'
+
+      # X label
+      svg.append 'text'
+        .attr 'x', (layout.info.left + layout.canvas.width/2)
+        .attr 'y',  layout.canvas.height + 50 
+        .style 'text-anchor', 'middle'
+        .text spec.xLabel
+
+      # Y label
+      svg.append 'text'
+        .attr 'text-anchor', 'middle'
+        .attr 'x', (-1 * layout.canvas.height / 2)
+        .attr 'y', layout.info.left
+        .attr 'dy', '-2em'
+        .attr 'transform', 'rotate(-90)'
+        .text spec.yLabel
 
       inner = svg
         .append 'g'
         .attr 'class', 'inner'
         .attr 'transform', "translate(#{layout.canvas.left},#{layout.canvas.top})"
-
       inner
         .append 'line'
         .attr 'class', 'divider'
@@ -95,22 +122,17 @@ module.exports = (spec, components) ->
         .attr 'x2', 0
         .attr 'y1', 0
         .attr 'y2', layout.dimensions.height
-
       inner
         .append 'g'
         .attr 'class', 'x axis'
         .attr 'transform', "translate(0,#{layout.canvas.height})"
-
       inner
         .append 'g'
         .attr 'class', 'y axis'
 
-      clipId = "clip-#{Math.floor(Math.random() * 1000000)}"
-
       chart = inner
         .append 'g'
         .attr 'class', 'chart'
-
       chart
         .append 'defs'
         .append 'rect'
@@ -119,148 +141,14 @@ module.exports = (spec, components) ->
         .attr 'width', layout.canvas.width
         .attr 'height', layout.canvas.height
 
-      frequency =
-        N: []
-        NNE: []
-        NE: []
-        ENE: []
-        E: []
-        ESE: []
-        SE: []
-        SSE: []
-        S: []
-        SSW: []
-        SW: []
-        WSW: []
-        W: []
-        WNW: []
-        NW: []
-        NNW: []
-
-      colorScale = d3.scale.quantize()
-        .range ['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']
-        .domain [0, 13]
-
-      textcolorScale = d3.scale.quantize()
-        .range ['#000000', '#000000', '#ffffff', '#ffffff']
-        .domain [0, 13]
-
-      calculate_direction = (degree) ->
-        direction = Math.floor (degree/22.5) + 0.5
-        text = [
-          'N',
-          'NNE',
-          'NE',
-          'ENE',
-          'E',
-          'ESE',
-          'SE',
-          'SSE',
-          'S',
-          'SSW',
-          'SW',
-          'WSW',
-          'W',
-          'WNW',
-          'NW',
-          'NNW'
-        ]
-
-        textDirection = text[(direction %% 16)]
-
-      for d in filteredData
-        dir = calculate_direction d.wd
-        frequency[dir].push d
-
-      _speedArray =
-          '0-4': []
-          '5-9': []
-          '10-14': []
-          '15-19': []
-          '20-24': []
-          '25-29': []
-          '30-34': []
-          '35-39': []
-          '40-44': []
-          '45-49': []
-          '50-54': []
-          '55-59': []
-          '60-64': []
-          '65+': []
-
-      calculate_speed_category = (speed) ->
-        cat = switch
-          when speed < 5 then '0-4'
-          when speed < 10 then '5-9'
-          when speed < 15 then '10-14'
-          when speed < 20 then '15-19'
-          when speed < 25 then '20-24'
-          when speed < 30 then '25-29'
-          when speed < 35 then '30-34'
-          when speed < 45 then '35-39'
-          when speed < 50 then '40-44'
-          when speed < 55 then '45-49'
-          when speed < 60 then '50-54'
-          when speed < 65 then '55-59'
-          when speed < 70 then '60-64'
-          else '65+'
-
-      getSpeeds = (dir, items) ->
-        speedArray = {}
-        for cat, _ of _speedArray
-          speedArray[cat] = []
-
-        for i in items
-          cat = calculate_speed_category i.wsp
-          speedArray[cat].push i
-
-        start = 0
-        count = 0
-        for cat, bits of speedArray
-          res =
-            index: count
-            start: start
-            end: start + bits.length
-            value: bits.length
-          start = res.end
-          count++
-          res
-
-      groupedData = []
-      angle = 0
-
-      for dir, items of frequency
-        groupedData.push
-          key: angle
-          value: dir
-          count: items.length
-          speeds: getSpeeds dir, items
-        angle += 22.5
-
-      for i, cat of Object.keys _speedArray
-        max = null
-        maxItem = null
-        for dir in groupedData
-          item = dir.speeds[i]
-          if item.value isnt 0
-            if maxItem is null or item.value > max
-              max = item.value
-              maxItem = item
-        maxItem.legend = cat if maxItem?
-
-
       scale =
-        x: d3.scale.ordinal().domain(groupedData.map (d) -> d.value)
-        y: d3.scale.linear().domain([0, 1.1 * d3.max groupedData, (d) -> d.count])
+        x: d3.scale.ordinal().domain(xData)
+        y: d3.scale.linear().domain([0, 1.1 * d3.max(yData)])
 
       axis =
         x : d3.svg.axis().scale(scale.x).orient 'bottom'
         y : d3.svg.axis().scale(scale.y).orient 'left'
 
-      chart
-        .append 'text'
-        .attr 'class', 'legend'
-        .attr 'text-anchor', 'end'
 
       result.resize params.dimensions
 
@@ -276,34 +164,17 @@ module.exports = (spec, components) ->
 
       bars = chart
         .selectAll '.bar'
-        .data groupedData
+        .data data
         .enter()
         .append 'g'
         .attr 'class', 'bar'
-        .attr 'transform', (d) -> "translate(#{scale.x d.value}, 0)"
+        .attr "transform", (d) -> "translate(" + scale.x(d.x) + "," + scale.y(d.y) + ")"
 
-      bars
-        .selectAll 'rect'
-        .data (d)-> d.speeds
-        .enter()
-        .append 'rect'
-        .attr 'x', 0
-        .attr 'y', (d) -> scale.y d.end
+      bars.append("rect")
+        .attr "x", 1
         .attr "width", scale.x.rangeBand()
-        .attr 'height', (d) -> scale.y(d.start) - scale.y(d.end)
-        .style 'fill', (d) -> colorScale d.index
-
-      bars
-        .selectAll 'text'
-        .data (d) -> d.speeds.filter (s) -> s.legend
-        .enter()
-        .append 'text'
-        .attr 'x', scale.x.rangeBand()/2
-        .attr 'y', (d) -> scale.y d.end
-        .attr 'dy', '1.1em'
-        .style 'text-anchor', 'middle'
-        .style 'fill', (d) -> textcolorScale d.index
-        .text (d) -> d.legend
+        .attr 'height', (d) -> layout.canvas.height - scale.y(d.y)
+        .style 'fill', (d) -> colorScale 3
 
       inner
         .select '.x.axis'
@@ -323,10 +194,3 @@ module.exports = (spec, components) ->
         .select '.y.axis .domain'
         .remove()
 
-      max = getMaxObj()
-
-      chart
-        .select '.legend'
-        .attr 'x', scale.x max.value
-        .attr 'y', scale.y max.count
-        .text "#{max.count}"

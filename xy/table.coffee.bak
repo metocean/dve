@@ -11,35 +11,32 @@ d3 = require 'd3'
 colorbrewer = require 'colorbrewer'
 
 calculate_layout = (dimensions, field, rowData) ->
-
-  innerMargin = 
-    top: 60
-    right: 0
-    bottom: 0
-    left: 70
-
-  container = 
-    width: Math.min(dimensions[0], (rowData[0].length) * field.width + innerMargin.left + innerMargin.right)
+  dimensions =
+    width: dimensions[0]
     height: field.height * (rowData.length + 2)
 
-  inner =
-    top: innerMargin.top
-    right: container.width - innerMargin.right
-    bottom: container.height - innerMargin.right
-    left: innerMargin.left
-  inner.width = inner.right - inner.left
-  inner.height = inner.bottom - inner.top
+  info =
+    top: 0
+    right: 0
+    bottom: 13
+    left: 200
 
-  container: container
-  inner: inner
-  innerMargin: innerMargin
+  canvas =
+    top: info.top + 30
+    right: info.right
+    bottom: info.bottom
+    left: info.left
+    width: dimensions.width - info.left - info.right
+    height: dimensions.height - info.top - info.bottom
+
+  dimensions: dimensions
+  info: info
+  canvas: canvas
 
 module.exports = (spec, components) ->
   result =
     render: (dom, state, params) ->
 
-
-      console.log 'params', params
       cat = (d[spec.category] for d in state.data)
       dir = {}
       for col in spec.columns
@@ -56,7 +53,7 @@ module.exports = (spec, components) ->
 
       rowData = makeRows data
 
-      # Rear-strip rows that are all zeros (leaving the last one)
+      # Rear-strip rows that are all zeros
       nRows = rowData.length
       nCols = spec.columns.length
       console.log 'nCols', nCols
@@ -74,20 +71,9 @@ module.exports = (spec, components) ->
         rowData = makeRows data
 
 
-      # HCD adds .00 to each number when the units are 'count'
-      # It's safe to round these to the nearest integer
-      console.log 'Params', params
-      if params.roundToInt == true
-        for row, i in rowData
-          for value, j in row
-            value = parseInt(value, 10).toString()
-            rowData[i][j] = value
-
-
-
       field =
         height: 30
-        width: 55
+        width: 70
 
 
       layout = calculate_layout params.dimensions, field, rowData
@@ -95,38 +81,98 @@ module.exports = (spec, components) ->
       svg = d3.select dom
         .append 'svg'
         .attr 'class', 'item table'
+
+      # data = data.map (d) ->
+      #   result =
+      #     time : d.time
+      #     wsp : +d.wsp
+      #   result
+
+      # data = data.filter (d) -> return d.wsp?
+
+      # filteredData = data.filter (d) ->
+      #   +d.time >= +@domain[0] and +d.time <= +@domain[1]
+
       svg
-        .attr 'width', layout.container.width
-        .attr 'height', layout.container.height
+        .attr 'width', layout.dimensions.width
+        .attr 'height', layout.dimensions.height
+
+      svg
+        .append 'g'
+        .attr 'class', 'title'
+        .append 'text'
+        .attr 'class', 'infotext'
+        .text spec.text
+        .attr 'dy', 20
+
+
+      # X label
+      svg.append 'text'
+        .attr 'x', layout.info.left + (nCols + 1) * field.width / 2
+        .attr 'y',  20 
+        # .attr 'y',  layout.canvas.height + 50 
+        .style 'text-anchor', 'middle'
+        .text spec.columnLabel
+
+      # Y label
+      svg.append 'text'
+        .attr 'text-anchor', 'middle'
+        .attr 'x', (-1 * layout.canvas.height / 2)
+        .attr 'y', layout.info.left
+        .attr 'dy', '-2em'
+        .attr 'transform', 'rotate(-90)'
+        .text spec.categoryLabel
+
+      svg.append 'a'
+        .attr 'transform', "translate(0,50)"
+        .attr 'xlink:href', 'https://hcd.metoceanview.com'
+        .append 'text'
+        .attr 'class', 'infotext'
+        .attr 'dy', 20
+        .text 'Download'
+
+      # # Y label
+      # svg.append 'text'
+      #   .attr 'text-anchor', 'middle'
+      #   .attr 'x', (-1 * layout.canvas.height / 2)
+      #   .attr 'y', layout.info.left
+      #   .attr 'dy', '-2em'
+      #   .attr 'transform', 'rotate(-90)'
+      #   .text spec.yLabel
 
       inner = svg
         .append 'g'
         .attr 'class', 'inner'
-        .attr 'transform', "translate(#{layout.inner.left},#{layout.inner.top})"
-      inner.append 'text'
-        .attr 'x', layout.inner.width / 2
-        .attr 'y',  -1 * layout.innerMargin.top
-        .attr 'dy', '1em'
-        .style 'text-anchor', 'middle'
-        .text spec.columnLabel
-      inner.append 'text'
-        .attr 'text-anchor', 'middle'
-        .attr 'x', (-1 * layout.inner.height / 2)
-        .attr 'y', -1 * layout.innerMargin.left
-        .attr 'dy', '1em'
-        .attr 'transform', 'rotate(-90)'
-        .text spec.categoryLabel
+        .attr 'transform', "translate(#{layout.canvas.left},#{layout.canvas.top})"
+
+      inner
+        .append 'line'
+        .attr 'class', 'divider'
+        .attr 'x1', 0
+        .attr 'x2', 0
+        .attr 'y1', 0
+        .attr 'y2', layout.dimensions.height
+
+       # need to make these equal to the longest string in the data set
+      
 
       container =  inner
         .append 'g'
         .attr 'class', 'container'
+        .attr 'transform', "translate(10, 10)"
 
+      topheaderGrp = container
+        .append 'g'
+        .attr 'class', 'topheaderGrp'
 
+      sideheaderGrp = container
+        .append 'g'
+        .attr 'class', 'sideheaderGrp'
 
       rowsGrp = container
         .append 'g'
         .attr 'class', 'rowsGrp'
-        .attr 'transform', "translate(#{field.width*0.5}, 0)"
+        .attr 'transform', "translate(#{field.width*0.75}, #{field.height*0.85})"
 
       colorScale = d3.scale.quantize()
         .range colorbrewer.Blues[9]
@@ -136,38 +182,36 @@ module.exports = (spec, components) ->
         .range ["#000000", "#000000", "#000000", "#ffffff", "#ffffff"]
         .domain [globalMin, globalMax]
 
-      topheaderGrp = container
-        .append 'g'
-        .attr 'class', 'topheaderGrp'
       topheader = topheaderGrp
         .selectAll 'g'
         .data d3.keys data.dir
         .enter()
         .append 'g'
         .attr 'class', 'header top'
-        .attr 'transform', (d, i) -> "translate(#{(i)*field.width}, #{-1 * field.height})"
+        .attr 'transform', (d, i) -> "translate(#{(i + 0.65)*field.width},0)"
+
       topheader.append 'rect'
         .attr 'width', field.width - 1
         .attr 'height', field.height
+
       topheader.append 'text'
         .attr 'x', field.width/2
         .attr 'y', field.height/2
         .attr 'dy', '0.35em'
         .text String
 
-      sideheaderGrp = container
-        .append 'g'
-        .attr 'class', 'sideheaderGrp'
       sideheader = sideheaderGrp
         .selectAll 'g'
         .data data.cat, (d) -> d3.values d
         .enter()
         .append 'g'
         .attr 'class', 'header side'
-        .attr 'transform', (d, i) -> "translate(#{-1 * field.width}, #{(i)*(field.height)})"
+        .attr 'transform', (d, i) -> "translate(0, #{(i + 0.85)*(field.height)})"
+
       sideheader.append 'rect'
         .attr 'width', field.width - 1
         .attr 'height', field.height
+
       sideheader.append 'text'
         .attr 'x', field.width/2
         .attr 'y', field.height/2
@@ -177,6 +221,7 @@ module.exports = (spec, components) ->
       row = rowsGrp
         .selectAll 'g.row'
         .data rowData
+
       row
         .enter()
         .append 'g'
@@ -185,17 +230,19 @@ module.exports = (spec, components) ->
 
       cells = row.selectAll 'g.cell'
         .data (d) -> d
-      
+
       cellsEnter = cells
         .enter()
         .append 'g'
         .attr 'class', 'cell'
-        .attr 'transform', (d, i) -> "translate(#{i*field.width-field.width/2}, 0)"
+        .attr 'transform', (d, i) -> "translate(#{i*field.width}, 0)"
+
       cellsEnter
         .append 'rect'
         .attr 'width', field.width - 1
         .attr 'height', field.height - 1
         .style 'fill', colorScale
+
       cellsEnter
         .append 'text'
         .attr 'x', field.width/2

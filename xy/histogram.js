@@ -14,38 +14,28 @@ d3 = require('d3');
 zip = require('../util/zip');
 
 calculate_layout = function(dimensions) {
-  var canvas, info, title;
-  dimensions = {
-    width: dimensions[0] / 1.5,
-    height: 600
-  };
-  info = {
+  var container, inner, innerAspectRatio, innerMargin, maxContainerWidth;
+  inner = {};
+  innerMargin = {
     top: 0,
     right: 0,
-    bottom: 200,
-    left: 200
+    bottom: 50,
+    left: 70
   };
-  title = {
-    top: 0,
-    right: dimensions.width - info.left,
-    bottom: 0,
-    left: 0,
-    height: dimensions.height,
-    width: info.left
-  };
-  canvas = {
-    top: info.top,
-    right: info.right,
-    bottom: info.bottom,
-    left: info.left,
-    width: dimensions.width - info.left - info.right,
-    height: dimensions.height - info.top - info.bottom
-  };
+  maxContainerWidth = 700;
+  container = {};
+  container.width = Math.min(dimensions[0], maxContainerWidth);
+  inner.right = container.width - innerMargin.right;
+  inner.left = 0 + innerMargin.left;
+  inner.width = inner.right - inner.left;
+  innerAspectRatio = 0.5;
+  inner.height = innerAspectRatio * inner.width;
+  inner.top = 0 + innerMargin.top;
+  inner.bottom = inner.top + inner.height;
+  container.height = inner.bottom + innerMargin.bottom;
   return {
-    dimensions: dimensions,
-    info: info,
-    title: title,
-    canvas: canvas
+    dimensions: container,
+    inner: inner
   };
 };
 
@@ -97,17 +87,13 @@ module.exports = function(spec, components) {
       });
       colorScale = d3.scale.quantize().range(['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']).domain([0, 13]);
       svg = d3.select(dom).append('svg').attr('class', 'item histogram');
-      svg.append('g').attr('class', 'title').attr('transform', "translate(" + layout.title.left + "," + layout.title.top + ")").append('text').attr('class', 'infotext').text("" + spec.text).attr('dy', 20);
-      svg.append('g').attr('class', 'title').attr('transform', "translate(" + layout.title.left + ",50)").append('text').attr('class', 'infotext').text("Source: " + spec.dataSource).attr('dy', 20);
-      svg.append("a").attr('transform', "translate(" + layout.title.left + ",100)").attr('xlink:href', 'https://hcd.metoceanview.com').append('text').attr('class', 'infotext').attr('dy', 20).text('Download');
-      svg.append('text').attr('x', layout.info.left + layout.canvas.width / 2).attr('y', layout.canvas.height + 50).style('text-anchor', 'middle').text(spec.xLabel);
-      svg.append('text').attr('text-anchor', 'middle').attr('x', -1 * layout.canvas.height / 2).attr('y', layout.info.left).attr('dy', '-2em').attr('transform', 'rotate(-90)').text(spec.yLabel);
-      inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
-      inner.append('line').attr('class', 'divider').attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', layout.dimensions.height);
-      inner.append('g').attr('class', 'x axis').attr('transform', "translate(0," + layout.canvas.height + ")");
+      inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.inner.left + "," + layout.inner.top + ")");
+      inner.append('g').attr('class', 'x axis').attr('transform', "translate(0," + layout.inner.height + ")");
       inner.append('g').attr('class', 'y axis');
+      inner.append('text').attr('x', layout.inner.width / 2).attr('y', layout.inner.height + 30).attr('dy', '1em').attr('class', 'axis-label axis-label--x').style('text-anchor', 'middle').text(spec.xLabel);
+      inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * (layout.inner.height / 2)).attr('y', -50).attr('dy', '1em').attr('transform', 'rotate(-90)').attr('class', 'axis-label axis-label--y').text(spec.yLabel);
       chart = inner.append('g').attr('class', 'chart');
-      chart.append('defs').append('rect').attr('x', '0').attr('y', '0').attr('width', layout.canvas.width).attr('height', layout.canvas.height);
+      chart.append('defs').append('rect').attr('x', 0).attr('y', 0).attr('width', layout.inner.width).attr('height', layout.inner.height);
       scale = {
         x: d3.scale.ordinal().domain(xData),
         y: d3.scale.linear().domain([0, 1.1 * d3.max(yData)])
@@ -122,18 +108,18 @@ module.exports = function(spec, components) {
       var bars, layout;
       layout = calculate_layout(dimensions);
       svg.attr('width', layout.dimensions.width).attr('height', layout.dimensions.height);
-      scale.x.rangeRoundBands([0, layout.canvas.width], 0.05);
-      scale.y.range([layout.canvas.height, 0]);
+      scale.x.rangeRoundBands([0, layout.inner.width], 0.05);
+      scale.y.range([layout.inner.height, 0]);
       bars = chart.selectAll('.bar').data(data).enter().append('g').attr('class', 'bar').attr("transform", function(d) {
         return "translate(" + scale.x(d.x) + "," + scale.y(d.y) + ")";
       });
       bars.append("rect").attr("x", 1).attr("width", scale.x.rangeBand()).attr('height', function(d) {
-        return layout.canvas.height - scale.y(d.y);
+        return layout.inner.height - scale.y(d.y);
       }).style('fill', function(d) {
         return colorScale(3);
       });
       inner.select('.x.axis').call(axis.x);
-      inner.select('.y.axis').call(axis.y.tickSize(-layout.canvas.width, 0, 0));
+      inner.select('.y.axis').call(axis.y.tickSize(-layout.inner.width, 0, 0));
       inner.selectAll('.y.axis .tick line').data(scale.y.ticks(axis.y.ticks()[0])).attr('class', function(d) {
         if (d === 0) {
           return 'zero';

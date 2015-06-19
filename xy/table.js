@@ -15,29 +15,29 @@ d3 = require('d3');
 colorbrewer = require('colorbrewer');
 
 calculate_layout = function(dimensions, field, rowData) {
-  var canvas, info;
-  dimensions = {
-    width: dimensions[0],
+  var container, inner, innerMargin;
+  innerMargin = {
+    top: 60,
+    right: 0,
+    bottom: 0,
+    left: 70
+  };
+  container = {
+    width: Math.min(dimensions[0], rowData[0].length * field.width + innerMargin.left + innerMargin.right),
     height: field.height * (rowData.length + 2)
   };
-  info = {
-    top: 0,
-    right: 0,
-    bottom: 13,
-    left: 200
+  inner = {
+    top: innerMargin.top,
+    right: container.width - innerMargin.right,
+    bottom: container.height - innerMargin.right,
+    left: innerMargin.left
   };
-  canvas = {
-    top: info.top + 30,
-    right: info.right,
-    bottom: info.bottom,
-    left: info.left,
-    width: dimensions.width - info.left - info.right,
-    height: dimensions.height - info.top - info.bottom
-  };
+  inner.width = inner.right - inner.left;
+  inner.height = inner.bottom - inner.top;
   return {
-    dimensions: dimensions,
-    info: info,
-    canvas: canvas
+    container: container,
+    inner: inner,
+    innerMargin: innerMargin
   };
 };
 
@@ -45,27 +45,28 @@ module.exports = function(spec, components) {
   var result;
   return result = {
     render: function(dom, state, params) {
-      var cat, cells, cellsEnter, col, colorScale, container, d, data, dir, field, globalMax, globalMin, inner, j, k, layout, len, makeRows, nCols, nRows, ref, row, rowData, rowsGrp, sideheader, sideheaderGrp, svg, textcolorScale, topheader, topheaderGrp, v, x;
+      var cat, cells, cellsEnter, col, colorScale, container, d, data, dir, field, globalMax, globalMin, i, inner, j, k, l, layout, len, len1, len2, m, makeRows, n, nCols, nRows, ref, row, rowData, rowsGrp, sideheader, sideheaderGrp, svg, textcolorScale, topheader, topheaderGrp, v, value, x;
+      console.log('params', params);
       cat = (function() {
-        var j, len, ref, results;
+        var l, len, ref, results;
         ref = state.data;
         results = [];
-        for (j = 0, len = ref.length; j < len; j++) {
-          d = ref[j];
+        for (l = 0, len = ref.length; l < len; l++) {
+          d = ref[l];
           results.push(d[spec.category]);
         }
         return results;
       })();
       dir = {};
       ref = spec.columns;
-      for (j = 0, len = ref.length; j < len; j++) {
-        col = ref[j];
+      for (l = 0, len = ref.length; l < len; l++) {
+        col = ref[l];
         dir[col] = (function() {
-          var l, len1, ref1, results;
+          var len1, m, ref1, results;
           ref1 = state.data;
           results = [];
-          for (l = 0, len1 = ref1.length; l < len1; l++) {
-            d = ref1[l];
+          for (m = 0, len1 = ref1.length; m < len1; m++) {
+            d = ref1[m];
             results.push(d[col]);
           }
           return results;
@@ -82,10 +83,10 @@ module.exports = function(spec, components) {
         for (k in ref1) {
           v = ref1[k];
           results.push(d3.min((function() {
-            var l, len1, results1;
+            var len1, m, results1;
             results1 = [];
-            for (l = 0, len1 = v.length; l < len1; l++) {
-              x = v[l];
+            for (m = 0, len1 = v.length; m < len1; m++) {
+              x = v[m];
               results1.push(+x);
             }
             return results1;
@@ -100,10 +101,10 @@ module.exports = function(spec, components) {
         for (k in ref1) {
           v = ref1[k];
           results.push(d3.max((function() {
-            var l, len1, results1;
+            var len1, m, results1;
             results1 = [];
-            for (l = 0, len1 = v.length; l < len1; l++) {
-              x = v[l];
+            for (m = 0, len1 = v.length; m < len1; m++) {
+              x = v[m];
               results1.push(+x);
             }
             return results1;
@@ -112,11 +113,11 @@ module.exports = function(spec, components) {
         return results;
       })());
       makeRows = function(data) {
-        var dirkeys, index, l, len1, ref1, results;
+        var dirkeys, index, len1, m, ref1, results;
         dirkeys = Object.keys(data.dir);
         ref1 = data.cat;
         results = [];
-        for (index = l = 0, len1 = ref1.length; l < len1; index = ++l) {
+        for (index = m = 0, len1 = ref1.length; m < len1; index = ++m) {
           cat = ref1[index];
           results.push(dirkeys.map(function(dir) {
             return data.dir[dir][index];
@@ -131,9 +132,9 @@ module.exports = function(spec, components) {
       (function() {
         var finalNonZeroRow, finalRow, i, ref1, row, zeroRows;
         zeroRows = (function() {
-          var l, len1, results;
+          var len1, m, results;
           results = [];
-          for (i = l = 0, len1 = rowData.length; l < len1; i = ++l) {
+          for (i = m = 0, len1 = rowData.length; m < len1; i = ++m) {
             row = rowData[i];
             if (row.every(function(c) {
               return +c === 0;
@@ -162,34 +163,42 @@ module.exports = function(spec, components) {
         }
         return rowData = makeRows(data);
       })();
+      console.log('Params', params);
+      if (params.roundToInt === true) {
+        for (i = m = 0, len1 = rowData.length; m < len1; i = ++m) {
+          row = rowData[i];
+          for (j = n = 0, len2 = row.length; n < len2; j = ++n) {
+            value = row[j];
+            value = parseInt(value, 10).toString();
+            rowData[i][j] = value;
+          }
+        }
+      }
       field = {
         height: 30,
-        width: 70
+        width: 55
       };
       layout = calculate_layout(params.dimensions, field, rowData);
       svg = d3.select(dom).append('svg').attr('class', 'item table');
-      svg.attr('width', layout.dimensions.width).attr('height', layout.dimensions.height);
-      svg.append('g').attr('class', 'title').append('text').attr('class', 'infotext').text(spec.text).attr('dy', 20);
-      svg.append('text').attr('x', layout.info.left + (nCols + 1) * field.width / 2).attr('y', 20).style('text-anchor', 'middle').text(spec.columnLabel);
-      svg.append('text').attr('text-anchor', 'middle').attr('x', -1 * layout.canvas.height / 2).attr('y', layout.info.left).attr('dy', '-2em').attr('transform', 'rotate(-90)').text(spec.categoryLabel);
-      svg.append('a').attr('transform', "translate(0,50)").attr('xlink:href', 'https://hcd.metoceanview.com').append('text').attr('class', 'infotext').attr('dy', 20).text('Download');
-      inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
-      inner.append('line').attr('class', 'divider').attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', layout.dimensions.height);
-      container = inner.append('g').attr('class', 'container').attr('transform', "translate(10, 10)");
-      topheaderGrp = container.append('g').attr('class', 'topheaderGrp');
-      sideheaderGrp = container.append('g').attr('class', 'sideheaderGrp');
-      rowsGrp = container.append('g').attr('class', 'rowsGrp').attr('transform', "translate(" + (field.width * 0.75) + ", " + (field.height * 0.85) + ")");
+      svg.attr('width', layout.container.width).attr('height', layout.container.height);
+      inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.inner.left + "," + layout.inner.top + ")");
+      inner.append('text').attr('x', layout.inner.width / 2).attr('y', -1 * layout.innerMargin.top).attr('dy', '1em').style('text-anchor', 'middle').text(spec.columnLabel);
+      inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * layout.inner.height / 2).attr('y', -1 * layout.innerMargin.left).attr('dy', '1em').attr('transform', 'rotate(-90)').text(spec.categoryLabel);
+      container = inner.append('g').attr('class', 'container');
+      rowsGrp = container.append('g').attr('class', 'rowsGrp').attr('transform', "translate(" + (field.width * 0.5) + ", 0)");
       colorScale = d3.scale.quantize().range(colorbrewer.Blues[9]).domain([globalMin, globalMax]);
       textcolorScale = d3.scale.quantize().range(["#000000", "#000000", "#000000", "#ffffff", "#ffffff"]).domain([globalMin, globalMax]);
+      topheaderGrp = container.append('g').attr('class', 'topheaderGrp');
       topheader = topheaderGrp.selectAll('g').data(d3.keys(data.dir)).enter().append('g').attr('class', 'header top').attr('transform', function(d, i) {
-        return "translate(" + ((i + 0.65) * field.width) + ",0)";
+        return "translate(" + (i * field.width) + ", " + (-1 * field.height) + ")";
       });
       topheader.append('rect').attr('width', field.width - 1).attr('height', field.height);
       topheader.append('text').attr('x', field.width / 2).attr('y', field.height / 2).attr('dy', '0.35em').text(String);
+      sideheaderGrp = container.append('g').attr('class', 'sideheaderGrp');
       sideheader = sideheaderGrp.selectAll('g').data(data.cat, function(d) {
         return d3.values(d);
       }).enter().append('g').attr('class', 'header side').attr('transform', function(d, i) {
-        return "translate(0, " + ((i + 0.85) * field.height) + ")";
+        return "translate(" + (-1 * field.width) + ", " + (i * field.height) + ")";
       });
       sideheader.append('rect').attr('width', field.width - 1).attr('height', field.height);
       sideheader.append('text').attr('x', field.width / 2).attr('y', field.height / 2).attr('dy', '0.35em').text(String);
@@ -201,7 +210,7 @@ module.exports = function(spec, components) {
         return d;
       });
       cellsEnter = cells.enter().append('g').attr('class', 'cell').attr('transform', function(d, i) {
-        return "translate(" + (i * field.width) + ", 0)";
+        return "translate(" + (i * field.width - field.width / 2) + ", 0)";
       });
       cellsEnter.append('rect').attr('width', field.width - 1).attr('height', field.height - 1).style('fill', colorScale);
       return cellsEnter.append('text').attr('x', field.width / 2).attr('y', field.height / 2).attr('dy', '0.35em').text(String).style('fill', textcolorScale);
