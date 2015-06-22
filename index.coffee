@@ -36,3 +36,4 @@ module.exports =
   histogram: require './xy/histogram'
   table: require './xy/table'
   windrose: require './xy/windrose'
+  windrosebar: require './xy/windrosebar'

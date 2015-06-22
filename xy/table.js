@@ -46,7 +46,7 @@ module.exports = function(spec, components) {
   return result = {
     render: function(dom, state, params) {
       var cat, cells, cellsEnter, col, colorScale, container, d, data, dir, field, globalMax, globalMin, i, inner, j, k, l, layout, len, len1, len2, m, makeRows, n, nCols, nRows, ref, row, rowData, rowsGrp, sideheader, sideheaderGrp, svg, textcolorScale, topheader, topheaderGrp, v, value, x;
-      console.log('params', params);
+      console.log('state.data', state.data);
       cat = (function() {
         var l, len, ref, results;
         ref = state.data;
@@ -188,6 +188,10 @@ module.exports = function(spec, components) {
       rowsGrp = container.append('g').attr('class', 'rowsGrp').attr('transform', "translate(" + (field.width * 0.5) + ", 0)");
       colorScale = d3.scale.quantize().range(colorbrewer.Blues[9]).domain([globalMin, globalMax]);
       textcolorScale = d3.scale.quantize().range(["#000000", "#000000", "#000000", "#ffffff", "#ffffff"]).domain([globalMin, globalMax]);
+      if (params.disableColoring) {
+        colorScale = d3.scale.quantize().range(["#fff"]).domain([globalMin, globalMax]);
+        textcolorScale = d3.scale.quantize().range(["#000"]).domain([globalMin, globalMax]);
+      }
       topheaderGrp = container.append('g').attr('class', 'topheaderGrp');
       topheader = topheaderGrp.selectAll('g').data(d3.keys(data.dir)).enter().append('g').attr('class', 'header top').attr('transform', function(d, i) {
         return "translate(" + (i * field.width) + ", " + (-1 * field.height) + ")";

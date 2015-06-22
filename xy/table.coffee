@@ -39,7 +39,8 @@ module.exports = (spec, components) ->
     render: (dom, state, params) ->
 
 
-      console.log 'params', params
+      # console.log 'params', params
+      console.log 'state.data', state.data
       cat = (d[spec.category] for d in state.data)
       dir = {}
       for col in spec.columns
@@ -131,10 +132,18 @@ module.exports = (spec, components) ->
       colorScale = d3.scale.quantize()
         .range colorbrewer.Blues[9]
         .domain [globalMin, globalMax]
-
       textcolorScale = d3.scale.quantize()
         .range ["#000000", "#000000", "#000000", "#ffffff", "#ffffff"]
         .domain [globalMin, globalMax]
+
+      if params.disableColoring
+        colorScale = d3.scale.quantize()
+          .range ["#fff"]
+          .domain [globalMin, globalMax]
+        textcolorScale = d3.scale.quantize()
+          .range ["#000"]
+          .domain [globalMin, globalMax]
+
 
       topheaderGrp = container
         .append 'g'

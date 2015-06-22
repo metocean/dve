@@ -10,9 +10,6 @@ body {
 .dve-container line {
   stroke: #000;
 }
-.dve-container svg {
-  border: 1px solid #d5e2ed;
-}
 .dve-container svg.space {
   border: none;
 }
