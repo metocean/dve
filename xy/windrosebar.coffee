@@ -10,30 +10,40 @@ TODO: Allow the different categories and values to be specified.
 
 d3 = require 'd3'
 
-calculate_layout = (dimensions) ->
-  container = 
-    width: 600
+calculate_layout = (dimensions, spec) ->
+  # Inner is the plot area, but doesn't include axes or labels
+  inner = {}
+  innerMargin = 
+    top: 0
+    right: 50
+    bottom: 50
+    left: 80
 
   legend = 
-    height: 200
-    width: 100
-  legend.top = 0
+    top: 0
+    width: 150
+  legend.height = 30 + 30 * spec.bins.length
   legend.bottom = legend.top + legend.height
 
-  innerMargin = 
-    top: 25
-    right: 20
-    bottom: 20
-    left: 20
+  # Container is the entire dom element d3 has to work with
+  maxContainerWidth = 900
+  container = {}
 
-  inner =
-    left: innerMargin.left
-    right: container.width - legend.width - innerMargin.right
-    top: innerMargin.top
+  # Container width is set already. That determines inner width, which determines the inner 
+  # height, which determines the container width.
+  container.width = Math.min(dimensions[0], maxContainerWidth)
+  container.right = container.width
+  container.left = 0
+  legend.right = container.width
+  legend.left = legend.right - legend.width
+  inner.right = container.right - legend.width - innerMargin.right
+  inner.left = 0 + innerMargin.left
   inner.width = inner.right - inner.left
-  inner.height = inner.width
+  innerAspectRatio = 0.5
+  inner.height = innerAspectRatio * inner.width
+  inner.top = 0 + innerMargin.top
   inner.bottom = inner.top + inner.height
-  container.height = inner.height + innerMargin.top + innerMargin.bottom
+  container.height = Math.max(inner.bottom + innerMargin.bottom, legend.height)
 
   container: container
   inner: inner
@@ -42,16 +52,15 @@ calculate_layout = (dimensions) ->
 module.exports = (spec, components) ->
   result =
     render: (dom, state, params) ->
-      layout = calculate_layout params.dimensions
+      layout = calculate_layout params.dimensions, spec
       console.log 'layout', layout
 
       svg = d3.select dom
         .append 'svg'
-        .attr 'class', 'item windrose'
+        .attr 'class', 'item windrosebar'
 
-
-      console.log 'crunching data'
       nCategories = state.data.length
+      nBins = spec.bins.length
       groupedData = []
       for d, i in state.data
         obj = {}
@@ -74,39 +83,21 @@ module.exports = (spec, components) ->
       dataMax = d3.max (d.count for d in groupedData)
 
 
-      svg = d3.select dom
-        .append 'svg'
-        .attr 'class', 'item histogram'
-
-
       inner = svg
         .append 'g'
         .attr 'class', 'inner'
         .attr 'transform', "translate(#{layout.inner.left},#{layout.inner.top})"
-
-      inner
-        .append 'line'
-        .attr 'class', 'divider'
-        .attr 'x1', 0
-        .attr 'x2', 0
-        .attr 'y1', 0
-        .attr 'y2', layout.container.height
-
       inner
         .append 'g'
         .attr 'class', 'x axis'
         .attr 'transform', "translate(0,#{layout.inner.height})"
-
       inner
         .append 'g'
         .attr 'class', 'y axis'
 
-      clipId = "clip-#{Math.floor(Math.random() * 1000000)}"
-
       chart = inner
         .append 'g'
         .attr 'class', 'chart'
-
       chart
         .append 'defs'
         .append 'rect'
@@ -117,11 +108,7 @@ module.exports = (spec, components) ->
 
       colorScale = d3.scale.quantize()
         .range ['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']
-        .domain [0, nCategories]
-
-      textcolorScale = d3.scale.quantize()
-        .range ['#000000', '#000000', '#ffffff', '#ffffff']
-        .domain [0, nCategories]
+        .domain [0, nBins]
 
       scale =
         x: d3.scale.ordinal().domain(groupedData.map (d) -> d.value)
@@ -131,10 +118,6 @@ module.exports = (spec, components) ->
         x : d3.svg.axis().scale(scale.x).orient 'bottom'
         y : d3.svg.axis().scale(scale.y).orient 'left'
 
-      chart
-        .append 'text'
-        .attr 'class', 'legend'
-        .attr 'text-anchor', 'end'
 
       svg
         .attr 'width', layout.container.width
@@ -195,3 +178,33 @@ module.exports = (spec, components) ->
         .attr 'transform', 'rotate(-90)'  # This also rotates the xy cooridnate system
         .attr 'class', 'axis-label axis-label--y'
         .text spec.yLabel
+
+
+      legendRectSize = 20
+      legendSpacing = 10
+      legend = svg.selectAll '.legend'
+        .data [0...nBins]
+        .enter()
+        .append 'g'
+        .attr 'class', 'legend'
+        .attr 'transform', (d, i) -> "translate(#{layout.legend.left},#{(layout.legend.top + legendRectSize+legendSpacing)*i + 30})"
+
+      legend.append 'rect'
+        .attr 'width', legendRectSize
+        .attr 'height', legendRectSize
+        .style 'fill', colorScale
+        .style 'stroke', colorScale
+
+      legend.append 'text'
+        .attr 'x', legendRectSize + legendSpacing
+        .attr 'y', legendRectSize - legendSpacing + 5
+        .text (d) -> spec.bins[d]
+
+      legendHeading = svg.append 'text'
+        .attr 'x', layout.legend.left
+        .attr 'y', layout.legend.top
+        .attr 'dy', '1em'
+        .text spec.binLabel
+
+
+

@@ -40,7 +40,7 @@ calculate_layout = function(dimensions) {
 };
 
 module.exports = function(spec, components) {
-  var axis, chart, colorScale, data, filteredData, groupedData, inner, result, scale, svg, textcolorScale;
+  var axis, chart, colorRange, colorScale, data, filteredData, groupedData, inner, result, scale, svg, textcolorScale;
   svg = null;
   data = null;
   filteredData = null;
@@ -51,6 +51,7 @@ module.exports = function(spec, components) {
   groupedData = null;
   colorScale = null;
   textcolorScale = null;
+  colorRange = null;
   return result = {
     render: function(dom, state, params) {
       var d, j, layout, ref, results, xData, yData;
@@ -86,6 +87,7 @@ module.exports = function(spec, components) {
         };
       });
       colorScale = d3.scale.quantize().range(['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']).domain([0, 13]);
+      colorRange = ['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448'];
       svg = d3.select(dom).append('svg').attr('class', 'item histogram');
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.inner.left + "," + layout.inner.top + ")");
       inner.append('g').attr('class', 'x axis').attr('transform', "translate(0," + layout.inner.height + ")");
@@ -115,9 +117,7 @@ module.exports = function(spec, components) {
       });
       bars.append("rect").attr("x", 1).attr("width", scale.x.rangeBand()).attr('height', function(d) {
         return layout.inner.height - scale.y(d.y);
-      }).style('fill', function(d) {
-        return colorScale(3);
-      });
+      }).style('fill', colorRange[10]);
       inner.select('.x.axis').call(axis.x);
       inner.select('.y.axis').call(axis.y.tickSize(-layout.inner.width, 0, 0));
       inner.selectAll('.y.axis .tick line').data(scale.y.ticks(axis.y.ticks()[0])).attr('class', function(d) {

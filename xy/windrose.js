@@ -11,33 +11,35 @@ var calculate_layout, d3;
 
 d3 = require('d3');
 
-calculate_layout = function(dimensions) {
-  var container, inner, innerMargin, legend;
-  console.log('rose dimensions', dimensions);
-  container = {
-    width: 600
+calculate_layout = function(dimensions, spec) {
+  var container, inner, innerMargin, legend, maxContainerWidth;
+  inner = {};
+  innerMargin = {
+    top: 20,
+    right: 60,
+    bottom: 50,
+    left: 80
   };
   legend = {
-    height: 200,
-    width: 100
+    top: 0,
+    width: 150
   };
-  legend.top = 0;
+  legend.height = 30 + 30 * spec.bins.length;
   legend.bottom = legend.top + legend.height;
-  innerMargin = {
-    top: 25,
-    right: 20,
-    bottom: 20,
-    left: 20
-  };
-  inner = {
-    left: innerMargin.left,
-    right: container.width - legend.width - innerMargin.right,
-    top: innerMargin.top
-  };
+  maxContainerWidth = 700;
+  container = {};
+  container.width = Math.min(dimensions[0], maxContainerWidth);
+  container.right = container.width;
+  container.left = 0;
+  legend.right = container.width;
+  legend.left = legend.right - legend.width;
+  inner.right = container.right - legend.width - innerMargin.right;
+  inner.left = 0 + innerMargin.left;
   inner.width = inner.right - inner.left;
   inner.height = inner.width;
+  inner.top = 0 + innerMargin.top;
   inner.bottom = inner.top + inner.height;
-  container.height = inner.height + innerMargin.top + innerMargin.bottom;
+  container.height = Math.max(inner.bottom + innerMargin.bottom, legend.height);
   return {
     container: container,
     inner: inner,
@@ -49,12 +51,11 @@ module.exports = function(spec, components) {
   var result;
   return result = {
     render: function(dom, state, params) {
-      var arc, axis, bin, circlecontainer, colorScale, d, dataMax, diameter, groupedData, i, inner, j, k, l, layout, len, len1, m, nCategories, nTicks, obj, radialScale, ref, ref1, ref2, results, scale, segment, sobj, start, svg, textcolorScale;
-      layout = calculate_layout(params.dimensions);
-      console.log('layout', layout);
+      var arc, axis, bin, circlecontainer, colorScale, d, dataMax, diameter, groupedData, i, inner, j, k, l, layout, legend, legendHeading, legendRectSize, legendSpacing, len, len1, m, n, nBins, nCategories, nTicks, obj, radialScale, ref, ref1, ref2, results, scale, segment, sobj, start, svg;
+      layout = calculate_layout(params.dimensions, spec);
       svg = d3.select(dom).append('svg').attr('class', 'item windrose');
-      console.log('crunching data');
       nCategories = state.data.length;
+      nBins = spec.bins.length;
       groupedData = [];
       ref = state.data;
       for (i = k = 0, len = ref.length; k < len; i = ++k) {
@@ -73,7 +74,7 @@ module.exports = function(spec, components) {
           sobj.index = j;
           sobj.start = start;
           start += +d[bin];
-          sobj.end = start;
+          sobj.end = start * 1.00001;
           obj.speeds.push(sobj);
         }
         obj.count = start;
@@ -90,8 +91,7 @@ module.exports = function(spec, components) {
       })());
       svg.attr('width', layout.container.width).attr('height', layout.container.height);
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + (layout.inner.left + layout.inner.width / 2) + "," + (layout.inner.top + layout.inner.height / 2) + ")");
-      colorScale = d3.scale.quantize().range(['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']).domain([0, nCategories]);
-      textcolorScale = d3.scale.quantize().range(['#000000', '#000000', '#ffffff', '#ffffff']).domain([0, nCategories]);
+      colorScale = d3.scale.quantize().range(['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']).domain([0, nBins]);
       console.log('building scale');
       scale = d3.scale.linear().domain([
         0, 1.1 * d3.max(groupedData, function(d) {
@@ -139,12 +139,24 @@ module.exports = function(spec, components) {
       nTicks = 4;
       radialScale = d3.scale.linear().domain([0, nTicks]).range([0, dataMax]);
       console.log('making circles');
-      results = [];
       for (i = m = 1, ref2 = nTicks + 1; 1 <= ref2 ? m < ref2 : m > ref2; i = 1 <= ref2 ? ++m : --m) {
         circlecontainer.append('text').text(+radialScale(i).toPrecision(5)).attr('x', 0).attr('y', -(i * diameter / nTicks));
-        results.push(circlecontainer.append('circle').attr('cx', 0).attr('cy', 0).attr('r', i * diameter / nTicks));
+        circlecontainer.append('circle').attr('cx', 0).attr('cy', 0).attr('r', i * diameter / nTicks);
       }
-      return results;
+      legendRectSize = 20;
+      legendSpacing = 10;
+      legend = svg.selectAll('.legend').data((function() {
+        results = [];
+        for (var n = 0; 0 <= nBins ? n < nBins : n > nBins; 0 <= nBins ? n++ : n--){ results.push(n); }
+        return results;
+      }).apply(this)).enter().append('g').attr('class', 'legend').attr('transform', function(d, i) {
+        return "translate(" + layout.legend.left + "," + ((layout.legend.top + legendRectSize + legendSpacing) * i + 30) + ")";
+      });
+      legend.append('rect').attr('width', legendRectSize).attr('height', legendRectSize).style('fill', colorScale).style('stroke', colorScale);
+      legend.append('text').attr('x', legendRectSize + legendSpacing).attr('y', legendRectSize - legendSpacing + 5).text(function(d) {
+        return spec.bins[d];
+      });
+      return legendHeading = svg.append('text').attr('x', layout.legend.left).attr('y', layout.legend.top).attr('dy', '1em').text(spec.binLabel);
     }
   };
 };

@@ -10,36 +10,40 @@ TODO: Allow the different categories and values to be specified.
 
 d3 = require 'd3'
 
-calculate_layout = (dimensions) ->
-  # dimensions =
-  #   width: 700
-  #   height: 300
+calculate_layout = (dimensions, spec) ->
 
-  console.log 'rose dimensions', dimensions
-
-  container = 
-    width: 600
+  # Inner is the plot area, but doesn't include axes or labels
+  inner = {}
+  innerMargin = 
+    top: 20
+    right: 60
+    bottom: 50
+    left: 80
 
   legend = 
-    height: 200
-    width: 100
-  legend.top = 0
+    top: 0
+    width: 150
+  legend.height = 30 + 30 * spec.bins.length
   legend.bottom = legend.top + legend.height
 
-  innerMargin = 
-    top: 25
-    right: 20
-    bottom: 20
-    left: 20
+  # Container is the entire dom element d3 has to work with
+  maxContainerWidth = 700
+  container = {}
 
-  inner =
-    left: innerMargin.left
-    right: container.width - legend.width - innerMargin.right
-    top: innerMargin.top
+  # Container width is set already. That determines inner width, which determines the inner 
+  # height, which determines the container width.
+  container.width = Math.min(dimensions[0], maxContainerWidth)
+  container.right = container.width
+  container.left = 0
+  legend.right = container.width
+  legend.left = legend.right - legend.width
+  inner.right = container.right - legend.width - innerMargin.right
+  inner.left = 0 + innerMargin.left
   inner.width = inner.right - inner.left
   inner.height = inner.width
+  inner.top = 0 + innerMargin.top
   inner.bottom = inner.top + inner.height
-  container.height = inner.height + innerMargin.top + innerMargin.bottom
+  container.height = Math.max(inner.bottom + innerMargin.bottom, legend.height)
 
   container: container
   inner: inner
@@ -48,16 +52,14 @@ calculate_layout = (dimensions) ->
 module.exports = (spec, components) ->
   result =
     render: (dom, state, params) ->
-      layout = calculate_layout params.dimensions
-      console.log 'layout', layout
+      layout = calculate_layout params.dimensions, spec
 
       svg = d3.select dom
         .append 'svg'
         .attr 'class', 'item windrose'
 
-
-      console.log 'crunching data'
       nCategories = state.data.length
+      nBins = spec.bins.length
       groupedData = []
       for d, i in state.data
         obj = {}
@@ -72,19 +74,16 @@ module.exports = (spec, components) ->
           sobj.index = j
           sobj.start = start
           start += +d[bin]
-          sobj.end = start
+          sobj.end = start * 1.00001
           obj.speeds.push sobj
         obj.count = start
         groupedData.push obj
 
       dataMax = d3.max (d.count for d in groupedData)
 
-
       svg
         .attr 'width', layout.container.width
         .attr 'height', layout.container.height
-
-
 
       inner = svg
         .append 'g'
@@ -93,11 +92,8 @@ module.exports = (spec, components) ->
 
       colorScale = d3.scale.quantize()
         .range ['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']
-        .domain [0, nCategories]
+        .domain [0, nBins]
 
-      textcolorScale = d3.scale.quantize()
-        .range ['#000000', '#000000', '#ffffff', '#ffffff']
-        .domain [0, nCategories]
 
       console.log 'building scale'
       scale = d3
@@ -188,3 +184,30 @@ module.exports = (spec, components) ->
           .attr 'cy', 0
           .attr 'r', i * diameter / nTicks
         
+      legendRectSize = 20
+      legendSpacing = 10
+      legend = svg.selectAll '.legend'
+        .data [0...nBins]
+        .enter()
+        .append 'g'
+        .attr 'class', 'legend'
+        .attr 'transform', (d, i) -> "translate(#{layout.legend.left},#{(layout.legend.top + legendRectSize+legendSpacing)*i + 30})"
+
+      legend.append 'rect'
+        .attr 'width', legendRectSize
+        .attr 'height', legendRectSize
+        .style 'fill', colorScale
+        .style 'stroke', colorScale
+
+      legend.append 'text'
+        .attr 'x', legendRectSize + legendSpacing
+        .attr 'y', legendRectSize - legendSpacing + 5
+        .text (d) -> spec.bins[d]
+
+      legendHeading = svg.append 'text'
+        .attr 'x', layout.legend.left
+        .attr 'y', layout.legend.top
+        .attr 'dy', '1em'
+        .text spec.binLabel
+
+

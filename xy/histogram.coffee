@@ -49,6 +49,7 @@ module.exports = (spec, components) ->
   groupedData = null
   colorScale = null
   textcolorScale = null
+  colorRange = null
 
   result =
     render: (dom, state, params) ->
@@ -63,6 +64,8 @@ module.exports = (spec, components) ->
       colorScale = d3.scale.quantize()
         .range ['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']
         .domain [0, 13]
+
+      colorRange = ['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']
 
       # Base element
       svg = d3.select dom
@@ -136,7 +139,7 @@ module.exports = (spec, components) ->
         .attr "x", 1
         .attr "width", scale.x.rangeBand()
         .attr 'height', (d) -> layout.inner.height - scale.y(d.y)
-        .style 'fill', (d) -> colorScale 3
+        .style 'fill', colorRange[10]
 
       inner
         .select '.x.axis'

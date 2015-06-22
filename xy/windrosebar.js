@@ -11,32 +11,36 @@ var calculate_layout, d3;
 
 d3 = require('d3');
 
-calculate_layout = function(dimensions) {
-  var container, inner, innerMargin, legend;
-  container = {
-    width: 600
+calculate_layout = function(dimensions, spec) {
+  var container, inner, innerAspectRatio, innerMargin, legend, maxContainerWidth;
+  inner = {};
+  innerMargin = {
+    top: 0,
+    right: 50,
+    bottom: 50,
+    left: 80
   };
   legend = {
-    height: 200,
-    width: 100
+    top: 0,
+    width: 150
   };
-  legend.top = 0;
+  legend.height = 30 + 30 * spec.bins.length;
   legend.bottom = legend.top + legend.height;
-  innerMargin = {
-    top: 25,
-    right: 20,
-    bottom: 20,
-    left: 20
-  };
-  inner = {
-    left: innerMargin.left,
-    right: container.width - legend.width - innerMargin.right,
-    top: innerMargin.top
-  };
+  maxContainerWidth = 900;
+  container = {};
+  container.width = Math.min(dimensions[0], maxContainerWidth);
+  container.right = container.width;
+  container.left = 0;
+  legend.right = container.width;
+  legend.left = legend.right - legend.width;
+  inner.right = container.right - legend.width - innerMargin.right;
+  inner.left = 0 + innerMargin.left;
   inner.width = inner.right - inner.left;
-  inner.height = inner.width;
+  innerAspectRatio = 0.5;
+  inner.height = innerAspectRatio * inner.width;
+  inner.top = 0 + innerMargin.top;
   inner.bottom = inner.top + inner.height;
-  container.height = inner.height + innerMargin.top + innerMargin.bottom;
+  container.height = Math.max(inner.bottom + innerMargin.bottom, legend.height);
   return {
     container: container,
     inner: inner,
@@ -48,12 +52,12 @@ module.exports = function(spec, components) {
   var result;
   return result = {
     render: function(dom, state, params) {
-      var axis, bars, bin, chart, clipId, colorScale, d, dataMax, groupedData, i, inner, j, k, l, layout, len, len1, nCategories, obj, ref, ref1, scale, sobj, start, svg, textcolorScale;
-      layout = calculate_layout(params.dimensions);
+      var axis, bars, bin, chart, colorScale, d, dataMax, groupedData, i, inner, j, k, l, layout, legend, legendHeading, legendRectSize, legendSpacing, len, len1, m, nBins, nCategories, obj, ref, ref1, results, scale, sobj, start, svg;
+      layout = calculate_layout(params.dimensions, spec);
       console.log('layout', layout);
-      svg = d3.select(dom).append('svg').attr('class', 'item windrose');
-      console.log('crunching data');
+      svg = d3.select(dom).append('svg').attr('class', 'item windrosebar');
       nCategories = state.data.length;
+      nBins = spec.bins.length;
       groupedData = [];
       ref = state.data;
       for (i = k = 0, len = ref.length; k < len; i = ++k) {
@@ -87,16 +91,12 @@ module.exports = function(spec, components) {
         }
         return results;
       })());
-      svg = d3.select(dom).append('svg').attr('class', 'item histogram');
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.inner.left + "," + layout.inner.top + ")");
-      inner.append('line').attr('class', 'divider').attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', layout.container.height);
       inner.append('g').attr('class', 'x axis').attr('transform', "translate(0," + layout.inner.height + ")");
       inner.append('g').attr('class', 'y axis');
-      clipId = "clip-" + (Math.floor(Math.random() * 1000000));
       chart = inner.append('g').attr('class', 'chart');
       chart.append('defs').append('rect').attr('x', '0').attr('y', '0').attr('width', layout.inner.width).attr('height', layout.inner.height);
-      colorScale = d3.scale.quantize().range(['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']).domain([0, nCategories]);
-      textcolorScale = d3.scale.quantize().range(['#000000', '#000000', '#ffffff', '#ffffff']).domain([0, nCategories]);
+      colorScale = d3.scale.quantize().range(['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']).domain([0, nBins]);
       scale = {
         x: d3.scale.ordinal().domain(groupedData.map(function(d) {
           return d.value;
@@ -111,7 +111,6 @@ module.exports = function(spec, components) {
         x: d3.svg.axis().scale(scale.x).orient('bottom'),
         y: d3.svg.axis().scale(scale.y).orient('left')
       };
-      chart.append('text').attr('class', 'legend').attr('text-anchor', 'end');
       svg.attr('width', layout.container.width).attr('height', layout.container.height);
       scale.x.rangeRoundBands([0, layout.inner.width], 0.05);
       scale.y.range([layout.inner.height, 0]);
@@ -138,7 +137,21 @@ module.exports = function(spec, components) {
       });
       inner.select('.y.axis .domain').remove();
       inner.append('text').attr('x', layout.inner.width / 2).attr('y', layout.inner.height + 30).attr('dy', '1em').attr('class', 'axis-label axis-label--x').style('text-anchor', 'middle').text(spec.xLabel);
-      return inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * (layout.inner.height / 2)).attr('y', -50).attr('dy', '1em').attr('transform', 'rotate(-90)').attr('class', 'axis-label axis-label--y').text(spec.yLabel);
+      inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * (layout.inner.height / 2)).attr('y', -50).attr('dy', '1em').attr('transform', 'rotate(-90)').attr('class', 'axis-label axis-label--y').text(spec.yLabel);
+      legendRectSize = 20;
+      legendSpacing = 10;
+      legend = svg.selectAll('.legend').data((function() {
+        results = [];
+        for (var m = 0; 0 <= nBins ? m < nBins : m > nBins; 0 <= nBins ? m++ : m--){ results.push(m); }
+        return results;
+      }).apply(this)).enter().append('g').attr('class', 'legend').attr('transform', function(d, i) {
+        return "translate(" + layout.legend.left + "," + ((layout.legend.top + legendRectSize + legendSpacing) * i + 30) + ")";
+      });
+      legend.append('rect').attr('width', legendRectSize).attr('height', legendRectSize).style('fill', colorScale).style('stroke', colorScale);
+      legend.append('text').attr('x', legendRectSize + legendSpacing).attr('y', legendRectSize - legendSpacing + 5).text(function(d) {
+        return spec.bins[d];
+      });
+      return legendHeading = svg.append('text').attr('x', layout.legend.left).attr('y', layout.legend.top).attr('dy', '1em').text(spec.binLabel);
     }
   };
 };
