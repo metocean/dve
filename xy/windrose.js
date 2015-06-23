@@ -92,7 +92,6 @@ module.exports = function(spec, components) {
       svg.attr('width', layout.container.width).attr('height', layout.container.height);
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + (layout.inner.left + layout.inner.width / 2) + "," + (layout.inner.top + layout.inner.height / 2) + ")");
       colorScale = d3.scale.quantize().range(['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']).domain([0, nBins]);
-      console.log('building scale');
       scale = d3.scale.linear().domain([
         0, 1.1 * d3.max(groupedData, function(d) {
           return d.count;
@@ -100,11 +99,9 @@ module.exports = function(spec, components) {
       ]).range([0, layout.inner.width / 2]);
       diameter = (scale(scale.domain()[1])) - 5;
       circlecontainer = inner.append('g').attr('class', 'circlecontainer');
-      console.log('making axis', axis);
       axis = inner.selectAll('.axis').data(groupedData).enter().append('g').attr('class', 'axis').attr('transform', function(d) {
         return "rotate(" + d.key + ")";
       });
-      console.log('making arc', arc);
       arc = function(o) {
         return d3.svg.arc().startAngle(function(d) {
           return (-o.width / 2) * Math.PI / 180;
@@ -120,7 +117,6 @@ module.exports = function(spec, components) {
       }).attr('style', 'text-anchor: middle').attr('dy', '0.25em').text(function(d) {
         return d.value;
       });
-      console.log('sevment', segment);
       segment = inner.selectAll('.segment').data(groupedData).enter().append('g').attr('class', 'segment').attr('transform', function(d) {
         return "rotate(" + d.key + ")";
       }).selectAll('path').data(function(d) {
@@ -138,7 +134,6 @@ module.exports = function(spec, components) {
       });
       nTicks = 4;
       radialScale = d3.scale.linear().domain([0, nTicks]).range([0, dataMax]);
-      console.log('making circles');
       for (i = m = 1, ref2 = nTicks + 1; 1 <= ref2 ? m < ref2 : m > ref2; i = 1 <= ref2 ? ++m : --m) {
         circlecontainer.append('text').text(+radialScale(i).toPrecision(5)).attr('x', 0).attr('y', -(i * diameter / nTicks));
         circlecontainer.append('circle').attr('cx', 0).attr('cy', 0).attr('r', i * diameter / nTicks);

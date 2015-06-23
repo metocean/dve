@@ -95,7 +95,6 @@ module.exports = (spec, components) ->
         .domain [0, nBins]
 
 
-      console.log 'building scale'
       scale = d3
         .scale
         .linear()
@@ -108,7 +107,6 @@ module.exports = (spec, components) ->
         .append 'g'
         .attr 'class', 'circlecontainer'
 
-      console.log 'making axis', axis
       axis = inner
         .selectAll '.axis'
         .data groupedData
@@ -117,7 +115,6 @@ module.exports = (spec, components) ->
         .attr 'class', 'axis'
         .attr 'transform', (d) -> "rotate(#{d.key})"
 
-      console.log 'making arc', arc
       arc = (o) ->
         d3
         .svg
@@ -144,7 +141,6 @@ module.exports = (spec, components) ->
         .attr 'dy', '0.25em'
         .text (d) -> d.value
 
-      console.log 'sevment', segment
       segment = inner
         .selectAll '.segment'
         .data groupedData
@@ -171,7 +167,6 @@ module.exports = (spec, components) ->
         .range [0, dataMax]
 
 
-      console.log 'making circles'
       for i in [1...nTicks+1]
         circlecontainer
           .append 'text'

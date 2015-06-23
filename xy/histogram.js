@@ -117,7 +117,7 @@ module.exports = function(spec, components) {
       });
       bars.append("rect").attr("x", 1).attr("width", scale.x.rangeBand()).attr('height', function(d) {
         return layout.inner.height - scale.y(d.y);
-      }).style('fill', colorRange[10]);
+      }).style('fill', colorRange[8]);
       inner.select('.x.axis').call(axis.x);
       inner.select('.y.axis').call(axis.y.tickSize(-layout.inner.width, 0, 0));
       inner.selectAll('.y.axis .tick line').data(scale.y.ticks(axis.y.ticks()[0])).attr('class', function(d) {

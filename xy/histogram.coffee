@@ -139,7 +139,7 @@ module.exports = (spec, components) ->
         .attr "x", 1
         .attr "width", scale.x.rangeBand()
         .attr 'height', (d) -> layout.inner.height - scale.y(d.y)
-        .style 'fill', colorRange[10]
+        .style 'fill', colorRange[8]
 
       inner
         .select '.x.axis'
