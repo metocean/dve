@@ -21,12 +21,13 @@ calculate_layout = (dimensions, spec) ->
 
   legend = 
     top: 0
-    width: 150
+    width: 130
   legend.height = 30 + 30 * spec.bins.length
   legend.bottom = legend.top + legend.height
 
   # Container is the entire dom element d3 has to work with
   maxContainerWidth = 900
+  minContainerWidth = 520
   container = {}
 
   # Container width is set already. That determines inner width, which determines the inner 
@@ -53,7 +54,6 @@ module.exports = (spec, components) ->
   result =
     render: (dom, state, params) ->
       layout = calculate_layout params.dimensions, spec
-      console.log 'layout', layout
 
       svg = d3.select dom
         .append 'svg'

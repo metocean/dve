@@ -22,7 +22,7 @@ calculate_layout = function(dimensions, spec) {
   };
   legend = {
     top: 0,
-    width: 150
+    width: 130
   };
   legend.height = 30 + 30 * spec.bins.length;
   legend.bottom = legend.top + legend.height;
@@ -53,9 +53,13 @@ module.exports = function(spec, components) {
     render: function(dom, state, params) {
       var arc, axis, bin, circlecontainer, colorScale, d, dataMax, diameter, groupedData, i, inner, j, k, l, layout, legend, legendHeading, legendRectSize, legendSpacing, len, len1, m, n, nBins, nCategories, nTicks, obj, radialScale, ref, ref1, ref2, results, scale, segment, sobj, start, svg;
       layout = calculate_layout(params.dimensions, spec);
+      console.log('layout', layout);
+      console.log('state', state);
       svg = d3.select(dom).append('svg').attr('class', 'item windrose');
       nCategories = state.data.length;
       nBins = spec.bins.length;
+      console.log('nc', nCategories);
+      console.log('nBins', nBins);
       groupedData = [];
       ref = state.data;
       for (i = k = 0, len = ref.length; k < len; i = ++k) {
@@ -92,6 +96,7 @@ module.exports = function(spec, components) {
       svg.attr('width', layout.container.width).attr('height', layout.container.height);
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + (layout.inner.left + layout.inner.width / 2) + "," + (layout.inner.top + layout.inner.height / 2) + ")");
       colorScale = d3.scale.quantize().range(['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']).domain([0, nBins]);
+      console.log('GD', groupedData);
       scale = d3.scale.linear().domain([
         0, 1.1 * d3.max(groupedData, function(d) {
           return d.count;

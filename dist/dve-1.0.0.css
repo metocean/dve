@@ -173,8 +173,19 @@ body {
   text-anchor: middle;
   font-weight: bold;
 }
+.dve-container .table .header.side text,
+.dve-container .tablebytime .header.side text {
+  text-anchor: start;
+}
 .dve-container .table .cell text,
 .dve-container .tablebytime .cell text {
   font: 10px sans-serif;
   text-anchor: middle;
+}
+.dve-container .tick text,
+.dve-container .axis g text,
+.dve-container .circlecontainer text,
+.dve-container .legend text {
+  font: 10px sans-serif;
+  font-weight: bold;
 }

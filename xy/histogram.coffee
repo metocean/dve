@@ -11,49 +11,40 @@ d3 = require 'd3'
 zip = require '../util/zip'
 
 calculate_layout = (dimensions) ->
-  # Inner is the plot area, but doesn't include axes or labels
-  inner = {}
   innerMargin = 
-    top: 0
+    top: 10
     right: 0
-    bottom: 50
+    bottom: 60
     left: 70
 
-  # Container is the entire dom element d3 has to work with
-  maxContainerWidth = 700
-  container = {}
+  maxContainerWidth = 800
+  minContainerWidth = 400
+  innerAspectRatio = 0.5
 
-  # Container width is set already. That determines inner width, which determines the inner 
-  # height, which determines the container width.
+  container = {}
+  inner = {}
   container.width = Math.min(dimensions[0], maxContainerWidth)
+  container.width = Math.max(container.width, minContainerWidth)
   inner.right = container.width - innerMargin.right
   inner.left = 0 + innerMargin.left
   inner.width = inner.right - inner.left
-  innerAspectRatio = 0.5
   inner.height = innerAspectRatio * inner.width
   inner.top = 0 + innerMargin.top
   inner.bottom = inner.top + inner.height
   container.height = inner.bottom + innerMargin.bottom
 
-  dimensions: container
+  container: container
   inner: inner
+  innerMargin: innerMargin
 
 module.exports = (spec, components) ->
-  svg = null
-  data = null
-  filteredData = null
-  inner = null
-  scale = null
-  axis = null
-  chart = null
-  groupedData = null
-  colorScale = null
-  textcolorScale = null
-  colorRange = null
 
   result =
     render: (dom, state, params) ->
+      console.log 'dims', params.dimensions
       layout = calculate_layout params.dimensions
+      console.log 'layout', layout
+
 
       # Parse data
       xData = (d[spec.bin] for d in state.data)
@@ -61,16 +52,21 @@ module.exports = (spec, components) ->
       data = [0...xData.length].map (i) ->
         {x: xData[i], y: yData[i]}
 
-      colorScale = d3.scale.quantize()
-        .range ['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']
-        .domain [0, 13]
 
-      colorRange = ['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']
-
-      # Base element
       svg = d3.select dom
         .append 'svg'
         .attr 'class', 'item histogram'
+        .attr 'width', layout.container.width
+        .attr 'height', layout.container.height
+
+      scale =
+        x: d3.scale.ordinal().domain(xData)
+        y: d3.scale.linear().domain([0, 1.1 * d3.max(yData)])
+      scale.x.rangeRoundBands([0, layout.inner.width], 0.05)
+      scale.y.range [layout.inner.height, 0]
+      axis =
+        x: d3.svg.axis().scale(scale.x).orient 'bottom'
+        y: d3.svg.axis().scale(scale.y).orient 'left'
 
       inner = svg.append 'g'
         .attr 'class', 'inner'
@@ -82,19 +78,31 @@ module.exports = (spec, components) ->
         .attr 'class', 'y axis'
       inner.append 'text'
         .attr 'x', (layout.inner.width/2)
-        .attr 'y',  layout.inner.height + 30
-        .attr 'dy', '1em'
+        .attr 'y',  layout.inner.height + layout.innerMargin.bottom - 25  # Not sure why this isn't 20...
+        .attr 'dy', 20
         .attr 'class', 'axis-label axis-label--x'
         .style 'text-anchor', 'middle'
         .text spec.xLabel
       inner.append 'text'
         .attr 'text-anchor', 'middle'
         .attr 'x', -1 * (layout.inner.height/2)
-        .attr 'y', -50
+        .attr 'y', -1 * layout.innerMargin.left
         .attr 'dy', '1em'
         .attr 'transform', 'rotate(-90)'  # This also rotates the xy cooridnate system
         .attr 'class', 'axis-label axis-label--y'
         .text spec.yLabel
+      inner
+        .select '.x.axis'
+        .call axis.x
+      inner
+        .select '.y.axis'
+        .call axis.y.tickSize -layout.inner.width, 0, 0
+      inner
+        .selectAll '.y.axis .tick line'
+        .data scale.y.ticks axis.y.ticks()[0]
+      inner
+        .select '.y.axis .domain'
+        .remove()
 
       chart = inner.append 'g'
         .attr 'class', 'chart'
@@ -106,27 +114,6 @@ module.exports = (spec, components) ->
         .attr 'width', layout.inner.width
         .attr 'height', layout.inner.height
 
-      scale =
-        x: d3.scale.ordinal().domain(xData)
-        y: d3.scale.linear().domain([0, 1.1 * d3.max(yData)])
-
-      axis =
-        x : d3.svg.axis().scale(scale.x).orient 'bottom'
-        y : d3.svg.axis().scale(scale.y).orient 'left'
-
-
-      result.resize params.dimensions
-
-    resize: (dimensions) ->
-      layout = calculate_layout dimensions
-
-      svg
-        .attr 'width', layout.dimensions.width
-        .attr 'height', layout.dimensions.height
-
-      scale.x.rangeRoundBands([0, layout.inner.width], 0.05)
-      scale.y.range [layout.inner.height, 0]
-
       bars = chart
         .selectAll '.bar'
         .data data
@@ -134,28 +121,9 @@ module.exports = (spec, components) ->
         .append 'g'
         .attr 'class', 'bar'
         .attr "transform", (d) -> "translate(" + scale.x(d.x) + "," + scale.y(d.y) + ")"
-
       bars.append("rect")
         .attr "x", 1
         .attr "width", scale.x.rangeBand()
         .attr 'height', (d) -> layout.inner.height - scale.y(d.y)
-        .style 'fill', colorRange[8]
-
-      inner
-        .select '.x.axis'
-        .call axis.x
-
-      inner
-        .select '.y.axis'
-        .call axis.y.tickSize -layout.inner.width, 0, 0
-
-      inner
-        .selectAll '.y.axis .tick line'
-        .data scale.y.ticks axis.y.ticks()[0]
-        .attr 'class', (d) ->
-          if d is 0 then 'zero' else null
-
-      inner
-        .select '.y.axis .domain'
-        .remove()
+        .style 'fill', '#4D6082'
 

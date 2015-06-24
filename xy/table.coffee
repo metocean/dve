@@ -10,7 +10,7 @@ TODO: Allow the different categories and values to be specified.
 d3 = require 'd3'
 colorbrewer = require 'colorbrewer'
 
-calculate_layout = (dimensions, field, rowData) ->
+calculate_layout = (dimensions, nRows, nCols, params) ->
 
   innerMargin = 
     top: 60
@@ -18,29 +18,41 @@ calculate_layout = (dimensions, field, rowData) ->
     bottom: 0
     left: 70
 
+  if params.megaMargin
+    innerMargin.left *= 2
+
+  maxContainerWidth = 800
+  minContainerWidth = 400
+  maxFieldWidth = 120
+
+  field = 
+    height: 30
+
   container = 
-    width: Math.min(dimensions[0], (rowData[0].length) * field.width + innerMargin.left + innerMargin.right)
-    height: field.height * (rowData.length + 2)
+    width: Math.min(dimensions[0], maxContainerWidth)
+  container.width = Math.max(container.width, minContainerWidth)
 
-  inner =
-    top: innerMargin.top
-    right: container.width - innerMargin.right
-    bottom: container.height - innerMargin.right
+  inner = 
     left: innerMargin.left
-  inner.width = inner.right - inner.left
-  inner.height = inner.bottom - inner.top
+    top: innerMargin.top
+    width: Math.min(container.width - innerMargin.left - innerMargin.right, maxFieldWidth*nCols)
+    height: field.height * nRows
 
+  container.height = innerMargin.top + innerMargin.bottom + inner.height
+  inner.bottom = inner.top + inner.height
+  inner.right = inner.left + inner.width
+  field.width = inner.width / nCols
+  
   container: container
   inner: inner
   innerMargin: innerMargin
+  field: field
 
 module.exports = (spec, components) ->
   result =
     render: (dom, state, params) ->
 
 
-      # console.log 'params', params
-      console.log 'state.data', state.data
       cat = (d[spec.category] for d in state.data)
       dir = {}
       for col in spec.columns
@@ -60,7 +72,6 @@ module.exports = (spec, components) ->
       # Rear-strip rows that are all zeros (leaving the last one)
       nRows = rowData.length
       nCols = spec.columns.length
-      console.log 'nCols', nCols
       do ->
         zeroRows = (i for row, i in rowData when row.every (c) -> +c==0)
         return if zeroRows.length == 0
@@ -77,21 +88,14 @@ module.exports = (spec, components) ->
 
       # HCD adds .00 to each number when the units are 'count'
       # It's safe to round these to the nearest integer
-      console.log 'Params', params
       if params.roundToInt == true
         for row, i in rowData
           for value, j in row
             value = parseInt(value, 10).toString()
             rowData[i][j] = value
 
-
-
-      field =
-        height: 30
-        width: 55
-
-
-      layout = calculate_layout params.dimensions, field, rowData
+      layout = calculate_layout params.dimensions, nRows, nCols, params
+      field =  layout.field
 
       svg = d3.select dom
         .append 'svg'
@@ -164,6 +168,9 @@ module.exports = (spec, components) ->
         .attr 'dy', '0.35em'
         .text String
 
+      headerWidth = 35
+      if params.megaMargin
+        headerWidth = layout.innerMargin.left
       sideheaderGrp = container
         .append 'g'
         .attr 'class', 'sideheaderGrp'
@@ -173,12 +180,12 @@ module.exports = (spec, components) ->
         .enter()
         .append 'g'
         .attr 'class', 'header side'
-        .attr 'transform', (d, i) -> "translate(#{-1 * field.width}, #{(i)*(field.height)})"
+        .attr 'transform', (d, i) -> "translate(#{-1 * headerWidth}, #{(i)*(field.height)})"
       sideheader.append 'rect'
-        .attr 'width', field.width - 1
+        .attr 'width', headerWidth - 2
         .attr 'height', field.height
       sideheader.append 'text'
-        .attr 'x', field.width/2
+        .attr 'x', 0
         .attr 'y', field.height/2
         .attr 'dy', '0.35em'
         .text String

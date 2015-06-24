@@ -14,30 +14,42 @@ d3 = require('d3');
 
 colorbrewer = require('colorbrewer');
 
-calculate_layout = function(dimensions, field, rowData) {
-  var container, inner, innerMargin;
+calculate_layout = function(dimensions, nRows, nCols, params) {
+  var container, field, inner, innerMargin, maxContainerWidth, maxFieldWidth, minContainerWidth;
   innerMargin = {
     top: 60,
     right: 0,
     bottom: 0,
     left: 70
   };
+  if (params.megaMargin) {
+    innerMargin.left *= 2;
+  }
+  maxContainerWidth = 800;
+  minContainerWidth = 400;
+  maxFieldWidth = 120;
+  field = {
+    height: 30
+  };
   container = {
-    width: Math.min(dimensions[0], rowData[0].length * field.width + innerMargin.left + innerMargin.right),
-    height: field.height * (rowData.length + 2)
+    width: Math.min(dimensions[0], maxContainerWidth)
   };
+  container.width = Math.max(container.width, minContainerWidth);
   inner = {
+    left: innerMargin.left,
     top: innerMargin.top,
-    right: container.width - innerMargin.right,
-    bottom: container.height - innerMargin.right,
-    left: innerMargin.left
+    width: Math.min(container.width - innerMargin.left - innerMargin.right, maxFieldWidth * nCols),
+    height: field.height * nRows
   };
-  inner.width = inner.right - inner.left;
-  inner.height = inner.bottom - inner.top;
+  container.height = innerMargin.top + innerMargin.bottom + inner.height;
+  inner.bottom = inner.top + inner.height;
+  inner.right = inner.left + inner.width;
+  field.width = inner.width / nCols;
   return {
     container: container,
     inner: inner,
-    innerMargin: innerMargin
+    innerMargin: innerMargin,
+    field: field
   };
 };
 
@@ -45,8 +57,7 @@ module.exports = function(spec, components) {
   var result;
   return result = {
     render: function(dom, state, params) {
-      var cat, cells, cellsEnter, col, colorScale, container, d, data, dir, field, globalMax, globalMin, i, inner, j, k, l, layout, len, len1, len2, m, makeRows, n, nCols, nRows, ref, row, rowData, rowsGrp, sideheader, sideheaderGrp, svg, textcolorScale, topheader, topheaderGrp, v, value, x;
-      console.log('state.data', state.data);
+      var cat, cells, cellsEnter, col, colorScale, container, d, data, dir, field, globalMax, globalMin, headerWidth, i, inner, j, k, l, layout, len, len1, len2, m, makeRows, n, nCols, nRows, ref, row, rowData, rowsGrp, sideheader, sideheaderGrp, svg, textcolorScale, topheader, topheaderGrp, v, value, x;
       cat = (function() {
         var l, len, ref, results;
         ref = state.data;
@@ -128,7 +139,6 @@ module.exports = function(spec, components) {
       rowData = makeRows(data);
       nRows = rowData.length;
       nCols = spec.columns.length;
-      console.log('nCols', nCols);
       (function() {
         var finalNonZeroRow, finalRow, i, ref1, row, zeroRows;
         zeroRows = (function() {
@@ -163,7 +173,6 @@ module.exports = function(spec, components) {
         }
         return rowData = makeRows(data);
       })();
-      console.log('Params', params);
       if (params.roundToInt === true) {
         for (i = m = 0, len1 = rowData.length; m < len1; i = ++m) {
           row = rowData[i];
@@ -174,11 +183,8 @@ module.exports = function(spec, components) {
           }
         }
       }
-      field = {
-        height: 30,
-        width: 55
-      };
-      layout = calculate_layout(params.dimensions, field, rowData);
+      layout = calculate_layout(params.dimensions, nRows, nCols, params);
+      field = layout.field;
       svg = d3.select(dom).append('svg').attr('class', 'item table');
       svg.attr('width', layout.container.width).attr('height', layout.container.height);
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.inner.left + "," + layout.inner.top + ")");
@@ -198,14 +204,18 @@ module.exports = function(spec, components) {
       });
       topheader.append('rect').attr('width', field.width - 1).attr('height', field.height);
       topheader.append('text').attr('x', field.width / 2).attr('y', field.height / 2).attr('dy', '0.35em').text(String);
+      headerWidth = 35;
+      if (params.megaMargin) {
+        headerWidth = layout.innerMargin.left;
+      }
       sideheaderGrp = container.append('g').attr('class', 'sideheaderGrp');
       sideheader = sideheaderGrp.selectAll('g').data(data.cat, function(d) {
         return d3.values(d);
       }).enter().append('g').attr('class', 'header side').attr('transform', function(d, i) {
-        return "translate(" + (-1 * field.width) + ", " + (i * field.height) + ")";
+        return "translate(" + (-1 * headerWidth) + ", " + (i * field.height) + ")";
       });
-      sideheader.append('rect').attr('width', field.width - 1).attr('height', field.height);
-      sideheader.append('text').attr('x', field.width / 2).attr('y', field.height / 2).attr('dy', '0.35em').text(String);
+      sideheader.append('rect').attr('width', headerWidth - 2).attr('height', field.height);
+      sideheader.append('text').attr('x', 0).attr('y', field.height / 2).attr('dy', '0.35em').text(String);
       row = rowsGrp.selectAll('g.row').data(rowData);
       row.enter().append('g').attr('class', 'row').attr('transform', function(d, i) {
         return "translate(0, " + (i * field.height) + ")";

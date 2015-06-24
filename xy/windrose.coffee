@@ -22,7 +22,7 @@ calculate_layout = (dimensions, spec) ->
 
   legend = 
     top: 0
-    width: 150
+    width: 130
   legend.height = 30 + 30 * spec.bins.length
   legend.bottom = legend.top + legend.height
 
@@ -53,6 +53,8 @@ module.exports = (spec, components) ->
   result =
     render: (dom, state, params) ->
       layout = calculate_layout params.dimensions, spec
+      console.log 'layout', layout
+      console.log 'state', state
 
       svg = d3.select dom
         .append 'svg'
@@ -60,6 +62,10 @@ module.exports = (spec, components) ->
 
       nCategories = state.data.length
       nBins = spec.bins.length
+
+      console.log 'nc', nCategories
+      console.log 'nBins', nBins
+
       groupedData = []
       for d, i in state.data
         obj = {}
@@ -94,6 +100,8 @@ module.exports = (spec, components) ->
         .range ['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']
         .domain [0, nBins]
 
+
+      console.log 'GD', groupedData
 
       scale = d3
         .scale

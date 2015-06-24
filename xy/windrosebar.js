@@ -12,7 +12,7 @@ var calculate_layout, d3;
 d3 = require('d3');
 
 calculate_layout = function(dimensions, spec) {
-  var container, inner, innerAspectRatio, innerMargin, legend, maxContainerWidth;
+  var container, inner, innerAspectRatio, innerMargin, legend, maxContainerWidth, minContainerWidth;
   inner = {};
   innerMargin = {
     top: 0,
@@ -22,11 +22,12 @@ calculate_layout = function(dimensions, spec) {
   };
   legend = {
     top: 0,
-    width: 150
+    width: 130
   };
   legend.height = 30 + 30 * spec.bins.length;
   legend.bottom = legend.top + legend.height;
   maxContainerWidth = 900;
+  minContainerWidth = 520;
   container = {};
   container.width = Math.min(dimensions[0], maxContainerWidth);
   container.right = container.width;
@@ -54,7 +55,6 @@ module.exports = function(spec, components) {
     render: function(dom, state, params) {
       var axis, bars, bin, chart, colorScale, d, dataMax, groupedData, i, inner, j, k, l, layout, legend, legendHeading, legendRectSize, legendSpacing, len, len1, m, nBins, nCategories, obj, ref, ref1, results, scale, sobj, start, svg;
       layout = calculate_layout(params.dimensions, spec);
-      console.log('layout', layout);
       svg = d3.select(dom).append('svg').attr('class', 'item windrosebar');
       nCategories = state.data.length;
       nBins = spec.bins.length;
