@@ -20,9 +20,9 @@ module.exports = (spec, components) ->
       for item in items
         item.render dom, state, params
     resize: (dimensions) ->
-      for i in items
-        continue unless i.resize?
-        i.resize dimensions
+      for item in items
+        continue unless item.resize?
+        item.resize dimensions
     query: (params) ->
       result = {}
       for item in items

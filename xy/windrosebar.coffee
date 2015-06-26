@@ -14,7 +14,7 @@ calculate_layout = (dimensions, spec) ->
   # Inner is the plot area, but doesn't include axes or labels
   inner = {}
   innerMargin = 
-    top: 0
+    top: 10
     right: 50
     bottom: 50
     left: 80

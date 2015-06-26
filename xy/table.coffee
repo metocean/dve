@@ -22,15 +22,16 @@ calculate_layout = (dimensions, nRows, nCols, params) ->
     innerMargin.left *= 2
 
   maxFieldWidth = 120
-  maxContainerWidth = Math.min(maxFieldWidth*nCols + innerMargin.left + innerMargin.right, dimensions[0])
-  minContainerWidth = 400
+  minFieldWidth = 30
+  containerWidth = dimensions[0]
+  containerWidth = Math.min(containerWidth, maxFieldWidth*nCols + innerMargin.left + innerMargin.right)
+  containerWidth = Math.max(containerWidth, minFieldWidth*nCols + innerMargin.left + innerMargin.right)
 
   field = 
     height: 30
 
   container = 
-    width: Math.min(dimensions[0], maxContainerWidth)
-  container.width = Math.max(container.width, minContainerWidth)
+    width: containerWidth  
 
   inner = 
     left: innerMargin.left

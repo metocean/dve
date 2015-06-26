@@ -15,7 +15,7 @@ calculate_layout = function(dimensions, spec) {
   var container, inner, innerAspectRatio, innerMargin, legend, maxContainerWidth, minContainerWidth;
   inner = {};
   innerMargin = {
-    top: 0,
+    top: 10,
     right: 50,
     bottom: 50,
     left: 80

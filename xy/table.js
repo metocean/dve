@@ -15,7 +15,7 @@ d3 = require('d3');
 colorbrewer = require('colorbrewer');
 
 calculate_layout = function(dimensions, nRows, nCols, params) {
-  var container, field, inner, innerMargin, maxContainerWidth, maxFieldWidth, minContainerWidth;
+  var container, containerWidth, field, inner, innerMargin, maxFieldWidth, minFieldWidth;
   innerMargin = {
     top: 60,
     right: 0,
@@ -26,15 +26,16 @@ calculate_layout = function(dimensions, nRows, nCols, params) {
     innerMargin.left *= 2;
   }
   maxFieldWidth = 120;
-  maxContainerWidth = Math.min(maxFieldWidth * nCols + innerMargin.left + innerMargin.right, dimensions[0]);
-  minContainerWidth = 400;
+  minFieldWidth = 30;
+  containerWidth = dimensions[0];
+  containerWidth = Math.min(containerWidth, maxFieldWidth * nCols + innerMargin.left + innerMargin.right);
+  containerWidth = Math.max(containerWidth, minFieldWidth * nCols + innerMargin.left + innerMargin.right);
   field = {
     height: 30
   };
   container = {
-    width: Math.min(dimensions[0], maxContainerWidth)
+    width: containerWidth
   };
-  container.width = Math.max(container.width, minContainerWidth);
   inner = {
     left: innerMargin.left,
     top: innerMargin.top,
