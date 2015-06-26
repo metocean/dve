@@ -21,9 +21,9 @@ calculate_layout = (dimensions, nRows, nCols, params) ->
   if params.megaMargin
     innerMargin.left *= 2
 
-  maxContainerWidth = 800
-  minContainerWidth = 400
   maxFieldWidth = 120
+  maxContainerWidth = Math.min(maxFieldWidth*nCols + innerMargin.left + innerMargin.right, dimensions[0])
+  minContainerWidth = 400
 
   field = 
     height: 30
@@ -51,10 +51,6 @@ calculate_layout = (dimensions, nRows, nCols, params) ->
 module.exports = (spec, components) ->
   result =
     render: (dom, state, params) ->
-
-      console.log 'state', state
-
-
       cat = (d[spec.category] for d in state.data)
       dir = {}
       for col in spec.columns
@@ -86,16 +82,13 @@ module.exports = (spec, components) ->
         for k, v of data.dir
           v = v.slice 0, finalRow+1
         rowData = makeRows data
-        nRows = rowData[0].length
-
+        nRows = rowData.length
 
       if params.roundToDp?
         for row, i in rowData
           for value, j in row
             value = parseFloat(value).toFixed(params.roundToDp).toString()
             rowData[i][j] = value
-
-
 
       layout = calculate_layout params.dimensions, nRows, nCols, params
       field =  layout.field

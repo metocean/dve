@@ -25,9 +25,9 @@ calculate_layout = function(dimensions, nRows, nCols, params) {
   if (params.megaMargin) {
     innerMargin.left *= 2;
   }
-  maxContainerWidth = 800;
-  minContainerWidth = 400;
   maxFieldWidth = 120;
+  maxContainerWidth = Math.min(maxFieldWidth * nCols + innerMargin.left + innerMargin.right, dimensions[0]);
+  minContainerWidth = 400;
   field = {
     height: 30
   };
@@ -58,7 +58,6 @@ module.exports = function(spec, components) {
   return result = {
     render: function(dom, state, params) {
       var cat, cells, cellsEnter, col, colorScale, container, d, data, dir, field, globalMax, globalMin, headerWidth, i, inner, j, k, l, layout, len, len1, len2, m, makeRows, n, nCols, nRows, ref, row, rowData, rowsGrp, sideheader, sideheaderGrp, svg, textcolorScale, topheader, topheaderGrp, v, value, x;
-      console.log('state', state);
       cat = (function() {
         var l, len, ref, results;
         ref = state.data;
@@ -173,7 +172,7 @@ module.exports = function(spec, components) {
           v = v.slice(0, finalRow + 1);
         }
         rowData = makeRows(data);
-        return nRows = rowData[0].length;
+        return nRows = rowData.length;
       })();
       if (params.roundToDp != null) {
         for (i = m = 0, len1 = rowData.length; m < len1; i = ++m) {
