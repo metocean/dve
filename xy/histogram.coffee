@@ -41,10 +41,7 @@ module.exports = (spec, components) ->
 
   result =
     render: (dom, state, params) ->
-      console.log 'dims', params.dimensions
       layout = calculate_layout params.dimensions
-      console.log 'layout', layout
-
 
       # Parse data
       xData = (d[spec.bin] for d in state.data)

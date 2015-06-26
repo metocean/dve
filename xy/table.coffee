@@ -52,6 +52,8 @@ module.exports = (spec, components) ->
   result =
     render: (dom, state, params) ->
 
+      console.log 'state', state
+
 
       cat = (d[spec.category] for d in state.data)
       dir = {}
@@ -84,15 +86,16 @@ module.exports = (spec, components) ->
         for k, v of data.dir
           v = v.slice 0, finalRow+1
         rowData = makeRows data
+        nRows = rowData[0].length
 
 
-      # HCD adds .00 to each number when the units are 'count'
-      # It's safe to round these to the nearest integer
-      if params.roundToInt == true
+      if params.roundToDp?
         for row, i in rowData
           for value, j in row
-            value = parseInt(value, 10).toString()
+            value = parseFloat(value).toFixed(params.roundToDp).toString()
             rowData[i][j] = value
+
+
 
       layout = calculate_layout params.dimensions, nRows, nCols, params
       field =  layout.field

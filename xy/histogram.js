@@ -47,9 +47,7 @@ module.exports = function(spec, components) {
   return result = {
     render: function(dom, state, params) {
       var axis, bars, chart, d, data, inner, j, layout, ref, results, scale, svg, xData, yData;
-      console.log('dims', params.dimensions);
       layout = calculate_layout(params.dimensions);
-      console.log('layout', layout);
       xData = (function() {
         var j, len, ref, results;
         ref = state.data;

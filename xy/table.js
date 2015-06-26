@@ -58,6 +58,7 @@ module.exports = function(spec, components) {
   return result = {
     render: function(dom, state, params) {
       var cat, cells, cellsEnter, col, colorScale, container, d, data, dir, field, globalMax, globalMin, headerWidth, i, inner, j, k, l, layout, len, len1, len2, m, makeRows, n, nCols, nRows, ref, row, rowData, rowsGrp, sideheader, sideheaderGrp, svg, textcolorScale, topheader, topheaderGrp, v, value, x;
+      console.log('state', state);
       cat = (function() {
         var l, len, ref, results;
         ref = state.data;
@@ -171,14 +172,15 @@ module.exports = function(spec, components) {
           v = ref1[k];
           v = v.slice(0, finalRow + 1);
         }
-        return rowData = makeRows(data);
+        rowData = makeRows(data);
+        return nRows = rowData[0].length;
       })();
-      if (params.roundToInt === true) {
+      if (params.roundToDp != null) {
         for (i = m = 0, len1 = rowData.length; m < len1; i = ++m) {
           row = rowData[i];
           for (j = n = 0, len2 = row.length; n < len2; j = ++n) {
             value = row[j];
-            value = parseInt(value, 10).toString();
+            value = parseFloat(value).toFixed(params.roundToDp).toString();
             rowData[i][j] = value;
           }
         }
