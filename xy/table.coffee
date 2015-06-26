@@ -11,12 +11,11 @@ d3 = require 'd3'
 colorbrewer = require 'colorbrewer'
 
 calculate_layout = (dimensions, nRows, nCols, params) ->
-
   innerMargin = 
-    top: 60
-    right: 0
-    bottom: 0
-    left: 70
+    top: 75
+    right: 10
+    bottom: 15
+    left: 85
 
   if params.megaMargin
     innerMargin.left *= 2
@@ -107,14 +106,14 @@ module.exports = (spec, components) ->
         .attr 'transform', "translate(#{layout.inner.left},#{layout.inner.top})"
       inner.append 'text'
         .attr 'x', layout.inner.width / 2
-        .attr 'y',  -1 * layout.innerMargin.top
+        .attr 'y',  -1 * layout.innerMargin.top + 15
         .attr 'dy', '1em'
         .style 'text-anchor', 'middle'
         .text spec.columnLabel
       inner.append 'text'
         .attr 'text-anchor', 'middle'
         .attr 'x', (-1 * layout.inner.height / 2)
-        .attr 'y', -1 * layout.innerMargin.left
+        .attr 'y', -1 * layout.innerMargin.left + 15
         .attr 'dy', '1em'
         .attr 'transform', 'rotate(-90)'
         .text spec.categoryLabel
@@ -167,7 +166,7 @@ module.exports = (spec, components) ->
 
       headerWidth = 35
       if params.megaMargin
-        headerWidth = layout.innerMargin.left
+        headerWidth = layout.innerMargin.left - 15
       sideheaderGrp = container
         .append 'g'
         .attr 'class', 'sideheaderGrp'
@@ -206,8 +205,8 @@ module.exports = (spec, components) ->
         .attr 'transform', (d, i) -> "translate(#{i*field.width-field.width/2}, 0)"
       cellsEnter
         .append 'rect'
-        .attr 'width', field.width - 1
-        .attr 'height', field.height - 1
+        .attr 'width', field.width
+        .attr 'height', field.height
         .style 'fill', colorScale
       cellsEnter
         .append 'text'

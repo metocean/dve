@@ -17,10 +17,10 @@ colorbrewer = require('colorbrewer');
 calculate_layout = function(dimensions, nRows, nCols, params) {
   var container, containerWidth, field, inner, innerMargin, maxFieldWidth, minFieldWidth;
   innerMargin = {
-    top: 60,
-    right: 0,
-    bottom: 0,
-    left: 70
+    top: 75,
+    right: 10,
+    bottom: 15,
+    left: 85
   };
   if (params.megaMargin) {
     innerMargin.left *= 2;
@@ -190,8 +190,8 @@ module.exports = function(spec, components) {
       svg = d3.select(dom).append('svg').attr('class', 'item table');
       svg.attr('width', layout.container.width).attr('height', layout.container.height);
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.inner.left + "," + layout.inner.top + ")");
-      inner.append('text').attr('x', layout.inner.width / 2).attr('y', -1 * layout.innerMargin.top).attr('dy', '1em').style('text-anchor', 'middle').text(spec.columnLabel);
-      inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * layout.inner.height / 2).attr('y', -1 * layout.innerMargin.left).attr('dy', '1em').attr('transform', 'rotate(-90)').text(spec.categoryLabel);
+      inner.append('text').attr('x', layout.inner.width / 2).attr('y', -1 * layout.innerMargin.top + 15).attr('dy', '1em').style('text-anchor', 'middle').text(spec.columnLabel);
+      inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * layout.inner.height / 2).attr('y', -1 * layout.innerMargin.left + 15).attr('dy', '1em').attr('transform', 'rotate(-90)').text(spec.categoryLabel);
       container = inner.append('g').attr('class', 'container');
       rowsGrp = container.append('g').attr('class', 'rowsGrp').attr('transform', "translate(" + (field.width * 0.5) + ", 0)");
       colorScale = d3.scale.quantize().range(colorbrewer.Blues[9]).domain([globalMin, globalMax]);
@@ -208,7 +208,7 @@ module.exports = function(spec, components) {
       topheader.append('text').attr('x', field.width / 2).attr('y', field.height / 2).attr('dy', '0.35em').text(String);
       headerWidth = 35;
       if (params.megaMargin) {
-        headerWidth = layout.innerMargin.left;
+        headerWidth = layout.innerMargin.left - 15;
       }
       sideheaderGrp = container.append('g').attr('class', 'sideheaderGrp');
       sideheader = sideheaderGrp.selectAll('g').data(data.cat, function(d) {
@@ -228,7 +228,7 @@ module.exports = function(spec, components) {
       cellsEnter = cells.enter().append('g').attr('class', 'cell').attr('transform', function(d, i) {
         return "translate(" + (i * field.width - field.width / 2) + ", 0)";
       });
-      cellsEnter.append('rect').attr('width', field.width - 1).attr('height', field.height - 1).style('fill', colorScale);
+      cellsEnter.append('rect').attr('width', field.width).attr('height', field.height).style('fill', colorScale);
       return cellsEnter.append('text').attr('x', field.width / 2).attr('y', field.height / 2).attr('dy', '0.35em').text(String).style('fill', textcolorScale);
     }
   };

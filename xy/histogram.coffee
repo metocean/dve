@@ -13,9 +13,9 @@ zip = require '../util/zip'
 calculate_layout = (dimensions) ->
   innerMargin = 
     top: 10
-    right: 0
+    right: 10
     bottom: 60
-    left: 70
+    left: 85
 
   maxContainerWidth = 800
   minContainerWidth = 400
@@ -75,7 +75,7 @@ module.exports = (spec, components) ->
         .attr 'class', 'y axis'
       inner.append 'text'
         .attr 'x', (layout.inner.width/2)
-        .attr 'y',  layout.inner.height + layout.innerMargin.bottom - 25  # Not sure why this isn't 20...
+        .attr 'y',  layout.inner.height + layout.innerMargin.bottom - 25 - 15  # Not sure why this isn't 20...
         .attr 'dy', 20
         .attr 'class', 'axis-label axis-label--x'
         .style 'text-anchor', 'middle'
@@ -83,7 +83,7 @@ module.exports = (spec, components) ->
       inner.append 'text'
         .attr 'text-anchor', 'middle'
         .attr 'x', -1 * (layout.inner.height/2)
-        .attr 'y', -1 * layout.innerMargin.left
+        .attr 'y', -1 * layout.innerMargin.left + 15
         .attr 'dy', '1em'
         .attr 'transform', 'rotate(-90)'  # This also rotates the xy cooridnate system
         .attr 'class', 'axis-label axis-label--y'

@@ -17,9 +17,9 @@ calculate_layout = function(dimensions) {
   var container, inner, innerAspectRatio, innerMargin, maxContainerWidth, minContainerWidth;
   innerMargin = {
     top: 10,
-    right: 0,
+    right: 10,
     bottom: 60,
-    left: 70
+    left: 85
   };
   maxContainerWidth = 800;
   minContainerWidth = 400;
@@ -92,8 +92,8 @@ module.exports = function(spec, components) {
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.inner.left + "," + layout.inner.top + ")");
       inner.append('g').attr('class', 'x axis').attr('transform', "translate(0," + layout.inner.height + ")");
       inner.append('g').attr('class', 'y axis');
-      inner.append('text').attr('x', layout.inner.width / 2).attr('y', layout.inner.height + layout.innerMargin.bottom - 25).attr('dy', 20).attr('class', 'axis-label axis-label--x').style('text-anchor', 'middle').text(spec.xLabel);
-      inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * (layout.inner.height / 2)).attr('y', -1 * layout.innerMargin.left).attr('dy', '1em').attr('transform', 'rotate(-90)').attr('class', 'axis-label axis-label--y').text(spec.yLabel);
+      inner.append('text').attr('x', layout.inner.width / 2).attr('y', layout.inner.height + layout.innerMargin.bottom - 25 - 15).attr('dy', 20).attr('class', 'axis-label axis-label--x').style('text-anchor', 'middle').text(spec.xLabel);
+      inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * (layout.inner.height / 2)).attr('y', -1 * layout.innerMargin.left + 15).attr('dy', '1em').attr('transform', 'rotate(-90)').attr('class', 'axis-label axis-label--y').text(spec.yLabel);
       inner.select('.x.axis').call(axis.x);
       inner.select('.y.axis').call(axis.y.tickSize(-layout.inner.width, 0, 0));
       inner.selectAll('.y.axis .tick line').data(scale.y.ticks(axis.y.ticks()[0]));
