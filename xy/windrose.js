@@ -15,16 +15,16 @@ calculate_layout = function(dimensions, spec) {
   var container, inner, innerMargin, legend, maxContainerWidth;
   inner = {};
   innerMargin = {
-    top: 20,
+    top: 40,
     right: 60,
-    bottom: 50,
-    left: 80
+    bottom: 40,
+    left: 40
   };
   legend = {
-    top: 0,
+    top: 20,
     width: 130
   };
-  legend.height = 30 + 30 * spec.bins.length;
+  legend.height = (spec.bins.length + 1.5) * 30;
   legend.bottom = legend.top + legend.height;
   maxContainerWidth = 700;
   container = {};
@@ -39,7 +39,7 @@ calculate_layout = function(dimensions, spec) {
   inner.height = inner.width;
   inner.top = 0 + innerMargin.top;
   inner.bottom = inner.top + inner.height;
-  container.height = Math.max(inner.bottom + innerMargin.bottom, legend.height);
+  container.height = Math.max(inner.bottom + innerMargin.bottom, legend.bottom);
   return {
     container: container,
     inner: inner,
@@ -150,7 +150,7 @@ module.exports = function(spec, components) {
         for (var n = 0; 0 <= nBins ? n < nBins : n > nBins; 0 <= nBins ? n++ : n--){ results.push(n); }
         return results;
       }).apply(this)).enter().append('g').attr('class', 'legend').attr('transform', function(d, i) {
-        return "translate(" + layout.legend.left + "," + ((layout.legend.top + legendRectSize + legendSpacing) * i + 30) + ")";
+        return "translate(" + layout.legend.left + "," + (layout.legend.top + (legendRectSize + legendSpacing) * i + 30) + ")";
       });
       legend.append('rect').attr('width', legendRectSize).attr('height', legendRectSize).style('fill', colorScale).style('stroke', colorScale);
       legend.append('text').attr('x', legendRectSize + legendSpacing).attr('y', legendRectSize - legendSpacing + 5).text(function(d) {

@@ -15,15 +15,15 @@ calculate_layout = (dimensions, spec) ->
   # Inner is the plot area, but doesn't include axes or labels
   inner = {}
   innerMargin = 
-    top: 20
+    top: 40
     right: 60
-    bottom: 50
-    left: 80
+    bottom: 40
+    left: 40
 
   legend = 
-    top: 0
+    top: 20
     width: 130
-  legend.height = 30 + 30 * spec.bins.length
+  legend.height = (spec.bins.length + 1.5) * 30
   legend.bottom = legend.top + legend.height
 
   # Container is the entire dom element d3 has to work with
@@ -43,7 +43,7 @@ calculate_layout = (dimensions, spec) ->
   inner.height = inner.width
   inner.top = 0 + innerMargin.top
   inner.bottom = inner.top + inner.height
-  container.height = Math.max(inner.bottom + innerMargin.bottom, legend.height)
+  container.height = Math.max(inner.bottom + innerMargin.bottom, legend.bottom)
 
   container: container
   inner: inner
@@ -194,7 +194,7 @@ module.exports = (spec, components) ->
         .enter()
         .append 'g'
         .attr 'class', 'legend'
-        .attr 'transform', (d, i) -> "translate(#{layout.legend.left},#{(layout.legend.top + legendRectSize+legendSpacing)*i + 30})"
+        .attr 'transform', (d, i) -> "translate(#{layout.legend.left},#{layout.legend.top + (legendRectSize+legendSpacing)*i + 30})"
 
       legend.append 'rect'
         .attr 'width', legendRectSize
