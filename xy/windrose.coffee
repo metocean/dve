@@ -110,10 +110,17 @@ module.exports = (spec, components) ->
         .range [0, layout.inner.width/2]
 
       diameter = (scale scale.domain()[1]) - 5
-
+      nTicks = 4
       circlecontainer = inner
         .append 'g'
         .attr 'class', 'circlecontainer'
+      for i in [1...nTicks+1]
+        circlecontainer
+          .append 'circle'
+          .attr 'cx', 0
+          .attr 'cy', 0
+          .attr 'r', i * diameter / nTicks
+
 
       axis = inner
         .selectAll '.axis'
@@ -167,25 +174,21 @@ module.exports = (spec, components) ->
         )
         .style 'fill', (d) -> colorScale d.index
 
-
+      tickcontainer = inner
+        .append 'g'
+        .attr 'class', 'circlecontainer'
       nTicks = 4
       radialScale = d3.scale
         .linear()
         .domain [0, nTicks]  # The number of 
         .range [0, dataMax]
-
-
       for i in [1...nTicks+1]
-        circlecontainer
+        tickcontainer
           .append 'text'
           .text +radialScale(i).toPrecision(5)
           .attr 'x', 0
           .attr 'y', -(i * diameter / nTicks)
-        circlecontainer
-          .append 'circle'
-          .attr 'cx', 0
-          .attr 'cy', 0
-          .attr 'r', i * diameter / nTicks
+
         
       legendRectSize = 20
       legendSpacing = 10

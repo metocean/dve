@@ -51,7 +51,7 @@ module.exports = function(spec, components) {
   var result;
   return result = {
     render: function(dom, state, params) {
-      var arc, axis, bin, circlecontainer, colorScale, d, dataMax, diameter, groupedData, i, inner, j, k, l, layout, legend, legendHeading, legendRectSize, legendSpacing, len, len1, m, n, nBins, nCategories, nTicks, obj, radialScale, ref, ref1, ref2, results, scale, segment, sobj, start, svg;
+      var arc, axis, bin, circlecontainer, colorScale, d, dataMax, diameter, groupedData, i, inner, j, k, l, layout, legend, legendHeading, legendRectSize, legendSpacing, len, len1, m, n, nBins, nCategories, nTicks, obj, p, radialScale, ref, ref1, ref2, ref3, results, scale, segment, sobj, start, svg, tickcontainer;
       layout = calculate_layout(params.dimensions, spec);
       console.log('layout', layout);
       console.log('state', state);
@@ -103,7 +103,11 @@ module.exports = function(spec, components) {
         })
       ]).range([0, layout.inner.width / 2]);
       diameter = (scale(scale.domain()[1])) - 5;
+      nTicks = 4;
       circlecontainer = inner.append('g').attr('class', 'circlecontainer');
+      for (i = m = 1, ref2 = nTicks + 1; 1 <= ref2 ? m < ref2 : m > ref2; i = 1 <= ref2 ? ++m : --m) {
+        circlecontainer.append('circle').attr('cx', 0).attr('cy', 0).attr('r', i * diameter / nTicks);
+      }
       axis = inner.selectAll('.axis').data(groupedData).enter().append('g').attr('class', 'axis').attr('transform', function(d) {
         return "rotate(" + d.key + ")";
       });
@@ -137,17 +141,17 @@ module.exports = function(spec, components) {
       })).style('fill', function(d) {
         return colorScale(d.index);
       });
+      tickcontainer = inner.append('g').attr('class', 'circlecontainer');
       nTicks = 4;
       radialScale = d3.scale.linear().domain([0, nTicks]).range([0, dataMax]);
-      for (i = m = 1, ref2 = nTicks + 1; 1 <= ref2 ? m < ref2 : m > ref2; i = 1 <= ref2 ? ++m : --m) {
-        circlecontainer.append('text').text(+radialScale(i).toPrecision(5)).attr('x', 0).attr('y', -(i * diameter / nTicks));
-        circlecontainer.append('circle').attr('cx', 0).attr('cy', 0).attr('r', i * diameter / nTicks);
+      for (i = n = 1, ref3 = nTicks + 1; 1 <= ref3 ? n < ref3 : n > ref3; i = 1 <= ref3 ? ++n : --n) {
+        tickcontainer.append('text').text(+radialScale(i).toPrecision(5)).attr('x', 0).attr('y', -(i * diameter / nTicks));
       }
       legendRectSize = 20;
       legendSpacing = 10;
       legend = svg.selectAll('.legend').data((function() {
         results = [];
-        for (var n = 0; 0 <= nBins ? n < nBins : n > nBins; 0 <= nBins ? n++ : n--){ results.push(n); }
+        for (var p = 0; 0 <= nBins ? p < nBins : p > nBins; 0 <= nBins ? p++ : p--){ results.push(p); }
         return results;
       }).apply(this)).enter().append('g').attr('class', 'legend').attr('transform', function(d, i) {
         return "translate(" + layout.legend.left + "," + (layout.legend.top + (legendRectSize + legendSpacing) * i + 30) + ")";
