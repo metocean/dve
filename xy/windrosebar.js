@@ -30,6 +30,7 @@ calculate_layout = function(dimensions, spec) {
   minContainerWidth = 520;
   container = {};
   container.width = Math.min(dimensions[0], maxContainerWidth);
+  container.width = Math.max(container.width, minContainerWidth);
   container.right = container.width;
   container.left = 0;
   legend.right = container.width;

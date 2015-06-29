@@ -12,7 +12,7 @@ var calculate_layout, d3;
 d3 = require('d3');
 
 calculate_layout = function(dimensions, spec) {
-  var container, inner, innerMargin, legend, maxContainerWidth;
+  var container, inner, innerMargin, legend, maxContainerWidth, minContainerWidth;
   inner = {};
   innerMargin = {
     top: 40,
@@ -27,8 +27,10 @@ calculate_layout = function(dimensions, spec) {
   legend.height = (spec.bins.length + 1.5) * 30;
   legend.bottom = legend.top + legend.height;
   maxContainerWidth = 700;
+  minContainerWidth = 400;
   container = {};
   container.width = Math.min(dimensions[0], maxContainerWidth);
+  container.width = Math.max(container.width, minContainerWidth);
   container.right = container.width;
   container.left = 0;
   legend.right = container.width;

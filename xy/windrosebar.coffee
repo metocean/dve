@@ -33,6 +33,7 @@ calculate_layout = (dimensions, spec) ->
   # Container width is set already. That determines inner width, which determines the inner 
   # height, which determines the container width.
   container.width = Math.min(dimensions[0], maxContainerWidth)
+  container.width = Math.max(container.width, minContainerWidth)
   container.right = container.width
   container.left = 0
   legend.right = container.width
