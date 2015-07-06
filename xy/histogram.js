@@ -60,6 +60,7 @@ module.exports = function(spec, components) {
           y: yData[i]
         };
       });
+      console.log('gggggggggggggggggggggg');
       svg = d3.select(dom).append('svg').attr('class', 'item histogram').attr('width', layout.container.width).attr('height', layout.container.height);
       scale = {
         x: d3.scale.ordinal().domain(xData),

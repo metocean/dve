@@ -11,7 +11,7 @@ var calculate_layout, d3;
 
 d3 = require('d3');
 
-calculate_layout = function(dimensions, spec) {
+calculate_layout = function(dimensions, spec, nBins) {
   var container, inner, innerMargin, legend, maxContainerWidth, minContainerWidth;
   inner = {};
   innerMargin = {
@@ -24,7 +24,7 @@ calculate_layout = function(dimensions, spec) {
     top: 20,
     width: 130
   };
-  legend.height = (spec.bins.length + 1.5) * 30;
+  legend.height = (nBins + 1.5) * 30;
   legend.bottom = legend.top + legend.height;
   maxContainerWidth = 700;
   minContainerWidth = 400;
@@ -53,39 +53,37 @@ module.exports = function(spec, components) {
   var result;
   return result = {
     render: function(dom, state, params) {
-      var arc, axis, bin, circlecontainer, colorScale, d, dataMax, diameter, groupedData, i, inner, j, k, l, layout, legend, legendHeading, legendRectSize, legendSpacing, len, len1, m, n, nBins, nCategories, nTicks, obj, p, radialScale, ref, ref1, ref2, ref3, results, scale, segment, sobj, start, svg, tickcontainer;
-      layout = calculate_layout(params.dimensions, spec);
-      console.log('layout', layout);
-      console.log('state', state);
+      var angularBins, arc, axis, cell, circlecontainer, colorScale, d, dataMax, diameter, groupedData, i, inner, j, k, l, layout, legend, legendHeading, legendRectSize, legendSpacing, len, len1, m, n, nBins, nSegments, nTicks, obj, p, radialBins, radialScale, ref, ref1, ref2, results, row, scale, segment, sobj, start, svg, tickcontainer;
+      angularBins = state.data.bins[0].labels;
+      radialBins = state.data.bins[1].labels;
+      nSegments = angularBins.length;
+      nBins = radialBins.length;
+      layout = calculate_layout(params.dimensions, spec, nBins);
       svg = d3.select(dom).append('svg').attr('class', 'item windrose');
-      nCategories = state.data.length;
-      nBins = spec.bins.length;
-      console.log('nc', nCategories);
-      console.log('nBins', nBins);
       groupedData = [];
-      ref = state.data;
+      ref = state.data.data;
       for (i = k = 0, len = ref.length; k < len; i = ++k) {
-        d = ref[i];
+        row = ref[i];
         obj = {};
-        obj.angle = i * (360 / nCategories);
+        obj.angle = i * 360 / angularBins.length;
         obj.key = obj.angle;
-        obj.category = d[spec.category];
-        obj.value = obj.category;
-        obj.speeds = [];
+        obj.label = angularBins[i];
+        obj.value = obj.label;
+        obj.data = [];
         start = 0;
-        ref1 = spec.bins;
-        for (j = l = 0, len1 = ref1.length; l < len1; j = ++l) {
-          bin = ref1[j];
+        for (j = l = 0, len1 = row.length; l < len1; j = ++l) {
+          cell = row[j];
           sobj = {};
           sobj.index = j;
           sobj.start = start;
-          start += +d[bin];
-          sobj.end = start * 1.00001;
-          obj.speeds.push(sobj);
+          start += cell;
+          sobj.end = start;
+          obj.data.push(sobj);
         }
         obj.count = start;
         groupedData.push(obj);
       }
+      console.log('groupedData', groupedData);
       dataMax = d3.max((function() {
         var len2, m, results;
         results = [];
@@ -107,7 +105,7 @@ module.exports = function(spec, components) {
       diameter = (scale(scale.domain()[1])) - 5;
       nTicks = 4;
       circlecontainer = inner.append('g').attr('class', 'circlecontainer');
-      for (i = m = 1, ref2 = nTicks + 1; 1 <= ref2 ? m < ref2 : m > ref2; i = 1 <= ref2 ? ++m : --m) {
+      for (i = m = 1, ref1 = nTicks + 1; 1 <= ref1 ? m < ref1 : m > ref1; i = 1 <= ref1 ? ++m : --m) {
         circlecontainer.append('circle').attr('cx', 0).attr('cy', 0).attr('r', i * diameter / nTicks);
       }
       axis = inner.selectAll('.axis').data(groupedData).enter().append('g').attr('class', 'axis').attr('transform', function(d) {
@@ -131,9 +129,9 @@ module.exports = function(spec, components) {
       segment = inner.selectAll('.segment').data(groupedData).enter().append('g').attr('class', 'segment').attr('transform', function(d) {
         return "rotate(" + d.key + ")";
       }).selectAll('path').data(function(d) {
-        return d.speeds;
+        return d.data;
       }).enter().append('path').attr('d', arc({
-        width: 360 / nCategories * 0.8,
+        width: 360 / nSegments * 0.8,
         from: function(d) {
           return scale(d.start);
         },
@@ -146,7 +144,7 @@ module.exports = function(spec, components) {
       tickcontainer = inner.append('g').attr('class', 'circlecontainer');
       nTicks = 4;
       radialScale = d3.scale.linear().domain([0, nTicks]).range([0, dataMax]);
-      for (i = n = 1, ref3 = nTicks + 1; 1 <= ref3 ? n < ref3 : n > ref3; i = 1 <= ref3 ? ++n : --n) {
+      for (i = n = 1, ref2 = nTicks + 1; 1 <= ref2 ? n < ref2 : n > ref2; i = 1 <= ref2 ? ++n : --n) {
         tickcontainer.append('text').text(+radialScale(i).toPrecision(5)).attr('x', 0).attr('y', -(i * diameter / nTicks));
       }
       legendRectSize = 20;
@@ -160,9 +158,9 @@ module.exports = function(spec, components) {
       });
       legend.append('rect').attr('width', legendRectSize).attr('height', legendRectSize).style('fill', colorScale).style('stroke', colorScale);
       legend.append('text').attr('x', legendRectSize + legendSpacing).attr('y', legendRectSize - legendSpacing + 5).text(function(d) {
-        return spec.bins[d];
+        return radialBins[d];
       });
-      return legendHeading = svg.append('text').attr('x', layout.legend.left).attr('y', layout.legend.top).attr('dy', '1em').text(spec.binLabel);
+      return legendHeading = svg.append('text').attr('x', layout.legend.left).attr('y', layout.legend.top).attr('dy', '1em').text(spec.radialLabel + (spec.radialUnits ? " [" + state.data.bins[1].units + "]" : ''));
     }
   };
 };

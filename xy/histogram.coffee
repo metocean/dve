@@ -52,6 +52,8 @@ module.exports = (spec, components) ->
         {x: xData[i], y: yData[i]}
 
 
+      console.log 'gggggggggggggggggggggg'
+
       svg = d3.select dom
         .append 'svg'
         .attr 'class', 'item histogram'

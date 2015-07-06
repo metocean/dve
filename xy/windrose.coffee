@@ -10,7 +10,7 @@ TODO: Allow the different categories and values to be specified.
 
 d3 = require 'd3'
 
-calculate_layout = (dimensions, spec) ->
+calculate_layout = (dimensions, spec, nBins) ->
 
   # Inner is the plot area, but doesn't include axes or labels
   inner = {}
@@ -23,7 +23,7 @@ calculate_layout = (dimensions, spec) ->
   legend = 
     top: 20
     width: 130
-  legend.height = (spec.bins.length + 1.5) * 30
+  legend.height = (nBins + 1.5) * 30
   legend.bottom = legend.top + legend.height
 
   # Container is the entire dom element d3 has to work with
@@ -54,38 +54,39 @@ calculate_layout = (dimensions, spec) ->
 module.exports = (spec, components) ->
   result =
     render: (dom, state, params) ->
-      layout = calculate_layout params.dimensions, spec
-      console.log 'layout', layout
-      console.log 'state', state
+      angularBins = state.data.bins[0].labels
+      radialBins = state.data.bins[1].labels
+      nSegments = angularBins.length
+      nBins = radialBins.length
+
+      layout = calculate_layout params.dimensions, spec, nBins
 
       svg = d3.select dom
         .append 'svg'
         .attr 'class', 'item windrose'
 
-      nCategories = state.data.length
-      nBins = spec.bins.length
-
-      console.log 'nc', nCategories
-      console.log 'nBins', nBins
 
       groupedData = []
-      for d, i in state.data
+      for row, i in state.data.data
         obj = {}
-        obj.angle = i * (360 / nCategories)
+        obj.angle = i * 360 / angularBins.length
         obj.key = obj.angle
-        obj.category = d[spec.category]
-        obj.value = obj.category
-        obj.speeds = []
+        obj.label = angularBins[i]
+        obj.value = obj.label
+        obj.data = []
         start = 0
-        for bin, j in spec.bins
+        for cell, j in row
           sobj = {}
           sobj.index = j
           sobj.start = start
-          start += +d[bin]
-          sobj.end = start * 1.00001
-          obj.speeds.push sobj
+          start += cell
+          sobj.end = start
+          obj.data.push sobj
         obj.count = start
         groupedData.push obj
+
+      console.log 'groupedData', groupedData
+
 
       dataMax = d3.max (d.count for d in groupedData)
 
@@ -166,11 +167,11 @@ module.exports = (spec, components) ->
         .attr 'class', 'segment'
         .attr 'transform', (d) -> "rotate(#{d.key})"
         .selectAll 'path'
-        .data (d) -> d.speeds
+        .data (d) -> d.data
         .enter()
         .append 'path'
         .attr('d', arc
-          width: 360 / nCategories * 0.8
+          width: 360 / nSegments * 0.8
           from: (d) -> scale d.start
           to: (d) -> scale d.end
         )
@@ -182,7 +183,7 @@ module.exports = (spec, components) ->
       nTicks = 4
       radialScale = d3.scale
         .linear()
-        .domain [0, nTicks]  # The number of 
+        .domain [0, nTicks] 
         .range [0, dataMax]
       for i in [1...nTicks+1]
         tickcontainer
@@ -210,12 +211,12 @@ module.exports = (spec, components) ->
       legend.append 'text'
         .attr 'x', legendRectSize + legendSpacing
         .attr 'y', legendRectSize - legendSpacing + 5
-        .text (d) -> spec.bins[d]
+        .text (d) -> radialBins[d]
 
       legendHeading = svg.append 'text'
         .attr 'x', layout.legend.left
         .attr 'y', layout.legend.top
         .attr 'dy', '1em'
-        .text spec.binLabel
+        .text spec.radialLabel + if spec.radialUnits then " [#{state.data.bins[1].units}]" else ''
 
 
