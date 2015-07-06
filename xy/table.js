@@ -7,8 +7,7 @@ Plot an xy table with heatmap.
 TODO: Work out how to position these xy visualisations.
 TODO: Allow the different categories and values to be specified.
  */
-var calculate_layout, colorbrewer, d3,
-  indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+var calculate_layout, colorbrewer, d3;
 
 d3 = require('d3');
 
@@ -58,47 +57,20 @@ module.exports = function(spec, components) {
   var result;
   return result = {
     render: function(dom, state, params) {
-      var cat, cells, cellsEnter, col, colorScale, container, d, data, dir, field, globalMax, globalMin, headerWidth, i, inner, j, k, l, layout, len, len1, len2, m, makeRows, n, nCols, nRows, ref, row, rowData, rowsGrp, sideheader, sideheaderGrp, svg, textcolorScale, topheader, topheaderGrp, v, value, x;
-      cat = (function() {
-        var l, len, ref, results;
-        ref = state.data;
-        results = [];
-        for (l = 0, len = ref.length; l < len; l++) {
-          d = ref[l];
-          results.push(d[spec.category]);
-        }
-        return results;
-      })();
-      dir = {};
-      ref = spec.columns;
-      for (l = 0, len = ref.length; l < len; l++) {
-        col = ref[l];
-        dir[col] = (function() {
-          var len1, m, ref1, results;
-          ref1 = state.data;
-          results = [];
-          for (m = 0, len1 = ref1.length; m < len1; m++) {
-            d = ref1[m];
-            results.push(d[col]);
-          }
-          return results;
-        })();
-      }
-      data = {
-        cat: cat,
-        dir: dir
-      };
+      var cat, cells, cellsEnter, colorScale, container, dir, field, globalMax, globalMin, headerWidth, i, inner, j, k, l, layout, len, len1, m, nCols, nRows, row, rowData, rowsGrp, sideheader, sideheaderGrp, svg, textcolorScale, topheader, topheaderGrp, v, value, x;
+      cat = state.data.bins[0].labels;
+      dir = state.data.bins[1].labels;
+      rowData = state.data.data;
       globalMin = d3.min((function() {
-        var ref1, results;
-        ref1 = data.dir;
+        var results;
         results = [];
-        for (k in ref1) {
-          v = ref1[k];
+        for (k in rowData) {
+          v = rowData[k];
           results.push(d3.min((function() {
-            var len1, m, results1;
+            var l, len, results1;
             results1 = [];
-            for (m = 0, len1 = v.length; m < len1; m++) {
-              x = v[m];
+            for (l = 0, len = v.length; l < len; l++) {
+              x = v[l];
               results1.push(+x);
             }
             return results1;
@@ -107,16 +79,15 @@ module.exports = function(spec, components) {
         return results;
       })());
       globalMax = d3.max((function() {
-        var ref1, results;
-        ref1 = data.dir;
+        var results;
         results = [];
-        for (k in ref1) {
-          v = ref1[k];
+        for (k in rowData) {
+          v = rowData[k];
           results.push(d3.max((function() {
-            var len1, m, results1;
+            var l, len, results1;
             results1 = [];
-            for (m = 0, len1 = v.length; m < len1; m++) {
-              x = v[m];
+            for (l = 0, len = v.length; l < len; l++) {
+              x = v[l];
               results1.push(+x);
             }
             return results1;
@@ -124,61 +95,12 @@ module.exports = function(spec, components) {
         }
         return results;
       })());
-      makeRows = function(data) {
-        var dirkeys, index, len1, m, ref1, results;
-        dirkeys = Object.keys(data.dir);
-        ref1 = data.cat;
-        results = [];
-        for (index = m = 0, len1 = ref1.length; m < len1; index = ++m) {
-          cat = ref1[index];
-          results.push(dirkeys.map(function(dir) {
-            return data.dir[dir][index];
-          }));
-        }
-        return results;
-      };
-      rowData = makeRows(data);
       nRows = rowData.length;
-      nCols = spec.columns.length;
-      (function() {
-        var finalNonZeroRow, finalRow, i, ref1, row, zeroRows;
-        zeroRows = (function() {
-          var len1, m, results;
-          results = [];
-          for (i = m = 0, len1 = rowData.length; m < len1; i = ++m) {
-            row = rowData[i];
-            if (row.every(function(c) {
-              return +c === 0;
-            })) {
-              results.push(i);
-            }
-          }
-          return results;
-        })();
-        if (zeroRows.length === 0) {
-          return;
-        }
-        finalNonZeroRow = nRows - 1;
-        while (indexOf.call(zeroRows, finalNonZeroRow) >= 0) {
-          finalNonZeroRow -= 1;
-        }
-        finalRow = finalNonZeroRow + 1;
-        if (finalRow >= nRows) {
-          return;
-        }
-        data.cat = data.cat.slice(0, finalRow + 1);
-        ref1 = data.dir;
-        for (k in ref1) {
-          v = ref1[k];
-          v = v.slice(0, finalRow + 1);
-        }
-        rowData = makeRows(data);
-        return nRows = rowData.length;
-      })();
+      nCols = rowData[0].length;
       if (params.roundToDp != null) {
-        for (i = m = 0, len1 = rowData.length; m < len1; i = ++m) {
+        for (i = l = 0, len = rowData.length; l < len; i = ++l) {
           row = rowData[i];
-          for (j = n = 0, len2 = row.length; n < len2; j = ++n) {
+          for (j = m = 0, len1 = row.length; m < len1; j = ++m) {
             value = row[j];
             value = parseFloat(value).toFixed(params.roundToDp).toString();
             rowData[i][j] = value;
@@ -190,8 +112,8 @@ module.exports = function(spec, components) {
       svg = d3.select(dom).append('svg').attr('class', 'item table');
       svg.attr('width', layout.container.width).attr('height', layout.container.height);
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.inner.left + "," + layout.inner.top + ")");
-      inner.append('text').attr('x', layout.inner.width / 2).attr('y', -1 * layout.innerMargin.top + 15).attr('dy', '1em').style('text-anchor', 'middle').text(spec.columnLabel);
-      inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * layout.inner.height / 2).attr('y', -1 * layout.innerMargin.left + 15).attr('dy', '1em').attr('transform', 'rotate(-90)').text(spec.categoryLabel);
+      inner.append('text').attr('x', layout.inner.width / 2).attr('y', -1 * layout.innerMargin.top + 15).attr('dy', '1em').style('text-anchor', 'middle').text(spec.xLabel + (spec.xUnits ? " [" + state.data.bins[1].units + "]" : ''));
+      inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * layout.inner.height / 2).attr('y', -1 * layout.innerMargin.left + 15).attr('dy', '1em').attr('transform', 'rotate(-90)').text(spec.yLabel + (spec.yUnits ? " [" + state.data.bins[0].units + "]" : ''));
       container = inner.append('g').attr('class', 'container');
       rowsGrp = container.append('g').attr('class', 'rowsGrp').attr('transform', "translate(" + (field.width * 0.5) + ", 0)");
       colorScale = d3.scale.quantize().range(colorbrewer.Blues[9]).domain([globalMin, globalMax]);
@@ -201,7 +123,7 @@ module.exports = function(spec, components) {
         textcolorScale = d3.scale.quantize().range(["#000"]).domain([globalMin, globalMax]);
       }
       topheaderGrp = container.append('g').attr('class', 'topheaderGrp');
-      topheader = topheaderGrp.selectAll('g').data(d3.keys(data.dir)).enter().append('g').attr('class', 'header top').attr('transform', function(d, i) {
+      topheader = topheaderGrp.selectAll('g').data(dir).enter().append('g').attr('class', 'header top').attr('transform', function(d, i) {
         return "translate(" + (i * field.width) + ", " + (-1 * field.height) + ")";
       });
       topheader.append('rect').attr('width', field.width - 1).attr('height', field.height);
@@ -211,9 +133,7 @@ module.exports = function(spec, components) {
         headerWidth = layout.innerMargin.left - 15;
       }
       sideheaderGrp = container.append('g').attr('class', 'sideheaderGrp');
-      sideheader = sideheaderGrp.selectAll('g').data(data.cat, function(d) {
-        return d3.values(d);
-      }).enter().append('g').attr('class', 'header side').attr('transform', function(d, i) {
+      sideheader = sideheaderGrp.selectAll('g').data(cat).enter().append('g').attr('class', 'header side').attr('transform', function(d, i) {
         return "translate(" + (-1 * headerWidth) + ", " + (i * field.height) + ")";
       });
       sideheader.append('rect').attr('width', headerWidth - 2).attr('height', field.height);

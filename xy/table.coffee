@@ -51,38 +51,15 @@ calculate_layout = (dimensions, nRows, nCols, params) ->
 module.exports = (spec, components) ->
   result =
     render: (dom, state, params) ->
-      cat = (d[spec.category] for d in state.data)
-      dir = {}
-      for col in spec.columns
-        dir[col] = (d[col] for d in state.data)
-      data = cat: cat, dir: dir
-      globalMin = d3.min((d3.min((+x for x in v)) for k, v of data.dir))
-      globalMax = d3.max((d3.max((+x for x in v)) for k, v of data.dir))
+      cat = state.data.bins[0].labels
+      dir = state.data.bins[1].labels
 
+      rowData = state.data.data
+      globalMin = d3.min((d3.min((+x for x in v)) for k, v of rowData))
+      globalMax = d3.max((d3.max((+x for x in v)) for k, v of rowData))
 
-      makeRows = (data) ->
-        dirkeys = Object.keys data.dir
-        for cat, index in data.cat
-          dirkeys.map (dir) -> data.dir[dir][index]
-
-      rowData = makeRows data
-
-      # Rear-strip rows that are all zeros (leaving the last one)
       nRows = rowData.length
-      nCols = spec.columns.length
-      do ->
-        zeroRows = (i for row, i in rowData when row.every (c) -> +c==0)
-        return if zeroRows.length == 0
-        finalNonZeroRow = nRows - 1
-        while finalNonZeroRow in zeroRows
-          finalNonZeroRow -= 1
-        finalRow = finalNonZeroRow + 1  # Leave one zero row
-        return if finalRow >= nRows
-        data.cat = data.cat.slice 0, finalRow+1
-        for k, v of data.dir
-          v = v.slice 0, finalRow+1
-        rowData = makeRows data
-        nRows = rowData.length
+      nCols = rowData[0].length
 
       if params.roundToDp?
         for row, i in rowData
@@ -109,14 +86,14 @@ module.exports = (spec, components) ->
         .attr 'y',  -1 * layout.innerMargin.top + 15
         .attr 'dy', '1em'
         .style 'text-anchor', 'middle'
-        .text spec.columnLabel
+        .text spec.xLabel + if spec.xUnits then " [#{state.data.bins[1].units}]" else ''
       inner.append 'text'
         .attr 'text-anchor', 'middle'
         .attr 'x', (-1 * layout.inner.height / 2)
         .attr 'y', -1 * layout.innerMargin.left + 15
         .attr 'dy', '1em'
         .attr 'transform', 'rotate(-90)'
-        .text spec.categoryLabel
+        .text spec.yLabel + if spec.yUnits then " [#{state.data.bins[0].units}]" else ''
 
       container =  inner
         .append 'g'
@@ -150,7 +127,7 @@ module.exports = (spec, components) ->
         .attr 'class', 'topheaderGrp'
       topheader = topheaderGrp
         .selectAll 'g'
-        .data d3.keys data.dir
+        .data dir
         .enter()
         .append 'g'
         .attr 'class', 'header top'
@@ -172,7 +149,7 @@ module.exports = (spec, components) ->
         .attr 'class', 'sideheaderGrp'
       sideheader = sideheaderGrp
         .selectAll 'g'
-        .data data.cat, (d) -> d3.values d
+        .data cat
         .enter()
         .append 'g'
         .attr 'class', 'header side'

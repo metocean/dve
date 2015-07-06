@@ -44,8 +44,10 @@ module.exports = (spec, components) ->
       layout = calculate_layout params.dimensions
 
       # Parse data
-      xData = (d[spec.bin] for d in state.data)
-      yData = (d[spec.field] for d in state.data)
+      xData = state.data.bins[0].labels
+      yData = state.data.data
+
+
       data = [0...xData.length].map (i) ->
         {x: xData[i], y: yData[i]}
 
@@ -79,7 +81,7 @@ module.exports = (spec, components) ->
         .attr 'dy', 20
         .attr 'class', 'axis-label axis-label--x'
         .style 'text-anchor', 'middle'
-        .text spec.xLabel
+        .text spec.xLabel + if spec.xUnits then " [#{state.data.bins[0].units}]" else ''
       inner.append 'text'
         .attr 'text-anchor', 'middle'
         .attr 'x', -1 * (layout.inner.height/2)
@@ -87,7 +89,7 @@ module.exports = (spec, components) ->
         .attr 'dy', '1em'
         .attr 'transform', 'rotate(-90)'  # This also rotates the xy cooridnate system
         .attr 'class', 'axis-label axis-label--y'
-        .text spec.yLabel
+        .text spec.yLabel + if spec.yUnits then " [#{state.data.units}]" else ''
       inner
         .select '.x.axis'
         .call axis.x
