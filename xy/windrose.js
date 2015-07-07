@@ -95,7 +95,6 @@ module.exports = function(spec, components) {
       svg.attr('width', layout.container.width).attr('height', layout.container.height);
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + (layout.inner.left + layout.inner.width / 2) + "," + (layout.inner.top + layout.inner.height / 2) + ")");
       colorScale = d3.scale.quantize().range(['#E4EAF1', '#D1D8E3', '#BEC7D5', '#ABB6C7', '#98A5B9', '#8594AB', '#73829E', '#607190', '#4D6082', '#3A4E74', '#273D66', '#142C58', '#122851', '#102448']).domain([0, nBins]);
-      console.log('GD', groupedData);
       scale = d3.scale.linear().domain([
         0, 1.1 * d3.max(groupedData, function(d) {
           return d.count;

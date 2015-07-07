@@ -24,7 +24,6 @@ module.exports = (spec, components) ->
       d3
         .select window
         .on 'resize', debounce 125, ->
-          console.log 'Resizing'
           params.dimensions = domdimensions dom
           dom.innerHTML = ''
           list.render dom, state, params

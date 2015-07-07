@@ -103,7 +103,6 @@ module.exports = (spec, components) ->
         .domain [0, nBins]
 
 
-      console.log 'GD', groupedData
 
       scale = d3
         .scale

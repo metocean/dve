@@ -27,7 +27,6 @@ module.exports = function(spec, components) {
       });
       list.render(dom, state, params);
       d3.select(window).on('resize', debounce(125, function() {
-        console.log('Resizing');
         params.dimensions = domdimensions(dom);
         dom.innerHTML = '';
         return list.render(dom, state, params);
