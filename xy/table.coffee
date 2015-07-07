@@ -81,19 +81,23 @@ module.exports = (spec, components) ->
         .append 'g'
         .attr 'class', 'inner'
         .attr 'transform', "translate(#{layout.inner.left},#{layout.inner.top})"
-      inner.append 'text'
-        .attr 'x', layout.inner.width / 2
-        .attr 'y',  -1 * layout.innerMargin.top + 15
-        .attr 'dy', '1em'
-        .style 'text-anchor', 'middle'
-        .text spec.xLabel + if spec.xUnits then " [#{state.data.bins[1].units}]" else ''
-      inner.append 'text'
-        .attr 'text-anchor', 'middle'
-        .attr 'x', (-1 * layout.inner.height / 2)
-        .attr 'y', -1 * layout.innerMargin.left + 15
-        .attr 'dy', '1em'
-        .attr 'transform', 'rotate(-90)'
-        .text spec.yLabel + if spec.yUnits then " [#{state.data.bins[0].units}]" else ''
+
+      if spec.xLabel?
+        inner.append 'text'
+          .attr 'x', layout.inner.width / 2
+          .attr 'y',  -1 * layout.innerMargin.top + 15
+          .attr 'dy', '1em'
+          .style 'text-anchor', 'middle'
+          .text spec.xLabel + if spec.xUnits then " [#{state.data.bins[1].units}]" else ''
+
+      if spec.yLabel?
+        inner.append 'text'
+          .attr 'text-anchor', 'middle'
+          .attr 'x', (-1 * layout.inner.height / 2)
+          .attr 'y', -1 * layout.innerMargin.left + 15
+          .attr 'dy', '1em'
+          .attr 'transform', 'rotate(-90)'
+          .text spec.yLabel + if spec.yUnits then " [#{state.data.bins[0].units}]" else ''
 
       container =  inner
         .append 'g'

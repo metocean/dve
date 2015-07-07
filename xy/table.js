@@ -112,8 +112,12 @@ module.exports = function(spec, components) {
       svg = d3.select(dom).append('svg').attr('class', 'item table');
       svg.attr('width', layout.container.width).attr('height', layout.container.height);
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.inner.left + "," + layout.inner.top + ")");
-      inner.append('text').attr('x', layout.inner.width / 2).attr('y', -1 * layout.innerMargin.top + 15).attr('dy', '1em').style('text-anchor', 'middle').text(spec.xLabel + (spec.xUnits ? " [" + state.data.bins[1].units + "]" : ''));
-      inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * layout.inner.height / 2).attr('y', -1 * layout.innerMargin.left + 15).attr('dy', '1em').attr('transform', 'rotate(-90)').text(spec.yLabel + (spec.yUnits ? " [" + state.data.bins[0].units + "]" : ''));
+      if (spec.xLabel != null) {
+        inner.append('text').attr('x', layout.inner.width / 2).attr('y', -1 * layout.innerMargin.top + 15).attr('dy', '1em').style('text-anchor', 'middle').text(spec.xLabel + (spec.xUnits ? " [" + state.data.bins[1].units + "]" : ''));
+      }
+      if (spec.yLabel != null) {
+        inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * layout.inner.height / 2).attr('y', -1 * layout.innerMargin.left + 15).attr('dy', '1em').attr('transform', 'rotate(-90)').text(spec.yLabel + (spec.yUnits ? " [" + state.data.bins[0].units + "]" : ''));
+      }
       container = inner.append('g').attr('class', 'container');
       rowsGrp = container.append('g').attr('class', 'rowsGrp').attr('transform', "translate(" + (field.width * 0.5) + ", 0)");
       colorScale = d3.scale.quantize().range(colorbrewer.Blues[9]).domain([globalMin, globalMax]);
