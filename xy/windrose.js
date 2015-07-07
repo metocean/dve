@@ -83,7 +83,6 @@ module.exports = function(spec, components) {
         obj.count = start;
         groupedData.push(obj);
       }
-      console.log('groupedData', groupedData);
       dataMax = d3.max((function() {
         var len2, m, results;
         results = [];

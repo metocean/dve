@@ -11,7 +11,7 @@ var calculate_layout, d3;
 
 d3 = require('d3');
 
-calculate_layout = function(dimensions, spec) {
+calculate_layout = function(dimensions, speczz, nBins) {
   var container, inner, innerAspectRatio, innerMargin, legend, maxContainerWidth, minContainerWidth;
   inner = {};
   innerMargin = {
@@ -24,7 +24,7 @@ calculate_layout = function(dimensions, spec) {
     top: 20,
     width: 130
   };
-  legend.height = legend.height = (spec.bins.length + 1.5) * 30;
+  legend.height = legend.height = (nBins + 1.5) * 30;
   legend.bottom = legend.top + legend.height;
   maxContainerWidth = 900;
   minContainerWidth = 520;
@@ -54,31 +54,32 @@ module.exports = function(spec, components) {
   var result;
   return result = {
     render: function(dom, state, params) {
-      var axis, bars, bin, chart, colorScale, d, dataMax, groupedData, i, inner, j, k, l, layout, legend, legendHeading, legendRectSize, legendSpacing, len, len1, m, nBins, nCategories, obj, ref, ref1, results, scale, sobj, start, svg;
-      layout = calculate_layout(params.dimensions, spec);
+      var angularBins, axis, bars, cell, chart, colorScale, d, dataMax, groupedData, i, inner, j, k, l, layout, legend, legendHeading, legendRectSize, legendSpacing, len, len1, m, nBins, nSegments, obj, radialBins, ref, results, row, scale, sobj, start, svg;
+      angularBins = state.data.bins[0].labels;
+      radialBins = state.data.bins[1].labels;
+      nSegments = angularBins.length;
+      nBins = radialBins.length;
+      layout = calculate_layout(params.dimensions, spec, nBins);
       svg = d3.select(dom).append('svg').attr('class', 'item windrosebar');
-      nCategories = state.data.length;
-      nBins = spec.bins.length;
       groupedData = [];
-      ref = state.data;
+      ref = state.data.data;
       for (i = k = 0, len = ref.length; k < len; i = ++k) {
-        d = ref[i];
+        row = ref[i];
         obj = {};
-        obj.angle = i * (360 / nCategories);
+        obj.angle = i * 360 / angularBins.length;
         obj.key = obj.angle;
-        obj.category = d[spec.category];
-        obj.value = obj.category;
-        obj.speeds = [];
+        obj.label = angularBins[i];
+        obj.value = obj.label;
+        obj.data = [];
         start = 0;
-        ref1 = spec.bins;
-        for (j = l = 0, len1 = ref1.length; l < len1; j = ++l) {
-          bin = ref1[j];
+        for (j = l = 0, len1 = row.length; l < len1; j = ++l) {
+          cell = row[j];
           sobj = {};
           sobj.index = j;
           sobj.start = start;
-          start += +d[bin];
+          start += cell;
           sobj.end = start;
-          obj.speeds.push(sobj);
+          obj.data.push(sobj);
         }
         obj.count = start;
         groupedData.push(obj);
@@ -119,7 +120,7 @@ module.exports = function(spec, components) {
         return "translate(" + (scale.x(d.value)) + ", 0)";
       });
       bars.selectAll('rect').data(function(d) {
-        return d.speeds;
+        return d.data;
       }).enter().append('rect').attr('x', 0).attr('y', function(d) {
         return scale.y(d.end);
       }).attr("width", scale.x.rangeBand()).attr('height', function(d) {
@@ -137,8 +138,7 @@ module.exports = function(spec, components) {
         }
       });
       inner.select('.y.axis .domain').remove();
-      inner.append('text').attr('x', layout.inner.width / 2).attr('y', layout.inner.height + 30).attr('dy', '1em').attr('class', 'axis-label axis-label--x').style('text-anchor', 'middle').text(spec.xLabel);
-      inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * (layout.inner.height / 2)).attr('y', -50).attr('dy', '1em').attr('transform', 'rotate(-90)').attr('class', 'axis-label axis-label--y').text(spec.yLabel);
+      inner.append('text').attr('x', layout.inner.width / 2).attr('y', layout.inner.height + 30).attr('dy', '1em').attr('class', 'axis-label axis-label--x').style('text-anchor', 'middle').text(spec.xLabel + (spec.xUnits ? " [" + state.data.bins[0].units + "]" : ''));
       legendRectSize = 20;
       legendSpacing = 10;
       legend = svg.selectAll('.legend').data((function() {
@@ -150,9 +150,9 @@ module.exports = function(spec, components) {
       });
       legend.append('rect').attr('width', legendRectSize).attr('height', legendRectSize).style('fill', colorScale).style('stroke', colorScale);
       legend.append('text').attr('x', legendRectSize + legendSpacing).attr('y', legendRectSize - legendSpacing + 5).text(function(d) {
-        return spec.bins[d];
+        return radialBins[d];
       });
-      return legendHeading = svg.append('text').attr('x', layout.legend.left).attr('y', layout.legend.top).attr('dy', '1em').text(spec.binLabel);
+      return legendHeading = svg.append('text').attr('x', layout.legend.left).attr('y', layout.legend.top).attr('dy', '1em').text(spec.categoryLabel + (spec.categoryUnits ? " [" + state.data.bins[1].units + "]" : ''));
     }
   };
 };

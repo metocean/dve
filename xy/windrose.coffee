@@ -85,7 +85,6 @@ module.exports = (spec, components) ->
         obj.count = start
         groupedData.push obj
 
-      console.log 'groupedData', groupedData
 
 
       dataMax = d3.max (d.count for d in groupedData)

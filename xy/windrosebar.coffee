@@ -10,7 +10,7 @@ TODO: Allow the different categories and values to be specified.
 
 d3 = require 'd3'
 
-calculate_layout = (dimensions, spec) ->
+calculate_layout = (dimensions, speczz, nBins) ->
   # Inner is the plot area, but doesn't include axes or labels
   inner = {}
   innerMargin = 
@@ -22,7 +22,7 @@ calculate_layout = (dimensions, spec) ->
   legend = 
     top: 20
     width: 130
-  legend.height = legend.height = (spec.bins.length + 1.5) * 30
+  legend.height = legend.height = (nBins + 1.5) * 30
   legend.bottom = legend.top + legend.height
 
   # Container is the entire dom element d3 has to work with
@@ -54,32 +54,36 @@ calculate_layout = (dimensions, spec) ->
 module.exports = (spec, components) ->
   result =
     render: (dom, state, params) ->
-      layout = calculate_layout params.dimensions, spec
+      angularBins = state.data.bins[0].labels
+      radialBins = state.data.bins[1].labels
+      nSegments = angularBins.length
+      nBins = radialBins.length
+
+      layout = calculate_layout params.dimensions, spec, nBins
 
       svg = d3.select dom
         .append 'svg'
         .attr 'class', 'item windrosebar'
 
-      nCategories = state.data.length
-      nBins = spec.bins.length
       groupedData = []
-      for d, i in state.data
+      for row, i in state.data.data
         obj = {}
-        obj.angle = i * (360 / nCategories)
+        obj.angle = i * 360 / angularBins.length
         obj.key = obj.angle
-        obj.category = d[spec.category]
-        obj.value = obj.category
-        obj.speeds = []
+        obj.label = angularBins[i]
+        obj.value = obj.label
+        obj.data = []
         start = 0
-        for bin, j in spec.bins
+        for cell, j in row
           sobj = {}
           sobj.index = j
           sobj.start = start
-          start += +d[bin]
+          start += cell
           sobj.end = start
-          obj.speeds.push sobj
+          obj.data.push sobj
         obj.count = start
         groupedData.push obj
+
 
       dataMax = d3.max (d.count for d in groupedData)
 
@@ -137,7 +141,7 @@ module.exports = (spec, components) ->
 
       bars
         .selectAll 'rect'
-        .data (d)-> d.speeds
+        .data (d)-> d.data
         .enter()
         .append 'rect'
         .attr 'x', 0
@@ -170,15 +174,15 @@ module.exports = (spec, components) ->
         .attr 'dy', '1em'
         .attr 'class', 'axis-label axis-label--x'
         .style 'text-anchor', 'middle'
-        .text spec.xLabel
-      inner.append 'text'
-        .attr 'text-anchor', 'middle'
-        .attr 'x', -1 * (layout.inner.height/2)
-        .attr 'y', -50
-        .attr 'dy', '1em'
-        .attr 'transform', 'rotate(-90)'  # This also rotates the xy cooridnate system
-        .attr 'class', 'axis-label axis-label--y'
-        .text spec.yLabel
+        .text spec.xLabel + if spec.xUnits then " [#{state.data.bins[0].units}]" else ''
+      # inner.append 'text'
+      #   .attr 'text-anchor', 'middle'
+      #   .attr 'x', -1 * (layout.inner.height/2)
+      #   .attr 'y', -50
+      #   .attr 'dy', '1em'
+      #   .attr 'transform', 'rotate(-90)'  # This also rotates the xy cooridnate system
+      #   .attr 'class', 'axis-label axis-label--y'
+      #   .text state.data.units
 
 
       legendRectSize = 20
@@ -199,13 +203,13 @@ module.exports = (spec, components) ->
       legend.append 'text'
         .attr 'x', legendRectSize + legendSpacing
         .attr 'y', legendRectSize - legendSpacing + 5
-        .text (d) -> spec.bins[d]
+        .text (d) -> radialBins[d]
 
       legendHeading = svg.append 'text'
         .attr 'x', layout.legend.left
         .attr 'y', layout.legend.top
         .attr 'dy', '1em'
-        .text spec.binLabel
+        .text spec.categoryLabel + if spec.categoryUnits then " [#{state.data.bins[1].units}]" else ''
 
 
 
