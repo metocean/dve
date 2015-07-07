@@ -10,7 +10,7 @@ npmpackage = require './package.json'
 livereload = require 'gulp-livereload'
 
 # interactive builds
-gulp.task 'watch', ['watchcoffee'], ->
+gulp.task 'watch', ['watchcoffee', 'html', 'style'], ->
   livereload.listen()
   gulp.watch 'style/*.styl', ['style']
   gulp.watch 'index.html', ['html']
@@ -22,18 +22,19 @@ gulp.task 'default', ['style', 'coffee']
 stylus = require 'gulp-stylus'
 autoprefixer = require 'gulp-autoprefixer'
 minifycss = require 'gulp-minify-css'
+cssimport = require 'gulp-cssimport'
 
 # compress stylus files and library css together
 gulp.task 'style', ->
-  styl = gulp.src 'style/dve.styl'
+  styl = gulp.src 'style/index.styl'
     .pipe sourcemaps.init()
     .pipe stylus()
-  css = gulp.src 'node_modules/colorbrewer/colorbrewer.css'
-    .pipe sourcemaps.init()
-  merge css, styl
-    .pipe concat "#{npmpackage.name}-#{npmpackage.version}.min.css"
-    .pipe autoprefixer browsers: ['last 2 versions']
-    .pipe minifycss()
+    .pipe autoprefixer browsers: ['last 2 versions', 'ie >= 10']
+    .pipe cssimport() 
+    .pipe rename "#{npmpackage.name}-#{npmpackage.version}.css"
+    .pipe gulp.dest 'dist'
+    .pipe minifycss(compatibility: '*,-properties.zeroUnits')
+    .pipe rename "#{npmpackage.name}-#{npmpackage.version}.min.css"
     .pipe sourcemaps.write './'
     .pipe gulp.dest 'dist'
     .pipe livereload()

@@ -78,7 +78,6 @@ module.exports = (spec, components) ->
         .text spec.text
         .style 'fill', '#142c58'
         .attr 'dy', '20px'
-        .attr 'dx', '5px'
 
       inner = svg
         .append 'g'

@@ -21,11 +21,14 @@ module.exports = (spec, components) ->
 
       list.render dom, state, params
 
+      namespacedListener = 'resize' + '.' + params.id
+
       d3
         .select window
-        .on 'resize', debounce 125, ->
-          dimensions = domdimensions dom
-          mount.resize dimensions
+        .on namespacedListener, debounce 125, ->
+          params.dimensions = domdimensions dom
+          dom.innerHTML = ''
+          list.render dom, state, params
 
       # hack to take into account the scrollbar if our content extends past the bottom
       setTimeout(->
