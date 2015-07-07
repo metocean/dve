@@ -21,9 +21,11 @@ module.exports = (spec, components) ->
 
       list.render dom, state, params
 
+      namespacedListener = 'resize' + '.' + params.id
+
       d3
         .select window
-        .on 'resize', debounce 125, ->
+        .on namespacedListener, debounce 125, ->
           params.dimensions = domdimensions dom
           dom.innerHTML = ''
           list.render dom, state, params

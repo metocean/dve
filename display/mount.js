@@ -22,11 +22,13 @@ module.exports = function(spec, components) {
   list = listcomponent(spec, components);
   return mount = {
     render: function(dom, state, params) {
+      var namespacedListener;
       params = extend({}, params, {
         dimensions: domdimensions(dom)
       });
       list.render(dom, state, params);
-      d3.select(window).on('resize', debounce(125, function() {
+      namespacedListener = 'resize' + '.' + params.id;
+      d3.select(window).on(namespacedListener, debounce(125, function() {
         params.dimensions = domdimensions(dom);
         dom.innerHTML = '';
         return list.render(dom, state, params);
