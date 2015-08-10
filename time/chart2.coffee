@@ -55,7 +55,7 @@ module.exports = (spec, components) ->
   scale = null
   axis = null
   focus = null
-  updatepoi = null
+  updaterange = null
   data = null
   chart = null
   items = []
@@ -116,50 +116,50 @@ module.exports = (spec, components) ->
         x: d3.svg.axis().scale(scale.x).orient("bottom").ticks(d3.time.hour)
         y: d3.svg.axis().scale(scale.y).orient("left").ticks(6)
 
-      poi = null
-      params.hub.on 'poi', (p) ->
-        poi = p
-        updatepoi()
+      range = null
+      params.hub.on 'range', (p) ->
+        range = p
+        updaterange()
 
-      poifsm =
+      rangefsm =
         hide: ->
-          return if poi is null
-          params.hub.emit 'poi', null
+          return if range is null
+          params.hub.emit 'range', null
 
         show: (x) ->
           range = scale.x.range()
-          return poifsm.hide() if range[0] > x or range[1] < x
+          return rangefsm.hide() if range[0] > x or range[1] < x
           d = scale.x.invert x
 
-          return if poi is d
-          params.hub.emit 'poi', moment d
+          return if range is d
+          params.hub.emit 'range', moment d
 
         update: ->
           x = d3.mouse(inner.node())[0]
           # Only update if enough drag
-          if poifsm.startx?
-            dist = Math.abs poifsm.startx - x
+          if rangefsm.startx?
+            dist = Math.abs rangefsm.startx - x
             return if dist < 10
-          poifsm.startx = null
-          poifsm.show x
+          rangefsm.startx = null
+          rangefsm.show x
         mousedown: ->
           x = d3.mouse(inner.node())[0]
-          return poifsm.show x if !poifsm.currentx?
-          poifsm.startx = x
+          return rangefsm.show x if !rangefsm.currentx?
+          rangefsm.startx = x
         mouseup: ->
-          return if !poifsm.startx?
-          if !poifsm.currentx
-            poifsm.startx = null
-            return poifsm.hide()
-          dist = Math.abs poifsm.startx - poifsm.currentx
+          return if !rangefsm.startx?
+          if !rangefsm.currentx
+            rangefsm.startx = null
+            return rangefsm.hide()
+          dist = Math.abs rangefsm.startx - rangefsm.currentx
           if dist < 10
-            poifsm.startx = null
-            return poifsm.hide()
+            rangefsm.startx = null
+            return rangefsm.hide()
           x = d3.mouse(inner.node())[0]
-          poifsm.show x
+          rangefsm.show x
 
       drag = d3.behavior.drag()
-        .on 'drag', poifsm.update
+        .on 'drag', rangefsm.update
 
       for s in spec.spec
         unless components[s.type]?
@@ -178,7 +178,7 @@ module.exports = (spec, components) ->
 
       focus
         .append 'line'
-        .attr 'class', 'poi'
+        .attr 'class', 'range'
         .attr 'display', 'none'
         .attr 'y1', 0
         .attr 'y2', layout.canvas.height
@@ -187,25 +187,25 @@ module.exports = (spec, components) ->
         .append 'rect'
         .attr 'class', 'foreground'
         .style 'fill', 'none'
-        .on 'mousedown', poifsm.mousedown
-        .on 'mouseup', poifsm.mouseup
+        .on 'mousedown', rangefsm.mousedown
+        .on 'mouseup', rangefsm.mouseup
         .call drag
 
-      updatepoi = ->
-        if !poi?
-          poifsm.currentx = scale.x poi
+      updaterange = ->
+        if !range?
+          rangefsm.currentx = scale.x range
           focus
-            .select 'line.poi'
+            .select 'line.range'
             .attr 'display', 'none'
           return
 
-        poifsm.currentx = scale.x poi
+        rangefsm.currentx = scale.x range
 
         focus
-          .select 'line.poi'
+          .select 'line.range'
           .attr 'display', null
-          .attr 'x1', scale.x poi
-          .attr 'x2', scale.x poi
+          .attr 'x1', scale.x range
+          .attr 'x2', scale.x range
 
       result.resize params.dimensions
 
@@ -272,4 +272,4 @@ module.exports = (spec, components) ->
           layout.canvas.height
         ]
 
-      updatepoi()
+      updaterange()

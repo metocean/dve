@@ -18,6 +18,8 @@ module.exports =
   select: require './display/select'
   report: require './display/report'
   timedomain: require './display/timedomain'
+  poi: require './display/poi'
+  range: require './display/range'
 
   # navigation
   timeheadings: require './time/timeheadings'
