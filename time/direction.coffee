@@ -291,9 +291,9 @@ module.exports = (spec, components) ->
 
         Neighbours = neighbours filteredData, (d) -> d.time
         poiNeighbours = Neighbours poi
-
-        d
-
+        console.log("Neighbours:"+JSON.stringify Neighbours)
+        console.log("Params:"+JSON.stringify params.domain)
+        console.log("Neighbours"+JSON.stringify poiNeighbours)
         if poiNeighbours.length is 1
           d = poiNeighbours[0]
         else if +poiNeighbours[0].time < +params.domain[0]
@@ -308,6 +308,8 @@ module.exports = (spec, components) ->
 
         drawArrow d[spec.field], focus.select '.foc-section'
 
+        # console.log "Raw data for the POI: "+JSON.stringify d
+        # console.log "Scaled Values for D3: "+scale d.time
         if (layout.canvas.width - scale poi) < 27
           xVal = layout.canvas.width - 27
         else if (layout.canvas.left + scale poi) < 227

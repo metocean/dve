@@ -24,6 +24,7 @@ module.exports =
   dayheadings: require './time/dayheadings'
   # time x single scale
   chart: require './time/chart'
+  chart2: require './time/chart2'
   tablebytime: require './time/tablebytime'
   # chart series
   line: require './time/line'

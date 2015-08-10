@@ -4,46 +4,49 @@ spec:
   text: Location 1 Wind
 - type: data
   spec:
-  - type: timedomain
+  - type: select
     dataset: example2
-    timezone: Australia/Sydney
-    start: (Australia/Sydney)/y-22d
-    end: (Australia/Sydney)/y-18d
     spec:
-    - type: dayheadings
-      text: Date
-    - type: timeheadings
-      text: Time
-    - type: direction
-      text: Wind Direction (from)
-      field: wd
-      units: °
-    - type: chart
-      text: Wind Speed
+    - type: timedomain
+      dataset: example2
+      timezone: Australia/Sydney
+      start: (Australia/Sydney)/y-22d
+      end: (Australia/Sydney)/y-18d
       spec:
-      - type: line
-        style: primary
-        text: Wind Speed 10m
-        field: wsp
-        units: kts
-      - type: scatter
-        style: secondary
-        text: Gust 10m
-        field: gst
-        units: kts
-    - type: tablebytime
-      text: Wind Speed
-      field: wsp
-      units: kts
-    - type: histogram
-      text: Wind Direction
-      field: wd
-      units: °
-    - type: windrose
-      text: Wind Rose
-      field: wd
-      units: °
-    - type: table
-      text: Wind Speed
-      field: wsp
-      units: °
+      - type: dayheadings
+        text: Date
+      - type: timeheadings
+        text: Time
+      - type: direction
+        text: Wind Direction (from)
+        field: wd
+        units: °
+      - type: chart2
+        text: Wind Speed
+        spec:
+        - type: line
+          style: primary
+          text: Wind Speed 10m
+          field: wsp
+          units: kts
+        - type: scatter
+          style: secondary
+          text: Gust 10m
+          field: gst
+          units: kts
+      # - type: tablebytime
+      #   text: Wind Speed
+      #   field: wsp
+      #   units: kts
+      # - type: histogram
+      #   text: Wind Direction
+      #   field: wd
+      #   units: °
+      # - type: windrose
+      #   text: Wind Rose
+      #   field: wd
+      #   units: °
+      # - type: table
+      #   text: Wind Speed
+      #   field: wsp
+      #   units: °

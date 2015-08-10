@@ -17,4 +17,5 @@ d3.text '/test.yml', (error, spec) ->
   dom = document.querySelector '#root'
   spec = jsyaml.load spec
   scene = components[spec.type] spec, components
+
   scene.render dom, { example2: example2 }, {}
