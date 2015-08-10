@@ -123,41 +123,59 @@ module.exports = (spec, components) ->
 
       rangefsm =
         hide: ->
+          rangefsm.startx = null
+          rangefsm.p1 = null
+          rangefsm.p2 = null
           return if range is null
           params.hub.emit 'range', null
 
         show: (x) ->
-          range = scale.x.range()
-          return rangefsm.hide() if range[0] > x or range[1] < x
-          d = scale.x.invert x
+          rangefsm.p2 = x
+          p1d = scale.x.invert rangefsm.p1
+          p2d = scale.x.invert rangefsm.p2
 
-          return if range is d
           params.hub.emit 'range',
-            start: moment d
-            end: null
+            p1: moment p1d
+            p2: moment p2d
+
+        getx: ->
+          x = d3.mouse(inner.node())[0]
+          datarange = scale.x.range()
+          if datarange[0] > x
+            x = datarange[0]
+          if datarange[1] < x
+            x = datarange[1]
+          x
 
         update: ->
-          x = d3.mouse(inner.node())[0]
-          # Only update if enough drag
+          x = rangefsm.getx()
           if rangefsm.startx?
-            dist = Math.abs rangefsm.startx - x
-            return if dist < 10
-          rangefsm.startx = null
+            return if Math.abs(rangefsm.startx - x) < 10
+            rangefsm.p1 = rangefsm.startx
+            rangefsm.startx = null
           rangefsm.show x
+
+        touchstart: ->
+          x = rangefsm.getx()
+          return rangefsm.startx = x if rangefsm.p1?
+          rangefsm.p1 = x
+          rangefsm.show x
+
         mousedown: ->
-          x = d3.mouse(inner.node())[0]
-          return rangefsm.show x if !rangefsm.currentx?
-          rangefsm.startx = x
+          if rangefsm.ignorenextdown
+            rangefsm.ignorenextdown = null
+            return
+          x = rangefsm.getx()
+          return rangefsm.startx = x if rangefsm.p1?
+          rangefsm.p1 = x
+          rangefsm.show x
+
+        touchend: ->
+          rangefsm.ignorenextdown = true
+
         mouseup: ->
-          return if !rangefsm.startx?
-          if !rangefsm.currentx
-            rangefsm.startx = null
-            return rangefsm.hide()
-          dist = Math.abs rangefsm.startx - rangefsm.currentx
-          if dist < 10
-            rangefsm.startx = null
-            return rangefsm.hide()
-          x = d3.mouse(inner.node())[0]
+          return rangefsm.hide() if rangefsm.startx?
+          x = rangefsm.getx()
           rangefsm.show x
 
       drag = d3.behavior.drag()
@@ -180,7 +198,14 @@ module.exports = (spec, components) ->
 
       focus
         .append 'line'
-        .attr 'class', 'range'
+        .attr 'class', 'rangestart'
+        .attr 'display', 'none'
+        .attr 'y1', 0
+        .attr 'y2', layout.canvas.height
+
+      focus
+        .append 'line'
+        .attr 'class', 'rangeend'
         .attr 'display', 'none'
         .attr 'y1', 0
         .attr 'y2', layout.canvas.height
@@ -189,6 +214,8 @@ module.exports = (spec, components) ->
         .append 'rect'
         .attr 'class', 'foreground'
         .style 'fill', 'none'
+        .on 'touchstart', rangefsm.touchstart
+        .on 'touchend', rangefsm.touchend
         .on 'mousedown', rangefsm.mousedown
         .on 'mouseup', rangefsm.mouseup
         .call drag
@@ -196,17 +223,29 @@ module.exports = (spec, components) ->
       updaterange = ->
         if !range?
           focus
-            .select 'line.range'
+            .select 'line.rangestart'
+            .attr 'display', 'none'
+          focus
+            .select 'line.rangeend'
             .attr 'display', 'none'
           return
 
-        rangefsm.currentx = scale.x range.start
+        #rangefsm.currentx = scale.x range.start
+
+        rangefsm.p1 = scale.x range.p1
+        rangefsm.p2 = scale.x range.p2
 
         focus
-          .select 'line.range'
+          .select 'line.rangestart'
           .attr 'display', null
-          .attr 'x1', scale.x range.start
-          .attr 'x2', scale.x range.start
+          .attr 'x1', scale.x range.p1
+          .attr 'x2', scale.x range.p1
+
+        focus
+          .select 'line.rangeend'
+          .attr 'display', null
+          .attr 'x1', scale.x range.p2
+          .attr 'x2', scale.x range.p2
 
       result.resize params.dimensions
 

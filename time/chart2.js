@@ -95,61 +95,79 @@ module.exports = function(spec, components) {
       });
       rangefsm = {
         hide: function() {
+          rangefsm.startx = null;
+          rangefsm.p1 = null;
+          rangefsm.p2 = null;
           if (range === null) {
             return;
           }
           return params.hub.emit('range', null);
         },
         show: function(x) {
-          var d;
-          range = scale.x.range();
-          if (range[0] > x || range[1] < x) {
-            return rangefsm.hide();
-          }
-          d = scale.x.invert(x);
-          if (range === d) {
-            return;
-          }
+          var p1d, p2d;
+          rangefsm.p2 = x;
+          p1d = scale.x.invert(rangefsm.p1);
+          p2d = scale.x.invert(rangefsm.p2);
           return params.hub.emit('range', {
-            start: moment(d),
-            end: null
+            p1: moment(p1d),
+            p2: moment(p2d)
           });
         },
-        update: function() {
-          var dist, x;
+        getx: function() {
+          var datarange, x;
           x = d3.mouse(inner.node())[0];
+          datarange = scale.x.range();
+          if (datarange[0] > x) {
+            x = datarange[0];
+          }
+          if (datarange[1] < x) {
+            x = datarange[1];
+          }
+          return x;
+        },
+        update: function() {
+          var x;
+          x = rangefsm.getx();
           if (rangefsm.startx != null) {
-            dist = Math.abs(rangefsm.startx - x);
-            if (dist < 10) {
+            if (Math.abs(rangefsm.startx - x) < 10) {
               return;
             }
+            rangefsm.p1 = rangefsm.startx;
+            rangefsm.startx = null;
           }
-          rangefsm.startx = null;
+          return rangefsm.show(x);
+        },
+        touchstart: function() {
+          var x;
+          x = rangefsm.getx();
+          if (rangefsm.p1 != null) {
+            return rangefsm.startx = x;
+          }
+          rangefsm.p1 = x;
           return rangefsm.show(x);
         },
         mousedown: function() {
           var x;
-          x = d3.mouse(inner.node())[0];
-          if (rangefsm.currentx == null) {
-            return rangefsm.show(x);
-          }
-          return rangefsm.startx = x;
-        },
-        mouseup: function() {
-          var dist, x;
-          if (rangefsm.startx == null) {
+          if (rangefsm.ignorenextdown) {
+            rangefsm.ignorenextdown = null;
             return;
           }
-          if (!rangefsm.currentx) {
-            rangefsm.startx = null;
+          x = rangefsm.getx();
+          if (rangefsm.p1 != null) {
+            return rangefsm.startx = x;
+          }
+          rangefsm.p1 = x;
+          return rangefsm.show(x);
+        },
+        touchend: function() {
+          return rangefsm.ignorenextdown = true;
+        },
+        mouseup: function() {
+          var x;
+          if (rangefsm.startx != null) {
             return rangefsm.hide();
           }
-          dist = Math.abs(rangefsm.startx - rangefsm.currentx);
-          if (dist < 10) {
-            rangefsm.startx = null;
-            return rangefsm.hide();
-          }
-          x = d3.mouse(inner.node())[0];
+          x = rangefsm.getx();
           return rangefsm.show(x);
         }
       };
@@ -170,15 +188,19 @@ module.exports = function(spec, components) {
         items.push(item);
       }
       focus = inner.append('g').attr('class', 'focus');
-      focus.append('line').attr('class', 'range').attr('display', 'none').attr('y1', 0).attr('y2', layout.canvas.height);
-      focus.append('rect').attr('class', 'foreground').style('fill', 'none').on('mousedown', rangefsm.mousedown).on('mouseup', rangefsm.mouseup).call(drag);
+      focus.append('line').attr('class', 'rangestart').attr('display', 'none').attr('y1', 0).attr('y2', layout.canvas.height);
+      focus.append('line').attr('class', 'rangeend').attr('display', 'none').attr('y1', 0).attr('y2', layout.canvas.height);
+      focus.append('rect').attr('class', 'foreground').style('fill', 'none').on('touchstart', rangefsm.touchstart).on('touchend', rangefsm.touchend).on('mousedown', rangefsm.mousedown).on('mouseup', rangefsm.mouseup).call(drag);
       updaterange = function() {
         if (range == null) {
-          focus.select('line.range').attr('display', 'none');
+          focus.select('line.rangestart').attr('display', 'none');
+          focus.select('line.rangeend').attr('display', 'none');
           return;
         }
-        rangefsm.currentx = scale.x(range.start);
-        return focus.select('line.range').attr('display', null).attr('x1', scale.x(range.start)).attr('x2', scale.x(range.start));
+        rangefsm.p1 = scale.x(range.p1);
+        rangefsm.p2 = scale.x(range.p2);
+        focus.select('line.rangestart').attr('display', null).attr('x1', scale.x(range.p1)).attr('x2', scale.x(range.p1));
+        return focus.select('line.rangeend').attr('display', null).attr('x1', scale.x(range.p2)).attr('x2', scale.x(range.p2));
       };
       return result.resize(params.dimensions);
     },
