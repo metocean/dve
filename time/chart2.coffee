@@ -132,7 +132,9 @@ module.exports = (spec, components) ->
           d = scale.x.invert x
 
           return if range is d
-          params.hub.emit 'range', moment d
+          params.hub.emit 'range',
+            start: moment d
+            end: null
 
         update: ->
           x = d3.mouse(inner.node())[0]
@@ -193,19 +195,18 @@ module.exports = (spec, components) ->
 
       updaterange = ->
         if !range?
-          rangefsm.currentx = scale.x range
           focus
             .select 'line.range'
             .attr 'display', 'none'
           return
 
-        rangefsm.currentx = scale.x range
+        rangefsm.currentx = scale.x range.start
 
         focus
           .select 'line.range'
           .attr 'display', null
-          .attr 'x1', scale.x range
-          .attr 'x2', scale.x range
+          .attr 'x1', scale.x range.start
+          .attr 'x2', scale.x range.start
 
       result.resize params.dimensions
 

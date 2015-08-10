@@ -110,7 +110,10 @@ module.exports = function(spec, components) {
           if (range === d) {
             return;
           }
-          return params.hub.emit('range', moment(d));
+          return params.hub.emit('range', {
+            start: moment(d),
+            end: null
+          });
         },
         update: function() {
           var dist, x;
@@ -171,12 +174,11 @@ module.exports = function(spec, components) {
       focus.append('rect').attr('class', 'foreground').style('fill', 'none').on('mousedown', rangefsm.mousedown).on('mouseup', rangefsm.mouseup).call(drag);
       updaterange = function() {
         if (range == null) {
-          rangefsm.currentx = scale.x(range);
           focus.select('line.range').attr('display', 'none');
           return;
         }
-        rangefsm.currentx = scale.x(range);
-        return focus.select('line.range').attr('display', null).attr('x1', scale.x(range)).attr('x2', scale.x(range));
+        rangefsm.currentx = scale.x(range.start);
+        return focus.select('line.range').attr('display', null).attr('x1', scale.x(range.start)).attr('x2', scale.x(range.start));
       };
       return result.resize(params.dimensions);
     },
