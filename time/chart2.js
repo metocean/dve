@@ -21,13 +21,15 @@ TODO: Region series for areas. E.g. probabilities, min and max.
     field: gst
     units: kts
  */
-var calculate_layout, d3, extend, moment;
+var calculate_layout, d3, extend, moment, neighbours;
 
 d3 = require('d3');
 
 moment = require('timespanner');
 
 extend = require('extend');
+
+neighbours = require('../util/neighbours');
 
 calculate_layout = function(dimensions) {
   var canvas, info;
@@ -70,7 +72,7 @@ module.exports = function(spec, components) {
   maxDomains = [];
   return result = {
     render: function(dom, state, params) {
-      var clipId, drag, item, j, layout, len, newparams, range, rangefsm, ref, s;
+      var Neighbours, clipId, drag, item, j, layout, len, newparams, range, rangefsm, ref, roundtoclosest, s;
       layout = calculate_layout(params.dimensions);
       svg = d3.select(dom).append('svg').attr('class', 'item chart');
       svg.append('g').attr('class', 'title').append('text').attr('class', 'infotext').attr('y', 0).attr('x', 0).text(spec.text).style('fill', '#142c58').attr('dy', '20px');
@@ -93,6 +95,30 @@ module.exports = function(spec, components) {
         range = p;
         return updaterange();
       });
+      console.log(state.data);
+      Neighbours = neighbours(state.data, function(d) {
+        return d.time;
+      });
+      roundtoclosest = function(p) {
+        var d0, d1, halfway, pn;
+        pn = Neighbours(p);
+        if (pn.length === 1) {
+          return pn[0];
+        } else if (+pn[0].time < +params.domain[0]) {
+          return pn[1];
+        } else if (+pn[1].time > +params.domain[1]) {
+          return pn[0];
+        } else {
+          d0 = pn[0];
+          d1 = pn[1];
+          halfway = d0.time + (d1.time - d0.time) / 2;
+          if (p.isBefore(halfway)) {
+            return d0;
+          } else {
+            return d1;
+          }
+        }
+      };
       rangefsm = {
         hide: function() {
           rangefsm.startx = null;
@@ -104,13 +130,15 @@ module.exports = function(spec, components) {
           return params.hub.emit('range', null);
         },
         show: function(x) {
-          var p1d, p2d;
+          var p1, p1d, p2, p2d;
           rangefsm.p2 = x;
-          p1d = scale.x.invert(rangefsm.p1);
-          p2d = scale.x.invert(rangefsm.p2);
+          p1d = moment(scale.x.invert(rangefsm.p1));
+          p2d = moment(scale.x.invert(rangefsm.p2));
+          p1 = roundtoclosest(p1d);
+          p2 = roundtoclosest(p2d);
           return params.hub.emit('range', {
-            p1: moment(p1d),
-            p2: moment(p2d)
+            p1: p1.time,
+            p2: p2.time
           });
         },
         getx: function() {

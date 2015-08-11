@@ -25,6 +25,7 @@ TODO: Region series for areas. E.g. probabilities, min and max.
 d3 = require 'd3'
 moment = require 'timespanner'
 extend = require 'extend'
+neighbours = require '../util/neighbours'
 
 calculate_layout = (dimensions) ->
   dimensions =
@@ -121,6 +122,24 @@ module.exports = (spec, components) ->
         range = p
         updaterange()
 
+
+      console.log state.data
+      Neighbours = neighbours state.data, (d) -> d.time
+
+      roundtoclosest = (p) ->
+        pn = Neighbours p
+        if pn.length is 1
+          pn[0]
+        else if +pn[0].time < +params.domain[0]
+          pn[1]
+        else if +pn[1].time > +params.domain[1]
+          pn[0]
+        else
+          d0 = pn[0]
+          d1 = pn[1]
+          halfway = d0.time + (d1.time - d0.time)/2
+          if p.isBefore(halfway) then d0 else d1
+
       rangefsm =
         hide: ->
           rangefsm.startx = null
@@ -131,12 +150,15 @@ module.exports = (spec, components) ->
 
         show: (x) ->
           rangefsm.p2 = x
-          p1d = scale.x.invert rangefsm.p1
-          p2d = scale.x.invert rangefsm.p2
+          p1d = moment scale.x.invert rangefsm.p1
+          p2d = moment scale.x.invert rangefsm.p2
+
+          p1 = roundtoclosest p1d
+          p2 = roundtoclosest p2d
 
           params.hub.emit 'range',
-            p1: moment p1d
-            p2: moment p2d
+            p1: p1.time
+            p2: p2.time
 
         getx: ->
           x = d3.mouse(inner.node())[0]
