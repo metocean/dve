@@ -12,5 +12,5 @@ var mount;
 mount = require('./mount');
 
 module.exports = function(spec, components) {
-  return mount(spec.spec, components);
+  return mount(spec, components);
 };

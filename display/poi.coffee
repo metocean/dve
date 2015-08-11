@@ -1,4 +1,3 @@
-d3 = require 'd3'
 moment = require 'timespanner'
 createhub = require '../util/hub'
 listcomponent = require './list'

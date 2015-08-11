@@ -10,4 +10,4 @@ TODO: metadata
 mount = require './mount'
 
 module.exports = (spec, components) ->
-  mount spec.spec, components
+  mount spec, components

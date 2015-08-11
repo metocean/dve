@@ -122,8 +122,6 @@ module.exports = (spec, components) ->
         range = p
         updaterange()
 
-
-      console.log state.data
       Neighbours = neighbours state.data, (d) -> d.time
 
       roundtoclosest = (p) ->
@@ -269,11 +267,11 @@ module.exports = (spec, components) ->
 
         adjustedrange =
           if range.p1 <= range.p2
-            p1: range.p2
-            p2: range.p1
-          else
             p1: range.p1
             p2: range.p2
+          else
+            p1: range.p2
+            p2: range.p1
 
         adjustedrange.m = adjustedrange.p1 + (adjustedrange.p2 - adjustedrange.p1) / 2
 

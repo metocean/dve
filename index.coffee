@@ -19,7 +19,7 @@ module.exports =
   report: require './display/report'
   timedomain: require './display/timedomain'
   poi: require './display/poi'
-  range: require './display/range'
+  hub: require './display/hub'
 
   # navigation
   timeheadings: require './time/timeheadings'
@@ -30,6 +30,7 @@ module.exports =
   tablebytime: require './time/tablebytime'
   # chart series
   line: require './time/line'
+  delta: require './time/delta'
   scatter: require './time/scatter'
   # single series
   direction: require './time/direction'

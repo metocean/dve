@@ -1,61 +1,23 @@
-type: report
+type: hub
 spec:
-- type: data
+- type: mount
   spec:
-  - type: select
+  - type: timedomain
     dataset: example2
+    timezone: Australia/Sydney
+    start: (Australia/Sydney)/y-22d
+    end: (Australia/Sydney)/y-18d
     spec:
-    - type: timedomain
-      dataset: example2
-      timezone: Australia/Sydney
-      start: (Australia/Sydney)/y-22d
-      end: (Australia/Sydney)/y-18d
+    - type: dayheadings
+      text: Date
+    - type: timeheadings
+      text: Time
+    - type: chart2
+      text: Wind Speed
       spec:
-      - type: range
-        spec:
-        - type: dayheadings
-          text: Date
-        - type: timeheadings
-          text: Time
-        - type: chart2
-          text: Wind Speed
-          spec:
-          - type: line
-            style: primary
-            text: Wind Speed 10m
-            field: wsp
-            units: kts
-          - type: scatter
-            style: secondary
-            text: Gust 10m
-            field: gst
-            units: kts
-        - type: chart2
-          text: Wind Speed
-          spec:
-          - type: line
-            style: primary
-            text: Wind Speed 10m
-            field: wsp
-            units: kts
-          - type: scatter
-            style: secondary
-            text: Gust 10m
-            field: gst
-            units: kts
-        # - type: tablebytime
-        #   text: Wind Speed
-        #   field: wsp
-        #   units: kts
-        # - type: histogram
-        #   text: Wind Direction
-        #   field: wd
-        #   units: °
-        # - type: windrose
-        #   text: Wind Rose
-        #   field: wd
-        #   units: °
-        # - type: table
-        #   text: Wind Speed
-        #   field: wsp
-        #   units: °
+      - type: delta
+        style: primary
+        text: Wind Speed 10m
+        field: wsp
+        delta: wsp2
+        units: kts

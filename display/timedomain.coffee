@@ -22,22 +22,8 @@ module.exports = (spec, components) ->
         domain[1] = spec.end
         if typeof domain[1] is 'string'
           domain[1] = moment.spanner domain[1]
-      poi = null
-      if moment.utc().isBetween domain[0], domain[1]
-        poi = moment.utc()
-      if spec.timezone?
-        tz = spec.timezone
-        domain[0] = domain[0].tz tz
-        domain[1] = domain[1].tz tz
-        for d in data
-          d.time = d.time.tz tz
-        poi = poi.tz tz if poi?
-      hub = createhub()
-      newparams = extend {}, params,
-        domain: domain
-        hub: hub
+      newparams = extend {}, params, domain: domain
       list.render dom, state, newparams
-      hub.emit 'poi', poi
     resize: (dimensions) ->
       list.resize dimensions
     query: (params) ->

@@ -12,7 +12,7 @@ extend = require 'extend'
 listcomponent = require './list'
 
 module.exports = (spec, components) ->
-  list = listcomponent spec, components
+  list = listcomponent spec.spec, components
 
   mount =
     render: (dom, state, params) ->

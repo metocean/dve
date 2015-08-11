@@ -95,7 +95,6 @@ module.exports = function(spec, components) {
         range = p;
         return updaterange();
       });
-      console.log(state.data);
       Neighbours = neighbours(state.data, function(d) {
         return d.time;
       });
@@ -231,11 +230,11 @@ module.exports = function(spec, components) {
         rangefsm.p1 = scale.x(range.p1);
         rangefsm.p2 = scale.x(range.p2);
         adjustedrange = range.p1 <= range.p2 ? {
-          p1: range.p2,
-          p2: range.p1
-        } : {
           p1: range.p1,
           p2: range.p2
+        } : {
+          p1: range.p2,
+          p2: range.p1
         };
         adjustedrange.m = adjustedrange.p1 + (adjustedrange.p2 - adjustedrange.p1) / 2;
         focus.select('line.rangestart').attr('display', null).attr('x1', scale.x(adjustedrange.p1)).attr('x2', scale.x(adjustedrange.p1));
