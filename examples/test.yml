@@ -1,7 +1,5 @@
 type: report
 spec:
-- type: title
-  text: Location 1 Wind
 - type: data
   spec:
   - type: select
@@ -13,18 +11,12 @@ spec:
       start: (Australia/Sydney)/y-22d
       end: (Australia/Sydney)/y-18d
       spec:
-      - type: poi
+      - type: range
         spec:
         - type: dayheadings
           text: Date
         - type: timeheadings
           text: Time
-        - type: direction
-          text: Wind Direction (from)
-          field: wd
-          units: °
-      - type: range
-        spec:
         - type: chart2
           text: Wind Speed
           spec:

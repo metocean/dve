@@ -190,17 +190,29 @@ module.exports = function(spec, components) {
       focus = inner.append('g').attr('class', 'focus');
       focus.append('line').attr('class', 'rangestart').attr('display', 'none').attr('y1', 0).attr('y2', layout.canvas.height);
       focus.append('line').attr('class', 'rangeend').attr('display', 'none').attr('y1', 0).attr('y2', layout.canvas.height);
+      focus.append('line').attr('class', 'rangemiddle').attr('display', 'none').attr('y1', 0).attr('y2', layout.canvas.height);
       focus.append('rect').attr('class', 'foreground').style('fill', 'none').on('touchstart', rangefsm.touchstart).on('touchend', rangefsm.touchend).on('mousedown', rangefsm.mousedown).on('mouseup', rangefsm.mouseup).call(drag);
       updaterange = function() {
+        var adjustedrange;
         if (range == null) {
           focus.select('line.rangestart').attr('display', 'none');
           focus.select('line.rangeend').attr('display', 'none');
+          focus.select('line.rangemiddle').attr('display', 'none');
           return;
         }
         rangefsm.p1 = scale.x(range.p1);
         rangefsm.p2 = scale.x(range.p2);
-        focus.select('line.rangestart').attr('display', null).attr('x1', scale.x(range.p1)).attr('x2', scale.x(range.p1));
-        return focus.select('line.rangeend').attr('display', null).attr('x1', scale.x(range.p2)).attr('x2', scale.x(range.p2));
+        adjustedrange = range.p1 <= range.p2 ? {
+          p1: range.p2,
+          p2: range.p1
+        } : {
+          p1: range.p1,
+          p2: range.p2
+        };
+        adjustedrange.m = adjustedrange.p1 + (adjustedrange.p2 - adjustedrange.p1) / 2;
+        focus.select('line.rangestart').attr('display', null).attr('x1', scale.x(adjustedrange.p1)).attr('x2', scale.x(adjustedrange.p1));
+        focus.select('line.rangeend').attr('display', null).attr('x1', scale.x(adjustedrange.p2)).attr('x2', scale.x(adjustedrange.p2));
+        return focus.select('line.rangemiddle').attr('display', null).attr('x1', scale.x(adjustedrange.m)).attr('x2', scale.x(adjustedrange.m));
       };
       return result.resize(params.dimensions);
     },
