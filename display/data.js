@@ -7,6 +7,9 @@ module.exports = function(spec, components) {
   var list, odoql;
   list = listcomponent(spec.spec, components);
   return odoql = {
+    init: function(state, params) {
+      return list.init(state, params);
+    },
     render: function(dom, state, params) {
       return list.render(dom, state, params);
     },
@@ -15,6 +18,9 @@ module.exports = function(spec, components) {
     },
     query: function(params) {
       return spec.queries;
+    },
+    remove: function(dom, state, params) {
+      return list.remove(dom, state, params);
     }
   };
 };

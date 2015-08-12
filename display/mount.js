@@ -21,6 +21,9 @@ module.exports = function(spec, components) {
   var list, mount;
   list = listcomponent(spec.spec, components);
   return mount = {
+    init: function(state, params) {
+      return list.init(state, params);
+    },
     render: function(dom, state, params) {
       var namespacedListener;
       params = extend({}, params, {
@@ -30,6 +33,7 @@ module.exports = function(spec, components) {
       namespacedListener = 'resize' + '.' + params.id;
       d3.select(window).on(namespacedListener, debounce(125, function() {
         params.dimensions = domdimensions(dom);
+        list.remove(dom, state, params);
         dom.innerHTML = '';
         return list.render(dom, state, params);
       }));
@@ -44,6 +48,10 @@ module.exports = function(spec, components) {
     },
     query: function(params) {
       return list.query(params);
-    }
+    },
+    remove: function(dom, state, params) {
+      return list.remove(dom, state, params);
+    },
+    list: list
   };
 };

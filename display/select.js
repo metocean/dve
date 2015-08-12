@@ -9,6 +9,9 @@ module.exports = function(spec, components) {
   var list, select;
   list = listcomponent(spec.spec, components);
   return select = {
+    init: function(state, params) {
+      return list.init(state, params);
+    },
     render: function(dom, state, params) {
       var data;
       data = state[spec.dataset];
@@ -22,6 +25,9 @@ module.exports = function(spec, components) {
     },
     query: function(params) {
       return list.query(params);
+    },
+    remove: function(dom, state, params) {
+      return list.remove(dom, state, params);
     }
   };
 };

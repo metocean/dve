@@ -5,6 +5,8 @@ module.exports = (spec, components) ->
   list = listcomponent spec.spec, components
 
   select =
+    init: (state, params) ->
+      list.init state, params
     render: (dom, state, params) ->
       data = state[spec.dataset]
       state = extend {}, state, data: data
@@ -13,3 +15,5 @@ module.exports = (spec, components) ->
       list.resize dimensions
     query: (params) ->
       list.query params
+    remove: (dom, state, params) ->
+      list.remove dom, state, params

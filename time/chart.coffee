@@ -61,6 +61,17 @@ module.exports = (spec, components) ->
   items = []
   maxDomains = []
   result =
+    init: (state, params) ->
+      for s in spec.spec
+        unless components[s.type]?
+          return console.error "#{s.type} component not found"
+        newparams = extend {}, params,
+          axis: axis
+          scale: scale
+        item = components[s.type] s, components
+        item.init state, params if item.init?
+        items.push item
+
     render: (dom, state, params) ->
       layout = calculate_layout params.dimensions
 
@@ -161,16 +172,12 @@ module.exports = (spec, components) ->
       drag = d3.behavior.drag()
         .on 'drag', poifsm.update
 
-      for s in spec.spec
-        unless components[s.type]?
-          return console.error "#{s.type} component not found"
+      for item in items
         newparams = extend {}, params,
           axis: axis
           scale: scale
-        item = components[s.type] s, components
         item.render chart, state, newparams
         maxDomains.push item.provideMax()
-        items.push item
 
       focus = inner
         .append 'g'

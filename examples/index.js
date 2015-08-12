@@ -41,10 +41,13 @@ fixdata = function(data) {
 d3.csv('/example3.csv', function(err, example3) {
   fixdata(example3);
   return d3.text('/test.yml', function(error, spec) {
-    var adjustedrange, dom, scene;
+    var adjustedrange, adjustrange, dom, scene;
     dom = document.querySelector('#root');
     spec = jsyaml.load(spec);
     scene = components[spec.type](spec, components);
+    scene.init({
+      data: example3
+    }, {});
     scene.render(dom, {
       data: example3
     }, {});
@@ -61,65 +64,56 @@ d3.csv('/example3.csv', function(err, example3) {
         p2: range.p1
       };
     });
-    document.querySelector('button.up').onclick = function(e) {
-      var d, diff, i, len, p1, p2, x;
+    adjustrange = function(n) {
+      var d, diff, i, len, p1, p2, results, x;
       if (adjustedrange == null) {
         return;
       }
       p1 = adjustedrange.p1.format('x');
       p2 = adjustedrange.p2.format('x');
       diff = p2 - p1;
+      results = [];
       for (i = 0, len = example3.length; i < len; i++) {
         d = example3[i];
         x = d.time.format('x') - p1;
         if (diff === 0) {
-          if (x === 0) {
-            d.wsp2 += 1;
-          } else {
+          if (x !== 0) {
             continue;
           }
+          d.wsp2 += n;
         }
         x /= diff;
         if (x >= 0 && x <= 1) {
-          d.wsp2 += curve(x);
+          results.push(d.wsp2 += n * curve(x));
+        } else {
+          results.push(void 0);
         }
       }
-      return scene.hub.emit('state updated', {
-        data: example3
-      });
+      return results;
+    };
+    document.querySelector('button.up').onclick = function(e) {
+      adjustrange(1);
+      return window.dispatchEvent(new Event('resize'));
     };
     document.querySelector('button.down').onclick = function(e) {
-      var d, diff, i, len, p1, p2, x;
-      if (adjustedrange == null) {
-        return;
-      }
-      p1 = adjustedrange.p1.format('x');
-      p2 = adjustedrange.p2.format('x');
-      diff = p2 - p1;
-      for (i = 0, len = example3.length; i < len; i++) {
-        d = example3[i];
-        x = d.time.format('x') - p1;
-        if (diff === 0) {
-          if (x === 0) {
-            d.wsp2 -= 1;
-          } else {
-            continue;
-          }
-        }
-        x /= diff;
-        if (x >= 0 && x <= 1) {
-          d.wsp2 -= curve(x);
-        }
-      }
-      return scene.hub.emit('state updated', {
-        data: example3
-      });
+      adjustrange(-1);
+      return window.dispatchEvent(new Event('resize'));
     };
     document.querySelector('button.back').onclick = function(e) {
       return scene.hub.emit('range nudge back');
     };
-    return document.querySelector('button.forward').onclick = function(e) {
+    document.querySelector('button.forward').onclick = function(e) {
       return scene.hub.emit('range nudge forward');
+    };
+    return document.querySelector('button.reset').onclick = function(e) {
+      var d, i, len;
+      for (i = 0, len = example3.length; i < len; i++) {
+        d = example3[i];
+        d.wsp2 = d.wsp;
+      }
+      return scene.hub.emit('state updated', {
+        data: example3
+      });
     };
   });
 });

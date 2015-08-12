@@ -12,6 +12,13 @@ module.exports = function(spec, components) {
   list = listcomponent(spec.spec, components);
   hub = createhub();
   return {
+    init: function(state, params) {
+      var newparams;
+      newparams = extend({}, params, {
+        hub: hub
+      });
+      return list.init(state, newparams);
+    },
     render: function(dom, state, params) {
       var newparams;
       newparams = extend({}, params, {
@@ -24,6 +31,9 @@ module.exports = function(spec, components) {
     },
     query: function(params) {
       return spec.queries;
+    },
+    remove: function(dom, state, params) {
+      return list.remove(dom, state, params);
     },
     hub: hub
   };

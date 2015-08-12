@@ -15,6 +15,33 @@ module.exports = function(spec, components) {
   var list, timedomain;
   list = listcomponent(spec.spec, components);
   return timedomain = {
+    init: function(state, params) {
+      var d, data, domain, i, len, newparams;
+      data = state.data;
+      for (i = 0, len = data.length; i < len; i++) {
+        d = data[i];
+        d.time = moment.utc(d.time, moment.ISO_8601);
+      }
+      domain = d3.extent(data, function(d) {
+        return d.time;
+      });
+      if (spec.start != null) {
+        domain[0] = spec.start;
+        if (typeof domain[0] === 'string') {
+          domain[0] = moment.spanner(domain[0]);
+        }
+      }
+      if (spec.end != null) {
+        domain[1] = spec.end;
+        if (typeof domain[1] === 'string') {
+          domain[1] = moment.spanner(domain[1]);
+        }
+      }
+      newparams = extend({}, params, {
+        domain: domain
+      });
+      return list.init(state, newparams);
+    },
     render: function(dom, state, params) {
       var d, data, domain, i, len, newparams;
       data = state.data;
@@ -47,6 +74,9 @@ module.exports = function(spec, components) {
     },
     query: function(params) {
       return spec.queries;
+    },
+    remove: function(dom, state, params) {
+      return list.remove(dom, state, params);
     }
   };
 };

@@ -29,6 +29,7 @@ d3.csv '/example3.csv', (err, example3) ->
     spec = jsyaml.load spec
     scene = components[spec.type] spec, components
 
+    scene.init { data: example3 }, {}
     scene.render dom, { data: example3 }, {}
     adjustedrange = null
     scene.hub.on 'range', (range) ->
@@ -40,39 +41,30 @@ d3.csv '/example3.csv', (err, example3) ->
         else
           p1: range.p2
           p2: range.p1
+    adjustrange = (n) ->
+      return if !adjustedrange?
+      p1 = adjustedrange.p1.format 'x'
+      p2 = adjustedrange.p2.format 'x'
+      diff = p2 - p1
+      for d in example3
+        x = d.time.format('x') - p1
+        if diff is 0
+          continue if x isnt 0
+          d.wsp2 += n
+        x /= diff
+        if x >= 0 and x <= 1
+          d.wsp2 += n * curve x
     document.querySelector('button.up').onclick = (e) ->
-      return if !adjustedrange?
-      p1 = adjustedrange.p1.format 'x'
-      p2 = adjustedrange.p2.format 'x'
-      diff = p2 - p1
-      for d in example3
-        x = d.time.format('x') - p1
-        if diff is 0
-          if x is 0
-            d.wsp2 += 1
-          else
-            continue
-        x /= diff
-        if x >= 0 and x <= 1
-          d.wsp2 += curve x
-      scene.hub.emit 'state updated', data: example3
+      adjustrange 1
+      window.dispatchEvent new Event 'resize'
     document.querySelector('button.down').onclick = (e) ->
-      return if !adjustedrange?
-      p1 = adjustedrange.p1.format 'x'
-      p2 = adjustedrange.p2.format 'x'
-      diff = p2 - p1
-      for d in example3
-        x = d.time.format('x') - p1
-        if diff is 0
-          if x is 0
-            d.wsp2 -= 1
-          else
-            continue
-        x /= diff
-        if x >= 0 and x <= 1
-          d.wsp2 -= curve x
-      scene.hub.emit 'state updated', data: example3
+      adjustrange -1
+      window.dispatchEvent new Event 'resize'
     document.querySelector('button.back').onclick = (e) ->
       scene.hub.emit 'range nudge back'
     document.querySelector('button.forward').onclick = (e) ->
       scene.hub.emit 'range nudge forward'
+    document.querySelector('button.reset').onclick = (e) ->
+      for d in example3
+        d.wsp2 = d.wsp
+      scene.hub.emit 'state updated', data: example3

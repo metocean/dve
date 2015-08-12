@@ -59,51 +59,46 @@ calculate_layout = function(dimensions) {
 };
 
 module.exports = function(spec, components) {
-  var axis, chart, focus, inner, items, maxDomains, result, scale, svg, updaterange;
+  var axis, chart, focus, inner, items, maxDomains, range, result, scale, svg, updaterange;
   svg = null;
   inner = null;
   scale = null;
   axis = null;
   focus = null;
   updaterange = null;
+  range = null;
   chart = null;
   items = [];
   maxDomains = [];
   return result = {
-    render: function(dom, state, params) {
-      var Neighbours, clipId, drag, item, j, layout, len, newparams, range, rangefsm, ref, roundtoclosest, s;
-      layout = calculate_layout(params.dimensions);
-      svg = d3.select(dom).append('svg').attr('class', 'item chart');
-      svg.append('g').attr('class', 'title').append('text').attr('class', 'infotext').attr('y', 0).attr('x', 0).text(spec.text).style('fill', '#142c58').attr('dy', '20px');
-      inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
-      inner.append('g').attr('class', 'x axis').attr('transform', "translate(0," + layout.canvas.height + ")");
-      inner.append('g').attr('class', 'y axis');
-      clipId = "clip-" + (Math.floor(Math.random() * 1000000));
-      chart = inner.append('g').attr('class', 'chart').attr('clip-path', "url(#" + clipId + ")");
-      chart.append('defs').append('clipPath').attr('id', clipId).append('rect').attr('x', '0').attr('y', '0');
-      scale = {
-        x: d3.time.scale().domain(params.domain),
-        y: d3.scale.linear()
-      };
-      axis = {
-        x: d3.svg.axis().scale(scale.x).orient("bottom").ticks(d3.time.hour),
-        y: d3.svg.axis().scale(scale.y).orient("left").ticks(6)
-      };
-      range = null;
+    init: function(state, params) {
+      var item, j, len, ref, s;
+      ref = spec.spec;
+      for (j = 0, len = ref.length; j < len; j++) {
+        s = ref[j];
+        if (components[s.type] == null) {
+          return console.error(s.type + " component not found");
+        }
+        item = components[s.type](s, components);
+        if (item.init != null) {
+          item.init(state, params);
+        }
+        items.push(item);
+      }
       params.hub.on('range', function(p) {
         range = p;
         return updaterange();
       });
       params.hub.on('range nudge back', function(p) {
-        var d, i, j, k, len, len1, newp1, newp2, p1index, p2index, ref, ref1;
+        var d, i, k, l, len1, len2, newp1, newp2, p1index, p2index, ref1, ref2;
         if (range == null) {
           return;
         }
         newp1 = range.p1;
         p1index = null;
-        ref = state.data;
-        for (i = j = 0, len = ref.length; j < len; i = ++j) {
-          d = ref[i];
+        ref1 = state.data;
+        for (i = k = 0, len1 = ref1.length; k < len1; i = ++k) {
+          d = ref1[i];
           if (d.time.isSame(range.p1)) {
             if (i === 0) {
               break;
@@ -114,9 +109,9 @@ module.exports = function(spec, components) {
         }
         newp2 = range.p2;
         p2index = null;
-        ref1 = state.data;
-        for (i = k = 0, len1 = ref1.length; k < len1; i = ++k) {
-          d = ref1[i];
+        ref2 = state.data;
+        for (i = l = 0, len2 = ref2.length; l < len2; i = ++l) {
+          d = ref2[i];
           if (d.time.isSame(range.p2)) {
             if (i === 0) {
               break;
@@ -136,16 +131,16 @@ module.exports = function(spec, components) {
           p2: newp2
         });
       });
-      params.hub.on('range nudge forward', function(p) {
-        var d, i, j, k, len, len1, newp1, newp2, p1index, p2index, ref, ref1;
+      return params.hub.on('range nudge forward', function(p) {
+        var d, i, k, l, len1, len2, newp1, newp2, p1index, p2index, ref1, ref2;
         if (range == null) {
           return;
         }
         newp1 = range.p1;
         p1index = null;
-        ref = state.data;
-        for (i = j = 0, len = ref.length; j < len; i = ++j) {
-          d = ref[i];
+        ref1 = state.data;
+        for (i = k = 0, len1 = ref1.length; k < len1; i = ++k) {
+          d = ref1[i];
           if (d.time.isSame(range.p1)) {
             if (i === state.data.length - 1) {
               break;
@@ -156,9 +151,9 @@ module.exports = function(spec, components) {
         }
         newp2 = range.p2;
         p2index = null;
-        ref1 = state.data;
-        for (i = k = 0, len1 = ref1.length; k < len1; i = ++k) {
-          d = ref1[i];
+        ref2 = state.data;
+        for (i = l = 0, len2 = ref2.length; l < len2; i = ++l) {
+          d = ref2[i];
           if (d.time.isSame(range.p2)) {
             if (i === state.data.length - 1) {
               break;
@@ -178,6 +173,26 @@ module.exports = function(spec, components) {
           p2: newp2
         });
       });
+    },
+    render: function(dom, state, params) {
+      var Neighbours, clipId, drag, item, j, layout, len, newparams, rangefsm, roundtoclosest;
+      layout = calculate_layout(params.dimensions);
+      svg = d3.select(dom).append('svg').attr('class', 'item chart');
+      svg.append('g').attr('class', 'title').append('text').attr('class', 'infotext').attr('y', 0).attr('x', 0).text(spec.text).style('fill', '#142c58').attr('dy', '20px');
+      inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
+      inner.append('g').attr('class', 'x axis').attr('transform', "translate(0," + layout.canvas.height + ")");
+      inner.append('g').attr('class', 'y axis');
+      clipId = "clip-" + (Math.floor(Math.random() * 1000000));
+      chart = inner.append('g').attr('class', 'chart').attr('clip-path', "url(#" + clipId + ")");
+      chart.append('defs').append('clipPath').attr('id', clipId).append('rect').attr('x', '0').attr('y', '0');
+      scale = {
+        x: d3.time.scale().domain(params.domain),
+        y: d3.scale.linear()
+      };
+      axis = {
+        x: d3.svg.axis().scale(scale.x).orient("bottom").ticks(d3.time.hour),
+        y: d3.svg.axis().scale(scale.y).orient("left").ticks(6)
+      };
       Neighbours = neighbours(state.data, function(d) {
         return d.time;
       });
@@ -282,20 +297,14 @@ module.exports = function(spec, components) {
         }
       };
       drag = d3.behavior.drag().on('drag', rangefsm.update);
-      ref = spec.spec;
-      for (j = 0, len = ref.length; j < len; j++) {
-        s = ref[j];
-        if (components[s.type] == null) {
-          return console.error(s.type + " component not found");
-        }
+      for (j = 0, len = items.length; j < len; j++) {
+        item = items[j];
         newparams = extend({}, params, {
           axis: axis,
           scale: scale
         });
-        item = components[s.type](s, components);
         item.render(chart, state, newparams);
         maxDomains.push(item.provideMax());
-        items.push(item);
       }
       focus = inner.append('g').attr('class', 'focus');
       focus.append('line').attr('class', 'rangestart').attr('display', 'none').attr('y1', 0).attr('y2', layout.canvas.height);

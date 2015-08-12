@@ -57,66 +57,19 @@ module.exports = (spec, components) ->
   axis = null
   focus = null
   updaterange = null
+  range = null
   chart = null
   items = []
   maxDomains = []
   result =
-    render: (dom, state, params) ->
-      layout = calculate_layout params.dimensions
+    init: (state, params) ->
+      for s in spec.spec
+        unless components[s.type]?
+          return console.error "#{s.type} component not found"
+        item = components[s.type] s, components
+        item.init state, params if item.init?
+        items.push item
 
-      svg = d3.select dom
-        .append 'svg'
-        .attr 'class', 'item chart'
-
-      svg
-        .append 'g'
-        .attr 'class', 'title'
-        .append 'text'
-        .attr 'class', 'infotext'
-        .attr 'y', 0
-        .attr 'x', 0
-        .text spec.text
-        .style 'fill', '#142c58'
-        .attr 'dy', '20px'
-
-      inner = svg
-        .append 'g'
-        .attr 'class', 'inner'
-        .attr 'transform', "translate(#{layout.canvas.left},#{layout.canvas.top})"
-
-      inner
-        .append 'g'
-        .attr 'class', 'x axis'
-        .attr 'transform', "translate(0,#{layout.canvas.height})"
-
-      inner
-        .append 'g'
-        .attr 'class', 'y axis'
-
-      clipId = "clip-#{Math.floor(Math.random() * 1000000)}"
-
-      chart = inner
-        .append 'g'
-        .attr 'class', 'chart'
-        .attr 'clip-path', "url(##{clipId})"
-
-      chart
-        .append 'defs'
-        .append 'clipPath'
-        .attr 'id', clipId
-        .append 'rect'
-        .attr 'x', '0'
-        .attr 'y', '0'
-
-      scale =
-        x: d3.time.scale().domain params.domain
-        y: d3.scale.linear()
-
-      axis =
-        x: d3.svg.axis().scale(scale.x).orient("bottom").ticks(d3.time.hour)
-        y: d3.svg.axis().scale(scale.y).orient("left").ticks(6)
-
-      range = null
       params.hub.on 'range', (p) ->
         range = p
         updaterange()
@@ -176,6 +129,60 @@ module.exports = (spec, components) ->
         params.hub.emit 'range',
           p1: newp1
           p2: newp2
+    render: (dom, state, params) ->
+      layout = calculate_layout params.dimensions
+
+      svg = d3.select dom
+        .append 'svg'
+        .attr 'class', 'item chart'
+
+      svg
+        .append 'g'
+        .attr 'class', 'title'
+        .append 'text'
+        .attr 'class', 'infotext'
+        .attr 'y', 0
+        .attr 'x', 0
+        .text spec.text
+        .style 'fill', '#142c58'
+        .attr 'dy', '20px'
+
+      inner = svg
+        .append 'g'
+        .attr 'class', 'inner'
+        .attr 'transform', "translate(#{layout.canvas.left},#{layout.canvas.top})"
+
+      inner
+        .append 'g'
+        .attr 'class', 'x axis'
+        .attr 'transform', "translate(0,#{layout.canvas.height})"
+
+      inner
+        .append 'g'
+        .attr 'class', 'y axis'
+
+      clipId = "clip-#{Math.floor(Math.random() * 1000000)}"
+
+      chart = inner
+        .append 'g'
+        .attr 'class', 'chart'
+        .attr 'clip-path', "url(##{clipId})"
+
+      chart
+        .append 'defs'
+        .append 'clipPath'
+        .attr 'id', clipId
+        .append 'rect'
+        .attr 'x', '0'
+        .attr 'y', '0'
+
+      scale =
+        x: d3.time.scale().domain params.domain
+        y: d3.scale.linear()
+
+      axis =
+        x: d3.svg.axis().scale(scale.x).orient("bottom").ticks(d3.time.hour)
+        y: d3.svg.axis().scale(scale.y).orient("left").ticks(6)
 
       Neighbours = neighbours state.data, (d) -> d.time
 
@@ -256,16 +263,12 @@ module.exports = (spec, components) ->
       drag = d3.behavior.drag()
         .on 'drag', rangefsm.update
 
-      for s in spec.spec
-        unless components[s.type]?
-          return console.error "#{s.type} component not found"
+      for item in items
         newparams = extend {}, params,
           axis: axis
           scale: scale
-        item = components[s.type] s, components
         item.render chart, state, newparams
         maxDomains.push item.provideMax()
-        items.push item
 
       focus = inner
         .append 'g'

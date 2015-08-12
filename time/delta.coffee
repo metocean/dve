@@ -32,6 +32,11 @@ module.exports = (spec, components) ->
       +d.time >= +start.time and +d.time <= +end.time
 
   result =
+    init: (state, params) ->
+      if params.hub?
+        params.hub.on 'state updated', (state) ->
+          data = selectdata state, params
+          result.resize prevdimensions
     render: (dom, state, params) ->
       svg = dom.append 'g'
       scale = params.scale
@@ -55,13 +60,8 @@ module.exports = (spec, components) ->
       prevdimensions = params.dimensions
       result.resize prevdimensions
 
-      if params.hub?
-        params.hub.on 'state updated', (state) ->
-          data = selectdata state, params
-          result.resize prevdimensions
-
     provideMax: ->
-      d3.max data, (d) -> d[spec.field]
+      d3.max data, (d) -> Math.max d[spec.field], d[spec.delta]
 
     resize: (dimensions) ->
       prevdimensions = dimensions

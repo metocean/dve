@@ -15,6 +15,9 @@ module.exports = (spec, components) ->
   list = listcomponent spec.spec, components
 
   mount =
+    init: (state, params) ->
+      list.init state, params
+
     render: (dom, state, params) ->
       params = extend {}, params,
         dimensions: domdimensions dom
@@ -27,6 +30,7 @@ module.exports = (spec, components) ->
         .select window
         .on namespacedListener, debounce 125, ->
           params.dimensions = domdimensions dom
+          list.remove dom, state, params
           dom.innerHTML = ''
           list.render dom, state, params
 
@@ -40,3 +44,6 @@ module.exports = (spec, components) ->
       list.resize dimensions
     query: (params) ->
       list.query params
+    remove: (dom, state, params) ->
+      list.remove dom, state, params
+    list: list

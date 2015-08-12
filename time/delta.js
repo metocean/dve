@@ -41,6 +41,14 @@ module.exports = function(spec, components) {
     });
   };
   return result = {
+    init: function(state, params) {
+      if (params.hub != null) {
+        return params.hub.on('state updated', function(state) {
+          data = selectdata(state, params);
+          return result.resize(prevdimensions);
+        });
+      }
+    },
     render: function(dom, state, params) {
       svg = dom.append('g');
       scale = params.scale;
@@ -49,17 +57,11 @@ module.exports = function(spec, components) {
       line = svg.append('path').attr('class', spec.style + " " + spec.type).attr('d', '');
       data = selectdata(state, params);
       prevdimensions = params.dimensions;
-      result.resize(prevdimensions);
-      if (params.hub != null) {
-        return params.hub.on('state updated', function(state) {
-          data = selectdata(state, params);
-          return result.resize(prevdimensions);
-        });
-      }
+      return result.resize(prevdimensions);
     },
     provideMax: function() {
       return d3.max(data, function(d) {
-        return d[spec.field];
+        return Math.max(d[spec.field], d[spec.delta]);
       });
     },
     resize: function(dimensions) {
