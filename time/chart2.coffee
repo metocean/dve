@@ -57,7 +57,6 @@ module.exports = (spec, components) ->
   axis = null
   focus = null
   updaterange = null
-  data = null
   chart = null
   items = []
   maxDomains = []
@@ -121,6 +120,62 @@ module.exports = (spec, components) ->
       params.hub.on 'range', (p) ->
         range = p
         updaterange()
+
+      params.hub.on 'range nudge back', (p) ->
+        return if !range?
+        newp1 = range.p1
+        p1index = null
+
+        for d, i in state.data
+          if d.time.isSame range.p1
+            break if i is 0
+            newp1 = state.data[i - 1].time.clone()
+            break
+        newp2 = range.p2
+        p2index = null
+        for d, i in state.data
+          if d.time.isSame range.p2
+            break if i is 0
+            newp2 = state.data[i - 1].time.clone()
+            break
+
+        if newp1.isBefore params.domain[0]
+          newp1 = params.domain[0].clone()
+
+        if newp2.isBefore params.domain[0]
+          newp2 = params.domain[0].clone()
+
+        params.hub.emit 'range',
+          p1: newp1
+          p2: newp2
+
+      params.hub.on 'range nudge forward', (p) ->
+        return if !range?
+        newp1 = range.p1
+        p1index = null
+
+        for d, i in state.data
+          if d.time.isSame range.p1
+            break if i is state.data.length - 1
+            newp1 = state.data[i + 1].time.clone()
+            break
+        newp2 = range.p2
+        p2index = null
+        for d, i in state.data
+          if d.time.isSame range.p2
+            break if i is state.data.length - 1
+            newp2 = state.data[i + 1].time.clone()
+            break
+
+        if newp1.isAfter params.domain[1]
+          newp1 = params.domain[1].clone()
+
+        if newp2.isAfter params.domain[1]
+          newp2 = params.domain[1].clone()
+
+        params.hub.emit 'range',
+          p1: newp1
+          p2: newp2
 
       Neighbours = neighbours state.data, (d) -> d.time
 

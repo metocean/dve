@@ -59,14 +59,13 @@ calculate_layout = function(dimensions) {
 };
 
 module.exports = function(spec, components) {
-  var axis, chart, data, focus, inner, items, maxDomains, result, scale, svg, updaterange;
+  var axis, chart, focus, inner, items, maxDomains, result, scale, svg, updaterange;
   svg = null;
   inner = null;
   scale = null;
   axis = null;
   focus = null;
   updaterange = null;
-  data = null;
   chart = null;
   items = [];
   maxDomains = [];
@@ -94,6 +93,90 @@ module.exports = function(spec, components) {
       params.hub.on('range', function(p) {
         range = p;
         return updaterange();
+      });
+      params.hub.on('range nudge back', function(p) {
+        var d, i, j, k, len, len1, newp1, newp2, p1index, p2index, ref, ref1;
+        if (range == null) {
+          return;
+        }
+        newp1 = range.p1;
+        p1index = null;
+        ref = state.data;
+        for (i = j = 0, len = ref.length; j < len; i = ++j) {
+          d = ref[i];
+          if (d.time.isSame(range.p1)) {
+            if (i === 0) {
+              break;
+            }
+            newp1 = state.data[i - 1].time.clone();
+            break;
+          }
+        }
+        newp2 = range.p2;
+        p2index = null;
+        ref1 = state.data;
+        for (i = k = 0, len1 = ref1.length; k < len1; i = ++k) {
+          d = ref1[i];
+          if (d.time.isSame(range.p2)) {
+            if (i === 0) {
+              break;
+            }
+            newp2 = state.data[i - 1].time.clone();
+            break;
+          }
+        }
+        if (newp1.isBefore(params.domain[0])) {
+          newp1 = params.domain[0].clone();
+        }
+        if (newp2.isBefore(params.domain[0])) {
+          newp2 = params.domain[0].clone();
+        }
+        return params.hub.emit('range', {
+          p1: newp1,
+          p2: newp2
+        });
+      });
+      params.hub.on('range nudge forward', function(p) {
+        var d, i, j, k, len, len1, newp1, newp2, p1index, p2index, ref, ref1;
+        if (range == null) {
+          return;
+        }
+        newp1 = range.p1;
+        p1index = null;
+        ref = state.data;
+        for (i = j = 0, len = ref.length; j < len; i = ++j) {
+          d = ref[i];
+          if (d.time.isSame(range.p1)) {
+            if (i === state.data.length - 1) {
+              break;
+            }
+            newp1 = state.data[i + 1].time.clone();
+            break;
+          }
+        }
+        newp2 = range.p2;
+        p2index = null;
+        ref1 = state.data;
+        for (i = k = 0, len1 = ref1.length; k < len1; i = ++k) {
+          d = ref1[i];
+          if (d.time.isSame(range.p2)) {
+            if (i === state.data.length - 1) {
+              break;
+            }
+            newp2 = state.data[i + 1].time.clone();
+            break;
+          }
+        }
+        if (newp1.isAfter(params.domain[1])) {
+          newp1 = params.domain[1].clone();
+        }
+        if (newp2.isAfter(params.domain[1])) {
+          newp2 = params.domain[1].clone();
+        }
+        return params.hub.emit('range', {
+          p1: newp1,
+          p2: newp2
+        });
       });
       Neighbours = neighbours(state.data, function(d) {
         return d.time;

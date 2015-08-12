@@ -4,7 +4,7 @@
 
 Using DVE with browserify is recommended but not required.
  */
-var components, curve, d3, fixdata, i, jsyaml, len, moment, v, values;
+var components, curve, d3, fixdata, jsyaml, moment;
 
 curve = function(x) {
   if (x < 0.25) {
@@ -16,13 +16,6 @@ curve = function(x) {
   return 8 * (x - 1) * (x - 1);
 };
 
-values = ["0.00", "0.05", "0.10", "0.15", "0.20", "0.25", "0.30", "0.35", "0.40", "0.45", "0.50", "0.55", "0.60", "0.65", "0.70", "0.75", "0.80", "0.85", "0.90", "0.95", "1.00"];
-
-for (i = 0, len = values.length; i < len; i++) {
-  v = values[i];
-  console.log(v + " - " + (curve(parseFloat(v))));
-}
-
 d3 = require('d3');
 
 jsyaml = require('js-yaml');
@@ -32,13 +25,13 @@ components = require('dve');
 moment = require('timespanner');
 
 fixdata = function(data) {
-  var d, j, len1, results;
+  var d, i, len, results;
   results = [];
-  for (j = 0, len1 = data.length; j < len1; j++) {
-    d = data[j];
+  for (i = 0, len = data.length; i < len; i++) {
+    d = data[i];
     d.time = moment(d.time, 'DD-MM-YYYY HH:mm');
     d.wsp = parseFloat(d.wsp);
-    d.wsp2 = parseFloat(d.wsp2);
+    d.wsp2 = parseFloat(d.wsp);
     d.wd = parseFloat(d.wd);
     results.push(d.gust = parseFloat(d.gust));
   }
@@ -58,7 +51,7 @@ d3.csv('/example3.csv', function(err, example3) {
     adjustedrange = null;
     scene.hub.on('range', function(range) {
       if (range == null) {
-        return;
+        return adjustedrange = null;
       }
       return adjustedrange = range.p1 <= range.p2 ? {
         p1: range.p1,
@@ -69,12 +62,15 @@ d3.csv('/example3.csv', function(err, example3) {
       };
     });
     document.querySelector('button.up').onclick = function(e) {
-      var d, diff, j, len1, p1, p2, x;
+      var d, diff, i, len, p1, p2, x;
+      if (adjustedrange == null) {
+        return;
+      }
       p1 = adjustedrange.p1.format('x');
       p2 = adjustedrange.p2.format('x');
       diff = p2 - p1;
-      for (j = 0, len1 = example3.length; j < len1; j++) {
-        d = example3[j];
+      for (i = 0, len = example3.length; i < len; i++) {
+        d = example3[i];
         x = d.time.format('x') - p1;
         if (diff === 0) {
           if (x === 0) {
@@ -92,13 +88,16 @@ d3.csv('/example3.csv', function(err, example3) {
         data: example3
       });
     };
-    return document.querySelector('button.down').onclick = function(e) {
-      var d, diff, j, len1, p1, p2, x;
+    document.querySelector('button.down').onclick = function(e) {
+      var d, diff, i, len, p1, p2, x;
+      if (adjustedrange == null) {
+        return;
+      }
       p1 = adjustedrange.p1.format('x');
       p2 = adjustedrange.p2.format('x');
       diff = p2 - p1;
-      for (j = 0, len1 = example3.length; j < len1; j++) {
-        d = example3[j];
+      for (i = 0, len = example3.length; i < len; i++) {
+        d = example3[i];
         x = d.time.format('x') - p1;
         if (diff === 0) {
           if (x === 0) {
@@ -115,6 +114,12 @@ d3.csv('/example3.csv', function(err, example3) {
       return scene.hub.emit('state updated', {
         data: example3
       });
+    };
+    document.querySelector('button.back').onclick = function(e) {
+      return scene.hub.emit('range nudge back');
+    };
+    return document.querySelector('button.forward').onclick = function(e) {
+      return scene.hub.emit('range nudge forward');
     };
   });
 });
