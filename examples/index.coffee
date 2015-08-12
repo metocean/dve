@@ -4,15 +4,10 @@ Using DVE with browserify is recommended but not required.
 
 ###
 
-# t = current time
-# b = start value
-# c = change in value
-# d = duration
-curve = (t) ->
-  t *= 2
-  return 1 / 2 * t * t if t < 1
-  t--
-  -1 / 2 * (t * (t - 2) - 1)
+curve = (x) ->
+  return 8 * x * x if x < 0.25
+  return -8 * (x - 0.5) * (x - 0.5) + 1 if x < 0.75
+  8 * (x - 1) * (x - 1)
 
 values = [
   "0.00"
@@ -65,6 +60,7 @@ d3.csv '/example3.csv', (err, example3) ->
     scene.render dom, { data: example3 }, {}
     adjustedrange = null
     scene.hub.on 'range', (range) ->
+      return if !range?
       adjustedrange =
         if range.p1 <= range.p2
           p1: range.p1
@@ -72,11 +68,33 @@ d3.csv '/example3.csv', (err, example3) ->
         else
           p1: range.p2
           p2: range.p1
-    setTimeout ->
+    document.querySelector('button.up').onclick = (e) ->
+      p1 = adjustedrange.p1.format 'x'
+      p2 = adjustedrange.p2.format 'x'
+      diff = p2 - p1
       for d in example3
-        if d.time.isSame(adjustedrange.p1) or d.time.isSame(adjustedrange.p2)
-          d.wsp2 = 10
-        if d.time.isAfter(adjustedrange.p1) and d.time.isBefore(adjustedrange.p2)
-          d.wsp2 = 10
+        x = d.time.format('x') - p1
+        if diff is 0
+          if x is 0
+            d.wsp2 += 1
+          else
+            continue
+        x /= diff
+        if x >= 0 and x <= 1
+          d.wsp2 += curve x
       scene.hub.emit 'state updated', data: example3
-    , 5000
+    document.querySelector('button.down').onclick = (e) ->
+      p1 = adjustedrange.p1.format 'x'
+      p2 = adjustedrange.p2.format 'x'
+      diff = p2 - p1
+      for d in example3
+        x = d.time.format('x') - p1
+        if diff is 0
+          if x is 0
+            d.wsp2 -= 1
+          else
+            continue
+        x /= diff
+        if x >= 0 and x <= 1
+          d.wsp2 -= curve x
+      scene.hub.emit 'state updated', data: example3
