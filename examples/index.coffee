@@ -86,6 +86,7 @@ d3.csv '/example3.csv', (err, example3) ->
       for d in example3
         d.wsp2 = Math.max 0, d.wsp2
     document.onkeydown = (e) ->
+      return if document.activeElement? and document.activeElement.tagName in ['TEXTAREA', 'INPUT']
       switch e.keyCode
         when 38
           adjustrange 1

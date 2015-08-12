@@ -150,6 +150,10 @@ d3.csv('/example3.csv', function(err, example3) {
       return results;
     };
     document.onkeydown = function(e) {
+      var ref;
+      if ((document.activeElement != null) && ((ref = document.activeElement.tagName) === 'TEXTAREA' || ref === 'INPUT')) {
+        return;
+      }
       switch (e.keyCode) {
         case 38:
           adjustrange(1);
