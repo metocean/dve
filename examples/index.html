@@ -11,12 +11,29 @@
     <link rel="stylesheet" href="/dist/dve-examples-0.0.1.min.css" />
   </head>
   <body>
+    <div style="float: right">
+      <button class="reset">Reset all changes</button>
+    </div>
+    <h2>Editing Wind Speed 10m</h2>
+    <br>
+    <br>
     <div id="root" class="dve-container"></div>
-    <button class="up">Up</button>
-    <button class="down">Down</button><br>
-    <button class="back">Back</button>
-    <button class="forward">Forward</button><br>
-    <button class="reset">Reset</button>
+    <div class="editor" style="display: none">
+      <br>
+      <div style="float: right">
+        <button class="back">&larr; Back one hour</button>
+        <button class="forward">Forward on hour &rarr;</button>
+      </div>
+      <button class="up">+ Increase by one knot</button><br>
+      <button class="down">- Decrease by one knot</button>
+      <br>
+      <br>
+      <form>
+      Value at middle of selection: <input type="text" class="value">
+      <button type="submit">Apply smoothed value</button>
+      </form>
+      <button class="clear">Smooth to original forecast</button>
+    </div>
     <script src="/dist/dve-examples-0.0.1.min.js"></script>
   </body>
 </html>

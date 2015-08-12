@@ -31,20 +31,19 @@ d3.csv '/example3.csv', (err, example3) ->
 
     scene.init { data: example3 }, {}
     scene.render dom, { data: example3 }, {}
-    adjustedrange = null
+    copiedrange = null
     scene.hub.on 'range', (range) ->
-      return adjustedrange = null if !range?
-      adjustedrange =
-        if range.p1 <= range.p2
-          p1: range.p1
-          p2: range.p2
-        else
-          p1: range.p2
-          p2: range.p1
+      copiedrange = range
+      if !range?
+        document.querySelector('input.value').value = ''
+        document.querySelector('.editor').style.display = 'none'
+      else
+        document.querySelector('input.value').value = range.ma.toFixed 1
+        document.querySelector('.editor').style.display = 'block'
     adjustrange = (n) ->
-      return if !adjustedrange?
-      p1 = adjustedrange.p1.format 'x'
-      p2 = adjustedrange.p2.format 'x'
+      return if !copiedrange?
+      p1 = copiedrange.p1.format 'x'
+      p2 = copiedrange.p2.format 'x'
       diff = p2 - p1
       for d in example3
         x = d.time.format('x') - p1
@@ -54,6 +53,50 @@ d3.csv '/example3.csv', (err, example3) ->
         x /= diff
         if x >= 0 and x <= 1
           d.wsp2 += n * curve x
+      for d in example3
+        d.wsp2 = Math.max 0, d.wsp2
+    targetrange = (n) ->
+      return if !copiedrange?
+      p1 = copiedrange.p1.format 'x'
+      p2 = copiedrange.p2.format 'x'
+      diff = p2 - p1
+      for d in example3
+        x = d.time.format('x') - p1
+        if diff is 0
+          continue if x isnt 0
+          d.wsp2 = n
+        x /= diff
+        if x >= 0 and x <= 1
+          d.wsp2 += (n - d.wsp2) * curve x
+      for d in example3
+        d.wsp2 = Math.max 0, d.wsp2
+    clearrange = ->
+      return if !copiedrange?
+      p1 = copiedrange.p1.format 'x'
+      p2 = copiedrange.p2.format 'x'
+      diff = p2 - p1
+      for d in example3
+        x = d.time.format('x') - p1
+        if diff is 0
+          continue if x isnt 0
+          d.wsp2 = d.wsp
+        x /= diff
+        if x >= 0 and x <= 1
+          d.wsp2 += (d.wsp - d.wsp2) * curve x
+      for d in example3
+        d.wsp2 = Math.max 0, d.wsp2
+    document.onkeydown = (e) ->
+      switch e.keyCode
+        when 38
+          adjustrange 1
+          window.dispatchEvent new Event 'resize'
+        when 40
+          adjustrange -1
+          window.dispatchEvent new Event 'resize'
+        when 37
+          scene.hub.emit 'range nudge back'
+        when 39
+          scene.hub.emit 'range nudge forward'
     document.querySelector('button.up').onclick = (e) ->
       adjustrange 1
       window.dispatchEvent new Event 'resize'
@@ -68,3 +111,10 @@ d3.csv '/example3.csv', (err, example3) ->
       for d in example3
         d.wsp2 = d.wsp
       scene.hub.emit 'state updated', data: example3
+    document.querySelector('form').onsubmit = (e) ->
+      e.preventDefault()
+      targetrange parseFloat document.querySelector('input.value').value
+      window.dispatchEvent new Event 'resize'
+    document.querySelector('button.clear').onclick = (e) ->
+      clearrange()
+      window.dispatchEvent new Event 'resize'

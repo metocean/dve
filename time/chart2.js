@@ -59,7 +59,7 @@ calculate_layout = function(dimensions) {
 };
 
 module.exports = function(spec, components) {
-  var axis, chart, focus, inner, items, maxDomains, range, result, scale, svg, updaterange;
+  var Neighbours, average, axis, chart, focus, inner, items, maxDomains, range, result, roundtoclosest, scale, svg, updaterange;
   svg = null;
   inner = null;
   scale = null;
@@ -70,6 +70,9 @@ module.exports = function(spec, components) {
   chart = null;
   items = [];
   maxDomains = [];
+  roundtoclosest = null;
+  Neighbours = null;
+  average = null;
   return result = {
     init: function(state, params) {
       var item, j, len, ref, s;
@@ -85,12 +88,25 @@ module.exports = function(spec, components) {
         }
         items.push(item);
       }
+      Neighbours = neighbours(state.data, function(d) {
+        return d.time;
+      });
+      average = function(p, fn) {
+        var k, len1, pn, total;
+        pn = Neighbours(p);
+        total = 0;
+        for (k = 0, len1 = pn.length; k < len1; k++) {
+          item = pn[k];
+          total += fn(item);
+        }
+        return total / pn.length;
+      };
       params.hub.on('range', function(p) {
         range = p;
         return updaterange();
       });
       params.hub.on('range nudge back', function(p) {
-        var d, i, k, l, len1, len2, newp1, newp2, p1index, p2index, ref1, ref2;
+        var d, i, k, l, len1, len2, m, newp1, newp2, p1index, p2index, ref1, ref2;
         if (range == null) {
           return;
         }
@@ -126,13 +142,18 @@ module.exports = function(spec, components) {
         if (newp2.isBefore(params.domain[0])) {
           newp2 = params.domain[0].clone();
         }
+        m = newp1 + (newp2 - newp1) / 2;
         return params.hub.emit('range', {
           p1: newp1,
-          p2: newp2
+          p2: newp2,
+          m: m,
+          ma: average(m, function(d) {
+            return d.wsp2;
+          })
         });
       });
       return params.hub.on('range nudge forward', function(p) {
-        var d, i, k, l, len1, len2, newp1, newp2, p1index, p2index, ref1, ref2;
+        var d, i, k, l, len1, len2, m, newp1, newp2, p1index, p2index, ref1, ref2;
         if (range == null) {
           return;
         }
@@ -168,14 +189,19 @@ module.exports = function(spec, components) {
         if (newp2.isAfter(params.domain[1])) {
           newp2 = params.domain[1].clone();
         }
+        m = newp1 + (newp2 - newp1) / 2;
         return params.hub.emit('range', {
           p1: newp1,
-          p2: newp2
+          p2: newp2,
+          m: m,
+          ma: average(m, function(d) {
+            return d.wsp2;
+          })
         });
       });
     },
     render: function(dom, state, params) {
-      var Neighbours, clipId, drag, item, j, layout, len, newparams, rangefsm, roundtoclosest;
+      var clipId, drag, item, j, layout, len, newparams, rangefsm;
       layout = calculate_layout(params.dimensions);
       svg = d3.select(dom).append('svg').attr('class', 'item chart');
       svg.append('g').attr('class', 'title').append('text').attr('class', 'infotext').attr('y', 0).attr('x', 0).text(spec.text).style('fill', '#142c58').attr('dy', '20px');
@@ -193,9 +219,6 @@ module.exports = function(spec, components) {
         x: d3.svg.axis().scale(scale.x).orient("bottom").ticks(d3.time.hour),
         y: d3.svg.axis().scale(scale.y).orient("left").ticks(6)
       };
-      Neighbours = neighbours(state.data, function(d) {
-        return d.time;
-      });
       roundtoclosest = function(p) {
         var d0, d1, halfway, pn;
         pn = Neighbours(p);
@@ -227,15 +250,20 @@ module.exports = function(spec, components) {
           return params.hub.emit('range', null);
         },
         show: function(x) {
-          var p1, p1d, p2, p2d;
+          var m, p1, p1d, p2, p2d;
           rangefsm.p2 = x;
           p1d = moment(scale.x.invert(rangefsm.p1));
           p2d = moment(scale.x.invert(rangefsm.p2));
           p1 = roundtoclosest(p1d);
           p2 = roundtoclosest(p2d);
+          m = p1.time + (p2.time - p1.time) / 2;
           return params.hub.emit('range', {
             p1: p1.time,
-            p2: p2.time
+            p2: p2.time,
+            m: m,
+            ma: average(m, function(d) {
+              return d.wsp2;
+            })
           });
         },
         getx: function() {
@@ -312,28 +340,27 @@ module.exports = function(spec, components) {
       focus.append('line').attr('class', 'rangemiddle').attr('display', 'none').attr('y1', 0).attr('y2', layout.canvas.height);
       focus.append('rect').attr('class', 'foreground').style('fill', 'none').on('touchstart', rangefsm.touchstart).on('touchend', rangefsm.touchend).on('mousedown', rangefsm.mousedown).on('mouseup', rangefsm.mouseup).call(drag);
       updaterange = function() {
-        var adjustedrange;
         if (range == null) {
           focus.select('line.rangestart').attr('display', 'none');
           focus.select('line.rangeend').attr('display', 'none');
           focus.select('line.rangemiddle').attr('display', 'none');
           return;
         }
-        rangefsm.p1 = scale.x(range.p1);
-        rangefsm.p2 = scale.x(range.p2);
-        adjustedrange = range.p1 <= range.p2 ? {
-          p1: range.p1,
-          p2: range.p2
-        } : {
-          p1: range.p2,
-          p2: range.p1
-        };
-        adjustedrange.m = adjustedrange.p1 + (adjustedrange.p2 - adjustedrange.p1) / 2;
-        focus.select('line.rangestart').attr('display', null).attr('x1', scale.x(adjustedrange.p1)).attr('x2', scale.x(adjustedrange.p1));
-        focus.select('line.rangeend').attr('display', null).attr('x1', scale.x(adjustedrange.p2)).attr('x2', scale.x(adjustedrange.p2));
-        return focus.select('line.rangemiddle').attr('display', null).attr('x1', scale.x(adjustedrange.m)).attr('x2', scale.x(adjustedrange.m));
+        focus.select('line.rangestart').attr('display', null).attr('x1', scale.x(range.p1)).attr('x2', scale.x(range.p1));
+        focus.select('line.rangeend').attr('display', null).attr('x1', scale.x(range.p2)).attr('x2', scale.x(range.p2));
+        return focus.select('line.rangemiddle').attr('display', null).attr('x1', scale.x(range.m)).attr('x2', scale.x(range.m));
       };
-      return result.resize(params.dimensions);
+      result.resize(params.dimensions);
+      if (range != null) {
+        return params.hub.emit('range', {
+          p1: range.p1,
+          p2: range.p2,
+          m: range.m,
+          ma: average(range.m, function(d) {
+            return d.wsp2;
+          })
+        });
+      }
     },
     resize: function(dimensions) {
       var i, j, layout, len;

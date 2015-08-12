@@ -61,6 +61,9 @@ module.exports = (spec, components) ->
   chart = null
   items = []
   maxDomains = []
+  roundtoclosest = null
+  Neighbours = null
+  average = null
   result =
     init: (state, params) ->
       for s in spec.spec
@@ -69,6 +72,15 @@ module.exports = (spec, components) ->
         item = components[s.type] s, components
         item.init state, params if item.init?
         items.push item
+
+      Neighbours = neighbours state.data, (d) -> d.time
+
+      average = (p, fn) ->
+        pn = Neighbours p
+        total = 0
+        for item in pn
+          total += fn item
+        total / pn.length
 
       params.hub.on 'range', (p) ->
         range = p
@@ -98,9 +110,12 @@ module.exports = (spec, components) ->
         if newp2.isBefore params.domain[0]
           newp2 = params.domain[0].clone()
 
+        m = newp1 + (newp2 - newp1) / 2
         params.hub.emit 'range',
           p1: newp1
           p2: newp2
+          m: m
+          ma: average m, (d) -> d.wsp2
 
       params.hub.on 'range nudge forward', (p) ->
         return if !range?
@@ -126,9 +141,12 @@ module.exports = (spec, components) ->
         if newp2.isAfter params.domain[1]
           newp2 = params.domain[1].clone()
 
+        m = newp1 + (newp2 - newp1) / 2
         params.hub.emit 'range',
           p1: newp1
           p2: newp2
+          m: m
+          ma: average m, (d) -> d.wsp2
     render: (dom, state, params) ->
       layout = calculate_layout params.dimensions
 
@@ -184,8 +202,6 @@ module.exports = (spec, components) ->
         x: d3.svg.axis().scale(scale.x).orient("bottom").ticks(d3.time.hour)
         y: d3.svg.axis().scale(scale.y).orient("left").ticks(6)
 
-      Neighbours = neighbours state.data, (d) -> d.time
-
       roundtoclosest = (p) ->
         pn = Neighbours p
         if pn.length is 1
@@ -216,9 +232,12 @@ module.exports = (spec, components) ->
           p1 = roundtoclosest p1d
           p2 = roundtoclosest p2d
 
+          m = p1.time + (p2.time - p1.time) / 2
           params.hub.emit 'range',
             p1: p1.time
             p2: p2.time
+            m: m
+            ma: average m, (d) -> d.wsp2
 
         getx: ->
           x = d3.mouse(inner.node())[0]
@@ -318,40 +337,32 @@ module.exports = (spec, components) ->
             .attr 'display', 'none'
           return
 
-        #rangefsm.currentx = scale.x range.start
-
-        rangefsm.p1 = scale.x range.p1
-        rangefsm.p2 = scale.x range.p2
-
-        adjustedrange =
-          if range.p1 <= range.p2
-            p1: range.p1
-            p2: range.p2
-          else
-            p1: range.p2
-            p2: range.p1
-
-        adjustedrange.m = adjustedrange.p1 + (adjustedrange.p2 - adjustedrange.p1) / 2
-
         focus
           .select 'line.rangestart'
           .attr 'display', null
-          .attr 'x1', scale.x adjustedrange.p1
-          .attr 'x2', scale.x adjustedrange.p1
+          .attr 'x1', scale.x range.p1
+          .attr 'x2', scale.x range.p1
 
         focus
           .select 'line.rangeend'
           .attr 'display', null
-          .attr 'x1', scale.x adjustedrange.p2
-          .attr 'x2', scale.x adjustedrange.p2
+          .attr 'x1', scale.x range.p2
+          .attr 'x2', scale.x range.p2
 
         focus
           .select 'line.rangemiddle'
           .attr 'display', null
-          .attr 'x1', scale.x adjustedrange.m
-          .attr 'x2', scale.x adjustedrange.m
+          .attr 'x1', scale.x range.m
+          .attr 'x2', scale.x range.m
 
       result.resize params.dimensions
+
+      if range?
+        params.hub.emit 'range',
+          p1: range.p1
+          p2: range.p2
+          m: range.m
+          ma: average range.m, (d) -> d.wsp2
 
     resize: (dimensions) ->
       layout = calculate_layout dimensions

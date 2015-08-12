@@ -41,7 +41,7 @@ fixdata = function(data) {
 d3.csv('/example3.csv', function(err, example3) {
   fixdata(example3);
   return d3.text('/test.yml', function(error, spec) {
-    var adjustedrange, adjustrange, dom, scene;
+    var adjustrange, clearrange, copiedrange, dom, scene, targetrange;
     dom = document.querySelector('#root');
     spec = jsyaml.load(spec);
     scene = components[spec.type](spec, components);
@@ -51,28 +51,25 @@ d3.csv('/example3.csv', function(err, example3) {
     scene.render(dom, {
       data: example3
     }, {});
-    adjustedrange = null;
+    copiedrange = null;
     scene.hub.on('range', function(range) {
+      copiedrange = range;
       if (range == null) {
-        return adjustedrange = null;
+        document.querySelector('input.value').value = '';
+        return document.querySelector('.editor').style.display = 'none';
+      } else {
+        document.querySelector('input.value').value = range.ma.toFixed(1);
+        return document.querySelector('.editor').style.display = 'block';
       }
-      return adjustedrange = range.p1 <= range.p2 ? {
-        p1: range.p1,
-        p2: range.p2
-      } : {
-        p1: range.p2,
-        p2: range.p1
-      };
     });
     adjustrange = function(n) {
-      var d, diff, i, len, p1, p2, results, x;
-      if (adjustedrange == null) {
+      var d, diff, i, j, len, len1, p1, p2, results, x;
+      if (copiedrange == null) {
         return;
       }
-      p1 = adjustedrange.p1.format('x');
-      p2 = adjustedrange.p2.format('x');
+      p1 = copiedrange.p1.format('x');
+      p2 = copiedrange.p2.format('x');
       diff = p2 - p1;
-      results = [];
       for (i = 0, len = example3.length; i < len; i++) {
         d = example3[i];
         x = d.time.format('x') - p1;
@@ -84,12 +81,87 @@ d3.csv('/example3.csv', function(err, example3) {
         }
         x /= diff;
         if (x >= 0 && x <= 1) {
-          results.push(d.wsp2 += n * curve(x));
-        } else {
-          results.push(void 0);
+          d.wsp2 += n * curve(x);
         }
       }
+      results = [];
+      for (j = 0, len1 = example3.length; j < len1; j++) {
+        d = example3[j];
+        results.push(d.wsp2 = Math.max(0, d.wsp2));
+      }
       return results;
+    };
+    targetrange = function(n) {
+      var d, diff, i, j, len, len1, p1, p2, results, x;
+      if (copiedrange == null) {
+        return;
+      }
+      p1 = copiedrange.p1.format('x');
+      p2 = copiedrange.p2.format('x');
+      diff = p2 - p1;
+      for (i = 0, len = example3.length; i < len; i++) {
+        d = example3[i];
+        x = d.time.format('x') - p1;
+        if (diff === 0) {
+          if (x !== 0) {
+            continue;
+          }
+          d.wsp2 = n;
+        }
+        x /= diff;
+        if (x >= 0 && x <= 1) {
+          d.wsp2 += (n - d.wsp2) * curve(x);
+        }
+      }
+      results = [];
+      for (j = 0, len1 = example3.length; j < len1; j++) {
+        d = example3[j];
+        results.push(d.wsp2 = Math.max(0, d.wsp2));
+      }
+      return results;
+    };
+    clearrange = function() {
+      var d, diff, i, j, len, len1, p1, p2, results, x;
+      if (copiedrange == null) {
+        return;
+      }
+      p1 = copiedrange.p1.format('x');
+      p2 = copiedrange.p2.format('x');
+      diff = p2 - p1;
+      for (i = 0, len = example3.length; i < len; i++) {
+        d = example3[i];
+        x = d.time.format('x') - p1;
+        if (diff === 0) {
+          if (x !== 0) {
+            continue;
+          }
+          d.wsp2 = d.wsp;
+        }
+        x /= diff;
+        if (x >= 0 && x <= 1) {
+          d.wsp2 += (d.wsp - d.wsp2) * curve(x);
+        }
+      }
+      results = [];
+      for (j = 0, len1 = example3.length; j < len1; j++) {
+        d = example3[j];
+        results.push(d.wsp2 = Math.max(0, d.wsp2));
+      }
+      return results;
+    };
+    document.onkeydown = function(e) {
+      switch (e.keyCode) {
+        case 38:
+          adjustrange(1);
+          return window.dispatchEvent(new Event('resize'));
+        case 40:
+          adjustrange(-1);
+          return window.dispatchEvent(new Event('resize'));
+        case 37:
+          return scene.hub.emit('range nudge back');
+        case 39:
+          return scene.hub.emit('range nudge forward');
+      }
     };
     document.querySelector('button.up').onclick = function(e) {
       adjustrange(1);
@@ -105,7 +177,7 @@ d3.csv('/example3.csv', function(err, example3) {
     document.querySelector('button.forward').onclick = function(e) {
       return scene.hub.emit('range nudge forward');
     };
-    return document.querySelector('button.reset').onclick = function(e) {
+    document.querySelector('button.reset').onclick = function(e) {
       var d, i, len;
       for (i = 0, len = example3.length; i < len; i++) {
         d = example3[i];
@@ -114,6 +186,15 @@ d3.csv('/example3.csv', function(err, example3) {
       return scene.hub.emit('state updated', {
         data: example3
       });
+    };
+    document.querySelector('form').onsubmit = function(e) {
+      e.preventDefault();
+      targetrange(parseFloat(document.querySelector('input.value').value));
+      return window.dispatchEvent(new Event('resize'));
+    };
+    return document.querySelector('button.clear').onclick = function(e) {
+      clearrange();
+      return window.dispatchEvent(new Event('resize'));
     };
   });
 });
