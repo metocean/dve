@@ -1,0 +1,7 @@
+type: report
+spec:
+- type: 'windrosebar'
+  xLabel: 'Direction'
+  xUnits: false
+  categoryLabel: 'Wind speed'
+  categoryUnits: true

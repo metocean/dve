@@ -9,10 +9,55 @@ components = require('dve');
 
 moment = require('timespanner');
 
-d3.json('/wsp-mean.json', function(errData, data) {
-  return d3.text('/spec.yml', function(errSpec, spec) {
+d3.json('/data/wsp-mean.json', function(errData, data) {
+  return d3.text('/specs/histogram.yml', function(errSpec, spec) {
     var el, scene;
     el = document.getElementById('histogram');
+    spec = jsyaml.load(spec);
+    scene = components[spec.type](spec, components);
+    scene.init({
+      data: data
+    }, {});
+    return scene.render(el, {
+      data: data
+    }, {});
+  });
+});
+
+d3.json('/data/wsp-count.json', function(errData, data) {
+  return d3.text('/specs/table.yml', function(errSpec, spec) {
+    var el, scene;
+    el = document.getElementById('table');
+    spec = jsyaml.load(spec);
+    scene = components[spec.type](spec, components);
+    scene.init({
+      data: data
+    }, {});
+    return scene.render(el, {
+      data: data
+    }, {});
+  });
+});
+
+d3.json('/data/wsp-rose.json', function(errData, data) {
+  return d3.text('/specs/windrose.yml', function(errSpec, spec) {
+    var el, scene;
+    el = document.getElementById('windrose');
+    spec = jsyaml.load(spec);
+    scene = components[spec.type](spec, components);
+    scene.init({
+      data: data
+    }, {});
+    return scene.render(el, {
+      data: data
+    }, {});
+  });
+});
+
+d3.json('/data/wsp-rose.json', function(errData, data) {
+  return d3.text('/specs/windrosebar.yml', function(errSpec, spec) {
+    var el, scene;
+    el = document.getElementById('windrosebar');
     spec = jsyaml.load(spec);
     scene = components[spec.type](spec, components);
     scene.init({

@@ -1,9 +1,7 @@
 type: report
 spec:
-- type: 'histogram'
+- type: 'table'
   xLabel: 'Month'
   xUnits: false
   yLabel: 'Mean wind speed'
   yUnits: true
-
-
