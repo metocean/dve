@@ -8,7 +8,7 @@ var calculate_layout, d3;
 
 d3 = require('d3');
 
-calculate_layout = function(dimensions, speczz, nBins) {
+calculate_layout = function(dimensions, spec, nBins) {
   var container, inner, innerAspectRatio, innerMargin, maxContainerWidth, minContainerWidth;
   inner = {};
   innerMargin = {

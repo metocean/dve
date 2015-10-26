@@ -7,7 +7,7 @@ Plot a windrose in bar chart format.
 
 d3 = require 'd3'
 
-calculate_layout = (dimensions, speczz, nBins) ->
+calculate_layout = (dimensions, spec, nBins) ->
   # Inner is the plot area, but doesn't include axes or labels
   inner = {}
   innerMargin = 
