@@ -2,9 +2,6 @@
 
 Plot a frequency histogram with additional buckets for each point.
 
-TODO: Work out how to position these xy visualisations.
-TODO: Allow the different categories and values to be specified.
-
 ###
 
 d3 = require 'd3'
@@ -15,7 +12,7 @@ calculate_layout = (dimensions) ->
     top: 10
     right: 10
     bottom: 60
-    left: 85
+    left: 60
 
   maxContainerWidth = 800
   minContainerWidth = 400
@@ -78,15 +75,15 @@ module.exports = (spec, components) ->
         .attr 'class', 'y axis'
       inner.append 'text'
         .attr 'x', (layout.inner.width/2)
-        .attr 'y',  layout.inner.height + layout.innerMargin.bottom - 25 - 15  # Not sure why this isn't 20...
-        .attr 'dy', 20
+        .attr 'y',  layout.inner.height + layout.innerMargin.bottom
+        .attr 'dy', '-0.4em'  # Account for descenders
         .attr 'class', 'axis-label axis-label--x'
         .style 'text-anchor', 'middle'
         .text spec.xLabel + if spec.xUnits then " [#{state.data.bins[0].units}]" else ''
       inner.append 'text'
         .attr 'text-anchor', 'middle'
-        .attr 'x', -1 * (layout.inner.height/2)
-        .attr 'y', -1 * layout.innerMargin.left + 15
+        .attr 'x', -1 * (layout.inner.height + layout.innerMargin.bottom) / 2
+        .attr 'y', -1 * layout.innerMargin.left
         .attr 'dy', '1em'
         .attr 'transform', 'rotate(-90)'  # This also rotates the xy cooridnate system
         .attr 'class', 'axis-label axis-label--y'

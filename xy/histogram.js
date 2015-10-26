@@ -3,9 +3,6 @@
 /*
 
 Plot a frequency histogram with additional buckets for each point.
-
-TODO: Work out how to position these xy visualisations.
-TODO: Allow the different categories and values to be specified.
  */
 var calculate_layout, d3, zip;
 
@@ -19,7 +16,7 @@ calculate_layout = function(dimensions) {
     top: 10,
     right: 10,
     bottom: 60,
-    left: 85
+    left: 60
   };
   maxContainerWidth = 800;
   minContainerWidth = 400;
@@ -74,8 +71,8 @@ module.exports = function(spec, components) {
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.inner.left + "," + layout.inner.top + ")");
       inner.append('g').attr('class', 'x axis').attr('transform', "translate(0," + layout.inner.height + ")");
       inner.append('g').attr('class', 'y axis');
-      inner.append('text').attr('x', layout.inner.width / 2).attr('y', layout.inner.height + layout.innerMargin.bottom - 25 - 15).attr('dy', 20).attr('class', 'axis-label axis-label--x').style('text-anchor', 'middle').text(spec.xLabel + (spec.xUnits ? " [" + state.data.bins[0].units + "]" : ''));
-      inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * (layout.inner.height / 2)).attr('y', -1 * layout.innerMargin.left + 15).attr('dy', '1em').attr('transform', 'rotate(-90)').attr('class', 'axis-label axis-label--y').text(spec.yLabel + (spec.yUnits ? " [" + state.data.units + "]" : ''));
+      inner.append('text').attr('x', layout.inner.width / 2).attr('y', layout.inner.height + layout.innerMargin.bottom).attr('dy', '-0.4em').attr('class', 'axis-label axis-label--x').style('text-anchor', 'middle').text(spec.xLabel + (spec.xUnits ? " [" + state.data.bins[0].units + "]" : ''));
+      inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * (layout.inner.height + layout.innerMargin.bottom) / 2).attr('y', -1 * layout.innerMargin.left).attr('dy', '1em').attr('transform', 'rotate(-90)').attr('class', 'axis-label axis-label--y').text(spec.yLabel + (spec.yUnits ? " [" + state.data.units + "]" : ''));
       inner.select('.x.axis').call(axis.x);
       inner.select('.y.axis').call(axis.y.tickSize(-layout.inner.width, 0, 0));
       inner.selectAll('.y.axis .tick line').data(scale.y.ticks(axis.y.ticks()[0]));

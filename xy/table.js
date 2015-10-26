@@ -3,9 +3,6 @@
 /*
 
 Plot an xy table with heatmap.
-
-TODO: Work out how to position these xy visualisations.
-TODO: Allow the different categories and values to be specified.
  */
 var calculate_layout, colorbrewer, d3;
 
@@ -16,7 +13,7 @@ colorbrewer = require('colorbrewer');
 calculate_layout = function(dimensions, nRows, nCols, params) {
   var container, containerWidth, field, inner, innerMargin, maxFieldWidth, minFieldWidth;
   innerMargin = {
-    top: 75,
+    top: 65,
     right: 10,
     bottom: 15,
     left: 85
@@ -113,10 +110,10 @@ module.exports = function(spec, components) {
       svg.attr('width', layout.container.width).attr('height', layout.container.height);
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.inner.left + "," + layout.inner.top + ")");
       if (spec.xLabel != null) {
-        inner.append('text').attr('x', layout.inner.width / 2).attr('y', -1 * layout.innerMargin.top + 15).attr('dy', '1em').style('text-anchor', 'middle').text(spec.xLabel + (spec.xUnits ? " [" + state.data.bins[1].units + "]" : ''));
+        inner.append('text').attr('x', layout.inner.width / 2).attr('y', -1 * layout.innerMargin.top).attr('dy', '1em').style('text-anchor', 'middle').text(spec.xLabel + (spec.xUnits ? " [" + state.data.bins[1].units + "]" : ''));
       }
       if (spec.yLabel != null) {
-        inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * layout.inner.height / 2).attr('y', -1 * layout.innerMargin.left + 15).attr('dy', '1em').attr('transform', 'rotate(-90)').text(spec.yLabel + (spec.yUnits ? " [" + state.data.bins[0].units + "]" : ''));
+        inner.append('text').attr('text-anchor', 'middle').attr('x', -1 * (layout.inner.height + layout.innerMargin.bottom) / 2).attr('y', -1 * layout.innerMargin.left).attr('dy', '1em').attr('transform', 'rotate(-90)').text(spec.yLabel + (spec.yUnits ? " [" + state.data.bins[0].units + "]" : ''));
       }
       container = inner.append('g').attr('class', 'container');
       rowsGrp = container.append('g').attr('class', 'rowsGrp').attr('transform', "translate(" + (field.width * 0.5) + ", 0)");

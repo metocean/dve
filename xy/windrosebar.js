@@ -2,30 +2,21 @@
 
 /*
 
-Plot a windrose with additional categories for each direction.
-
-TODO: Work out how to position these xy visualisations.
-TODO: Allow the different categories and values to be specified.
+Plot a windrose in bar chart format.
  */
 var calculate_layout, d3;
 
 d3 = require('d3');
 
 calculate_layout = function(dimensions, speczz, nBins) {
-  var container, inner, innerAspectRatio, innerMargin, legend, maxContainerWidth, minContainerWidth;
+  var container, inner, innerAspectRatio, innerMargin, maxContainerWidth, minContainerWidth;
   inner = {};
   innerMargin = {
     top: 30,
-    right: 50,
+    right: 0,
     bottom: 65,
-    left: 80
+    left: 60
   };
-  legend = {
-    top: 20,
-    width: 130
-  };
-  legend.height = legend.height = (nBins + 1.5) * 30;
-  legend.bottom = legend.top + legend.height;
   maxContainerWidth = 900;
   minContainerWidth = 520;
   container = {};
@@ -33,20 +24,18 @@ calculate_layout = function(dimensions, speczz, nBins) {
   container.width = Math.max(container.width, minContainerWidth);
   container.right = container.width;
   container.left = 0;
-  legend.right = container.width;
-  legend.left = legend.right - legend.width;
-  inner.right = container.right - legend.width - innerMargin.right;
+  inner.right = container.right - innerMargin.right;
   inner.left = 0 + innerMargin.left;
   inner.width = inner.right - inner.left;
   innerAspectRatio = 0.5;
   inner.height = innerAspectRatio * inner.width;
   inner.top = 0 + innerMargin.top;
   inner.bottom = inner.top + inner.height;
-  container.height = Math.max(inner.bottom + innerMargin.bottom, legend.bottom);
+  container.height = inner.bottom + innerMargin.bottom;
   return {
     container: container,
     inner: inner,
-    legend: legend
+    innerMargin: innerMargin
   };
 };
 
@@ -54,7 +43,7 @@ module.exports = function(spec, components) {
   var result;
   return result = {
     render: function(dom, state, params) {
-      var angularBins, axis, bars, cell, chart, colorScale, d, dataMax, groupedData, i, inner, j, k, l, layout, legend, legendHeading, legendRectSize, legendSpacing, len, len1, m, nBins, nSegments, obj, radialBins, ref, results, row, scale, sobj, start, svg;
+      var angularBins, axis, bars, cell, chart, colorScale, d, dataMax, groupedData, i, inner, j, k, l, layout, len, len1, nBins, nSegments, obj, radialBins, ref, row, scale, sobj, start, svg;
       angularBins = state.data.bins[0].labels;
       radialBins = state.data.bins[1].labels;
       nSegments = angularBins.length;
@@ -138,21 +127,7 @@ module.exports = function(spec, components) {
         }
       });
       inner.select('.y.axis .domain').remove();
-      inner.append('text').attr('x', layout.inner.width / 2).attr('y', layout.inner.height + 30).attr('dy', '1em').attr('class', 'axis-label axis-label--x').style('text-anchor', 'middle').text(spec.xLabel + (spec.xUnits ? " [" + state.data.bins[0].units + "]" : ''));
-      legendRectSize = 20;
-      legendSpacing = 10;
-      legend = svg.selectAll('.legend').data((function() {
-        results = [];
-        for (var m = 0; 0 <= nBins ? m < nBins : m > nBins; 0 <= nBins ? m++ : m--){ results.push(m); }
-        return results;
-      }).apply(this)).enter().append('g').attr('class', 'legend').attr('transform', function(d, i) {
-        return "translate(" + layout.legend.left + "," + (layout.legend.top + (legendRectSize + legendSpacing) * i + 30) + ")";
-      });
-      legend.append('rect').attr('width', legendRectSize).attr('height', legendRectSize).style('fill', colorScale).style('stroke', colorScale);
-      legend.append('text').attr('x', legendRectSize + legendSpacing).attr('y', legendRectSize - legendSpacing + 5).text(function(d) {
-        return radialBins[d];
-      });
-      return legendHeading = svg.append('text').attr('x', layout.legend.left).attr('y', layout.legend.top).attr('dy', '1em').text(spec.categoryLabel + (spec.categoryUnits ? " [" + state.data.bins[1].units + "]" : ''));
+      return inner.append('text').attr('x', layout.inner.width / 2).attr('y', layout.inner.height + layout.innerMargin.bottom).attr('dy', '-0.4em').attr('class', 'axis-label axis-label--x').style('text-anchor', 'middle').text(spec.xLabel + (spec.xUnits ? " [" + state.data.bins[0].units + "]" : ''));
     }
   };
 };
