@@ -56,6 +56,34 @@ body {
   stroke: #d8222a;
   stroke-width: 0.75;
 }
+.dve-container line.rangestart {
+  stroke: #d8222a;
+  stroke-width: 0.75;
+}
+.dve-container line.rangeend {
+  stroke: #d8222a;
+  stroke-width: 0.75;
+}
+.dve-container line.rangemiddle {
+  stroke-dasharray: 2, 2;
+  stroke: #d8222a;
+  stroke-width: 0.75;
+}
+.dve-container path.delta.positive {
+  stroke: none;
+  stroke: 0;
+  fill: #8bca7f;
+  fill-opacity: 0.6;
+}
+.dve-container path.delta.negative {
+  stroke: none;
+  stroke: 0;
+  fill: #e8797f;
+  fill-opacity: 0.6;
+}
+.dve-container path.delta.changes {
+  stroke-width: 0.75;
+}
 .dve-container .inner .divider {
   stroke: #d5e2ed;
   shape-rendering: crispEdges;
