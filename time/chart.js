@@ -39,7 +39,7 @@ calculate_layout = function(dimensions) {
     top: 0,
     right: 0,
     bottom: 3,
-    left: 200
+    left: 20
   };
   canvas = {
     top: info.top,
@@ -92,7 +92,6 @@ module.exports = function(spec, components) {
       var clipId, drag, item, j, layout, len, newparams, poi, poifsm;
       layout = calculate_layout(params.dimensions);
       svg = d3.select(dom).append('svg').attr('class', 'item chart');
-      svg.append('g').attr('class', 'title').append('text').attr('class', 'infotext').attr('y', 0).attr('x', 0).text(spec.text).style('fill', '#142c58').attr('dy', '20px');
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
       inner.append('g').attr('class', 'x axis').attr('transform', "translate(0," + layout.canvas.height + ")");
       inner.append('g').attr('class', 'y axis');

@@ -22,15 +22,7 @@ calculate_layout = (dimensions) ->
     top: 0
     right: 0
     bottom: 0
-    left: 200
-
-  title =
-    top: 0
-    right: dimensions.width - info.left
-    bottom: 0
-    left: 0
-    height: dimensions.height
-    width: info.left
+    left: 20
 
   canvas =
     top: info.top
@@ -42,7 +34,6 @@ calculate_layout = (dimensions) ->
 
   dimensions: dimensions
   info: info
-  title: title
   canvas: canvas
 
 module.exports = (spec, components) ->
@@ -114,15 +105,6 @@ module.exports = (spec, components) ->
         .attr 'class', 'item direction'
 
       data = state.data
-
-      svg
-        .append 'g'
-        .attr 'class', 'title'
-        .attr 'transform', "translate(#{layout.title.left},#{layout.title.top})"
-        .append 'text'
-        .attr 'class', 'infotext'
-        .text spec.text
-        .attr 'dy', 18
 
       inner = svg
         .append 'g'
