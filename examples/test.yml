@@ -21,3 +21,11 @@ spec:
         field: wsp
         delta: wsp2
         units: kts
+    - type: chart
+      text: Wind Speed
+      spec:
+      - type: line
+        style: primary
+        text: Wind Speed 10m
+        field: delta
+        units: kts
