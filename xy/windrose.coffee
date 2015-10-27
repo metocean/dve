@@ -2,9 +2,6 @@
 
 Plot a windrose with additional categories for each direction.
 
-TODO: Work out how to position these xy visualisations.
-TODO: Allow the different categories and values to be specified.
-
 ###
 
 
@@ -15,16 +12,10 @@ calculate_layout = (dimensions, spec, nBins) ->
   # Inner is the plot area, but doesn't include axes or labels
   inner = {}
   innerMargin = 
-    top: 40
-    right: 60
-    bottom: 40
-    left: 40
-
-  legend = 
-    top: 20
-    width: 130
-  legend.height = (nBins + 1.5) * 30
-  legend.bottom = legend.top + legend.height
+    top: 30
+    right: 30
+    bottom: 30
+    left: 30
 
   # Container is the entire dom element d3 has to work with
   maxContainerWidth = 700
@@ -37,19 +28,16 @@ calculate_layout = (dimensions, spec, nBins) ->
   container.width = Math.max(container.width, minContainerWidth)
   container.right = container.width
   container.left = 0
-  legend.right = container.width
-  legend.left = legend.right - legend.width
-  inner.right = container.right - legend.width - innerMargin.right
+  inner.right = container.right - innerMargin.right
   inner.left = 0 + innerMargin.left
   inner.width = inner.right - inner.left
   inner.height = inner.width
   inner.top = 0 + innerMargin.top
   inner.bottom = inner.top + inner.height
-  container.height = Math.max(inner.bottom + innerMargin.bottom, legend.bottom)
+  container.height = inner.bottom + innerMargin.bottom
 
   container: container
   inner: inner
-  legend: legend
 
 module.exports = (spec, components) ->
   result =
@@ -191,30 +179,5 @@ module.exports = (spec, components) ->
           .attr 'y', -(i * diameter / nTicks)
 
         
-      legendRectSize = 20
-      legendSpacing = 10
-      legend = svg.selectAll '.legend'
-        .data [0...nBins]
-        .enter()
-        .append 'g'
-        .attr 'class', 'legend'
-        .attr 'transform', (d, i) -> "translate(#{layout.legend.left},#{layout.legend.top + (legendRectSize+legendSpacing)*i + 30})"
-
-      legend.append 'rect'
-        .attr 'width', legendRectSize
-        .attr 'height', legendRectSize
-        .style 'fill', colorScale
-        .style 'stroke', colorScale
-
-      legend.append 'text'
-        .attr 'x', legendRectSize + legendSpacing
-        .attr 'y', legendRectSize - legendSpacing + 5
-        .text (d) -> radialBins[d]
-
-      legendHeading = svg.append 'text'
-        .attr 'x', layout.legend.left
-        .attr 'y', layout.legend.top
-        .attr 'dy', '1em'
-        .text spec.radialLabel + if spec.radialUnits then " [#{state.data.bins[1].units}]" else ''
 
 

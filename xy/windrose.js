@@ -3,29 +3,20 @@
 /*
 
 Plot a windrose with additional categories for each direction.
-
-TODO: Work out how to position these xy visualisations.
-TODO: Allow the different categories and values to be specified.
  */
 var calculate_layout, d3;
 
 d3 = require('d3');
 
 calculate_layout = function(dimensions, spec, nBins) {
-  var container, inner, innerMargin, legend, maxContainerWidth, minContainerWidth;
+  var container, inner, innerMargin, maxContainerWidth, minContainerWidth;
   inner = {};
   innerMargin = {
-    top: 40,
-    right: 60,
-    bottom: 40,
-    left: 40
+    top: 30,
+    right: 30,
+    bottom: 30,
+    left: 30
   };
-  legend = {
-    top: 20,
-    width: 130
-  };
-  legend.height = (nBins + 1.5) * 30;
-  legend.bottom = legend.top + legend.height;
   maxContainerWidth = 700;
   minContainerWidth = 400;
   container = {};
@@ -33,19 +24,16 @@ calculate_layout = function(dimensions, spec, nBins) {
   container.width = Math.max(container.width, minContainerWidth);
   container.right = container.width;
   container.left = 0;
-  legend.right = container.width;
-  legend.left = legend.right - legend.width;
-  inner.right = container.right - legend.width - innerMargin.right;
+  inner.right = container.right - innerMargin.right;
   inner.left = 0 + innerMargin.left;
   inner.width = inner.right - inner.left;
   inner.height = inner.width;
   inner.top = 0 + innerMargin.top;
   inner.bottom = inner.top + inner.height;
-  container.height = Math.max(inner.bottom + innerMargin.bottom, legend.bottom);
+  container.height = inner.bottom + innerMargin.bottom;
   return {
     container: container,
-    inner: inner,
-    legend: legend
+    inner: inner
   };
 };
 
@@ -53,7 +41,7 @@ module.exports = function(spec, components) {
   var result;
   return result = {
     render: function(dom, state, params) {
-      var angularBins, arc, axis, cell, circlecontainer, colorScale, d, dataMax, diameter, groupedData, i, inner, j, k, l, layout, legend, legendHeading, legendRectSize, legendSpacing, len, len1, m, n, nBins, nSegments, nTicks, obj, p, radialBins, radialScale, ref, ref1, ref2, results, row, scale, segment, sobj, start, svg, tickcontainer;
+      var angularBins, arc, axis, cell, circlecontainer, colorScale, d, dataMax, diameter, groupedData, i, inner, j, k, l, layout, len, len1, m, n, nBins, nSegments, nTicks, obj, radialBins, radialScale, ref, ref1, ref2, results, row, scale, segment, sobj, start, svg, tickcontainer;
       angularBins = state.data.bins[0].labels;
       radialBins = state.data.bins[1].labels;
       nSegments = angularBins.length;
@@ -142,23 +130,11 @@ module.exports = function(spec, components) {
       tickcontainer = inner.append('g').attr('class', 'circlecontainer');
       nTicks = 4;
       radialScale = d3.scale.linear().domain([0, nTicks]).range([0, dataMax]);
+      results = [];
       for (i = n = 1, ref2 = nTicks + 1; 1 <= ref2 ? n < ref2 : n > ref2; i = 1 <= ref2 ? ++n : --n) {
-        tickcontainer.append('text').text(+radialScale(i).toPrecision(5)).attr('x', 0).attr('y', -(i * diameter / nTicks));
+        results.push(tickcontainer.append('text').text(+radialScale(i).toPrecision(5)).attr('x', 0).attr('y', -(i * diameter / nTicks)));
       }
-      legendRectSize = 20;
-      legendSpacing = 10;
-      legend = svg.selectAll('.legend').data((function() {
-        results = [];
-        for (var p = 0; 0 <= nBins ? p < nBins : p > nBins; 0 <= nBins ? p++ : p--){ results.push(p); }
-        return results;
-      }).apply(this)).enter().append('g').attr('class', 'legend').attr('transform', function(d, i) {
-        return "translate(" + layout.legend.left + "," + (layout.legend.top + (legendRectSize + legendSpacing) * i + 30) + ")";
-      });
-      legend.append('rect').attr('width', legendRectSize).attr('height', legendRectSize).style('fill', colorScale).style('stroke', colorScale);
-      legend.append('text').attr('x', legendRectSize + legendSpacing).attr('y', legendRectSize - legendSpacing + 5).text(function(d) {
-        return radialBins[d];
-      });
-      return legendHeading = svg.append('text').attr('x', layout.legend.left).attr('y', layout.legend.top).attr('dy', '1em').text(spec.radialLabel + (spec.radialUnits ? " [" + state.data.bins[1].units + "]" : ''));
+      return results;
     }
   };
 };

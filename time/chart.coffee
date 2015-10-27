@@ -35,7 +35,7 @@ calculate_layout = (dimensions) ->
     top: 0
     right: 0
     bottom: 3
-    left: 200
+    left: 20
 
   canvas =
     top: info.top
@@ -78,17 +78,6 @@ module.exports = (spec, components) ->
       svg = d3.select dom
         .append 'svg'
         .attr 'class', 'item chart'
-
-      svg
-        .append 'g'
-        .attr 'class', 'title'
-        .append 'text'
-        .attr 'class', 'infotext'
-        .attr 'y', 0
-        .attr 'x', 0
-        .text spec.text
-        .style 'fill', '#142c58'
-        .attr 'dy', '20px'
 
       inner = svg
         .append 'g'

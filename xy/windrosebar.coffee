@@ -1,9 +1,6 @@
 ###
 
-Plot a windrose with additional categories for each direction.
-
-TODO: Work out how to position these xy visualisations.
-TODO: Allow the different categories and values to be specified.
+Plot a windrose in bar chart format.
 
 ###
 
@@ -15,15 +12,9 @@ calculate_layout = (dimensions, speczz, nBins) ->
   inner = {}
   innerMargin = 
     top: 30
-    right: 50
+    right: 0
     bottom: 65
-    left: 80
-
-  legend = 
-    top: 20
-    width: 130
-  legend.height = legend.height = (nBins + 1.5) * 30
-  legend.bottom = legend.top + legend.height
+    left: 60
 
   # Container is the entire dom element d3 has to work with
   maxContainerWidth = 900
@@ -36,20 +27,18 @@ calculate_layout = (dimensions, speczz, nBins) ->
   container.width = Math.max(container.width, minContainerWidth)
   container.right = container.width
   container.left = 0
-  legend.right = container.width
-  legend.left = legend.right - legend.width
-  inner.right = container.right - legend.width - innerMargin.right
+  inner.right = container.right - innerMargin.right
   inner.left = 0 + innerMargin.left
   inner.width = inner.right - inner.left
   innerAspectRatio = 0.5
   inner.height = innerAspectRatio * inner.width
   inner.top = 0 + innerMargin.top
   inner.bottom = inner.top + inner.height
-  container.height = Math.max(inner.bottom + innerMargin.bottom, legend.bottom)
+  container.height = inner.bottom + innerMargin.bottom
 
   container: container
   inner: inner
-  legend: legend
+  innerMargin: innerMargin
 
 module.exports = (spec, components) ->
   result =
@@ -170,46 +159,9 @@ module.exports = (spec, components) ->
 
       inner.append 'text'
         .attr 'x', (layout.inner.width/2)
-        .attr 'y',  layout.inner.height + 30
-        .attr 'dy', '1em'
+        .attr 'y',  layout.inner.height + layout.innerMargin.bottom
+        .attr 'dy', '-0.4em'  # Account for descenders
         .attr 'class', 'axis-label axis-label--x'
         .style 'text-anchor', 'middle'
         .text spec.xLabel + if spec.xUnits then " [#{state.data.bins[0].units}]" else ''
-      # inner.append 'text'
-      #   .attr 'text-anchor', 'middle'
-      #   .attr 'x', -1 * (layout.inner.height/2)
-      #   .attr 'y', -50
-      #   .attr 'dy', '1em'
-      #   .attr 'transform', 'rotate(-90)'  # This also rotates the xy cooridnate system
-      #   .attr 'class', 'axis-label axis-label--y'
-      #   .text state.data.units
-
-
-      legendRectSize = 20
-      legendSpacing = 10
-      legend = svg.selectAll '.legend'
-        .data [0...nBins]
-        .enter()
-        .append 'g'
-        .attr 'class', 'legend'
-        .attr 'transform', (d, i) -> "translate(#{layout.legend.left},#{layout.legend.top + (legendRectSize+legendSpacing)*i + 30})"
-
-      legend.append 'rect'
-        .attr 'width', legendRectSize
-        .attr 'height', legendRectSize
-        .style 'fill', colorScale
-        .style 'stroke', colorScale
-
-      legend.append 'text'
-        .attr 'x', legendRectSize + legendSpacing
-        .attr 'y', legendRectSize - legendSpacing + 5
-        .text (d) -> radialBins[d]
-
-      legendHeading = svg.append 'text'
-        .attr 'x', layout.legend.left
-        .attr 'y', layout.legend.top
-        .attr 'dy', '1em'
-        .text spec.categoryLabel + if spec.categoryUnits then " [#{state.data.bins[1].units}]" else ''
-
-
 

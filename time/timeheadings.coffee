@@ -25,15 +25,7 @@ calculate_layout = (dimensions) ->
     top: 0
     right: 0
     bottom: 0
-    left: 200
-
-  title =
-    top: 0
-    right: dimensions.width - info.left
-    bottom: 0
-    left: 0
-    height: dimensions.height
-    width: info.left
+    left: 20
 
   canvas =
     top: info.top
@@ -46,7 +38,6 @@ calculate_layout = (dimensions) ->
   margin: margin
   dimensions: dimensions
   info: info
-  title: title
   canvas: canvas
 
 module.exports = (spec, components) ->
@@ -63,14 +54,6 @@ module.exports = (spec, components) ->
       svg = d3.select dom
         .append 'svg'
         .attr 'class', 'item timeheadings'
-
-      svg
-        .append 'g'
-        .attr 'class', 'title'
-        .attr 'transform', "translate(#{layout.title.left},#{layout.title.top})"
-        .append 'text'
-        .attr 'class', 'infotext'
-        .attr 'dy', 20
 
       inner = svg
         .append 'g'
