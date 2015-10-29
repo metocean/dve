@@ -1,7 +1,6 @@
 d3 = require 'd3'
 jsyaml = require 'js-yaml'
 components = require 'dve'
-moment = require 'timespanner'
 
 
 
