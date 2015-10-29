@@ -32,7 +32,7 @@ calculate_layout = function(dimensions) {
     top: 0,
     right: 0,
     bottom: 0,
-    left: 200
+    left: 0
   };
   title = {
     top: 0,
@@ -72,7 +72,6 @@ module.exports = function(spec, components) {
       var drag, layout, poi, poifsm;
       layout = calculate_layout(params.dimensions);
       svg = d3.select(dom).append('svg').attr('class', 'item dayheadings');
-      svg.append('g').attr('class', 'title').attr('transform', "translate(" + layout.title.left + "," + layout.title.top + ")").append('text').attr('class', 'infotext').text(spec.text).attr('dy', 20);
       inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
       inner.append('line').attr('class', 'divider').attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', layout.dimensions.height);
       inner.append('g').attr('class', 'axis').attr("transform", "translate(0," + (-layout.canvas.top + 3 * layout.canvas.height / 4) + ")");

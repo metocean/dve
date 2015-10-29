@@ -19,7 +19,7 @@ calculate_layout = (dimensions) ->
     top: 0
     right: 0
     bottom: 0
-    left: 200
+    left: 0
 
   title =
     top: 0
@@ -129,15 +129,6 @@ module.exports = (spec, components) ->
       # colorScale = d3.scale.quantize()
       #   .range(colorbrewer.Blues[9])
       #   .domain [0, 360]
-
-      svg
-        .append 'g'
-        .attr 'class', 'title'
-        .attr 'transform', "translate(#{layout.title.left},#{layout.title.top})"
-        .append 'text'
-        .attr 'class', 'infotext'
-        .text spec.text
-        .attr 'dy', 18
 
       inner = svg
         .append 'g'
