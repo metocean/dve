@@ -28,7 +28,7 @@ d3.csv '/example3.csv', (err, example3) ->
     dom = document.querySelector '#root'
     spec = jsyaml.load spec
     scene = components[spec.type] spec, components
-
+    console.log(example3)
     scene.init { data: example3 }, {}
     scene.render dom, { data: example3 }, {}
     copiedrange = null

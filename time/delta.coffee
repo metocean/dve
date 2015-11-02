@@ -32,6 +32,10 @@ module.exports = (spec, components) ->
       +d.time >= +start.time and +d.time <= +end.time
 
   result =
+    id: spec.id
+    updateData: (state, params) ->
+      selectdata state, params
+      result.resize prevdimensions
     init: (state, params) ->
       if params.hub?
         params.hub.on 'state updated', (state) ->

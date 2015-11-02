@@ -72,7 +72,6 @@ module.exports = (spec, components) ->
         item = components[s.type] s, components
         item.init state, params if item.init?
         items.push item
-
       Neighbours = neighbours state.data, (d) -> d.time
 
       average = (p, fn) ->
@@ -83,6 +82,7 @@ module.exports = (spec, components) ->
         total / pn.length
 
       params.hub.on 'range', (p) ->
+        params.onRangeSelect && params.onRangeSelect(p.p1, p.p2)
         range = p
         updaterange()
 
@@ -147,6 +147,9 @@ module.exports = (spec, components) ->
           p2: newp2
           m: m
           ma: average m, (d) -> d.wsp2
+    updateField: (itemId, state, params) ->
+      items.forEach (item) ->
+        if(item.id == itemId) then item.updateData state, params
     render: (dom, state, params) ->
       layout = calculate_layout params.dimensions
 
