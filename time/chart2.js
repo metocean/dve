@@ -103,6 +103,11 @@ TODO: Region series for areas. E.g. probabilities, min and max.
           return total / pn.length;
         };
         params.hub.on('range', function(p) {
+          if (!p) {
+            range = null;
+            updaterange();
+            return;
+          }
           params.onRangeSelect && params.onRangeSelect(p.p1, p.p2);
           range = p;
           return updaterange();

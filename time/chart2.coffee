@@ -82,6 +82,10 @@ module.exports = (spec, components) ->
         total / pn.length
 
       params.hub.on 'range', (p) ->
+        if !p
+          range = null
+          updaterange()
+          return
         params.onRangeSelect && params.onRangeSelect(p.p1, p.p2)
         range = p
         updaterange()
