@@ -108,7 +108,6 @@ TODO: Region series for areas. E.g. probabilities, min and max.
             updaterange();
             return;
           }
-          params.onRangeSelect && params.onRangeSelect(p.p1, p.p2);
           range = p;
           return updaterange();
         });
@@ -208,10 +207,13 @@ TODO: Region series for areas. E.g. probabilities, min and max.
         });
       },
       updateField: function(itemId, state, params) {
-        return items.forEach(function(item) {
+        items.forEach(function(item) {
           if (item.id === itemId) {
             return item.updateData(state, params);
           }
+        });
+        return Neighbours = neighbours(state.data, function(d) {
+          return d.time;
         });
       },
       render: function(dom, state, params) {
@@ -354,11 +356,13 @@ TODO: Region series for areas. E.g. probabilities, min and max.
         focus.append('rect').attr('class', 'foreground').style('fill', 'none').on('touchstart', rangefsm.touchstart).on('touchend', rangefsm.touchend).on('mousedown', rangefsm.mousedown).on('mouseup', rangefsm.mouseup).call(drag);
         updaterange = function() {
           if (range == null) {
+            params.onRangeSelect && params.onRangeSelect();
             focus.select('line.rangestart').attr('display', 'none');
             focus.select('line.rangeend').attr('display', 'none');
             focus.select('line.rangemiddle').attr('display', 'none');
             return;
           }
+          params.onRangeSelect && params.onRangeSelect(range.p1, range.ma, range.p2);
           focus.select('line.rangestart').attr('display', null).attr('x1', scale.x(range.p1)).attr('x2', scale.x(range.p1));
           focus.select('line.rangeend').attr('display', null).attr('x1', scale.x(range.p2)).attr('x2', scale.x(range.p2));
           return focus.select('line.rangemiddle').attr('display', null).attr('x1', scale.x(range.m)).attr('x2', scale.x(range.m));

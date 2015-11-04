@@ -86,7 +86,6 @@ module.exports = (spec, components) ->
           range = null
           updaterange()
           return
-        params.onRangeSelect && params.onRangeSelect(p.p1, p.p2)
         range = p
         updaterange()
 
@@ -154,6 +153,8 @@ module.exports = (spec, components) ->
     updateField: (itemId, state, params) ->
       items.forEach (item) ->
         if(item.id == itemId) then item.updateData state, params
+
+      Neighbours = neighbours state.data, (d) -> d.time
     render: (dom, state, params) ->
       layout = calculate_layout params.dimensions
       svg = d3.select dom
@@ -321,6 +322,7 @@ module.exports = (spec, components) ->
 
       updaterange = ->
         if !range?
+          params.onRangeSelect && params.onRangeSelect()
           focus
             .select 'line.rangestart'
             .attr 'display', 'none'
@@ -331,7 +333,7 @@ module.exports = (spec, components) ->
             .select 'line.rangemiddle'
             .attr 'display', 'none'
           return
-
+        params.onRangeSelect && params.onRangeSelect(range.p1, range.ma, range.p2)
         focus
           .select 'line.rangestart'
           .attr 'display', null
