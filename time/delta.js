@@ -94,7 +94,8 @@ TODO: Push series labels to chart for overlapping adjustment.
         });
         line.attr('d', path(data));
         positive.attr('d', positivearea(data));
-        return negative.attr('d', negativearea(data));
+        negative.attr('d', negativearea(data));
+        return true;
       }
     };
   };

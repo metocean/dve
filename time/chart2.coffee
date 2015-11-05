@@ -152,9 +152,17 @@ module.exports = (spec, components) ->
           ma: average m, (d) -> d.wsp2
     updateField: (itemId, state, params) ->
       items.forEach (item) ->
-        if(item.id == itemId) then item.updateData state, params
-
+        if item.id == itemId then item.updateData state, params
       Neighbours = neighbours state.data, (d) -> d.time
+      if range
+        newMa = average range.m, (d) -> d.wsp2 #calculate new ma to see if the center value has changed
+        if range.ma != newMa #if the values are different, update the center value
+          range.ma = newMa
+          params.onRangeSelect
+            start: range.p1
+            center: range.ma
+            end: range.p2
+      # result.resize params.dimensions
     render: (dom, state, params) ->
       layout = calculate_layout params.dimensions
       svg = d3.select dom
@@ -320,9 +328,9 @@ module.exports = (spec, components) ->
         .on 'mouseup', rangefsm.mouseup
         .call drag
 
-      updaterange = ->
+      updaterange = () ->
         if !range?
-          params.onRangeSelect && params.onRangeSelect()
+          params.onRangeSelect && params.onRangeSelect(null)
           focus
             .select 'line.rangestart'
             .attr 'display', 'none'
@@ -333,7 +341,11 @@ module.exports = (spec, components) ->
             .select 'line.rangemiddle'
             .attr 'display', 'none'
           return
-        params.onRangeSelect && params.onRangeSelect(range.p1, range.ma, range.p2)
+        if params.onRangeSelect
+          params.onRangeSelect
+            start: range.p1
+            center: range.ma
+            end: range.p2
         focus
           .select 'line.rangestart'
           .attr 'display', null
@@ -351,8 +363,8 @@ module.exports = (spec, components) ->
           .attr 'display', null
           .attr 'x1', scale.x range.m
           .attr 'x2', scale.x range.m
-
       result.resize params.dimensions
+      updaterange()
 
       if range?
         params.hub.emit 'range',
@@ -418,10 +430,10 @@ module.exports = (spec, components) ->
         .attr 'width', layout.canvas.width
 
       for i in items
+        if i.provideMax() <= d3.max(maxDomains) then continue
+        maxDomains = [i.provideMax()]
         continue unless i.resize?
         i.resize [
           layout.canvas.width
           layout.canvas.height
         ]
-
-      updaterange()

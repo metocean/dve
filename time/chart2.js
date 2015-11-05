@@ -207,14 +207,28 @@ TODO: Region series for areas. E.g. probabilities, min and max.
         });
       },
       updateField: function(itemId, state, params) {
+        var newMa;
         items.forEach(function(item) {
           if (item.id === itemId) {
             return item.updateData(state, params);
           }
         });
-        return Neighbours = neighbours(state.data, function(d) {
+        Neighbours = neighbours(state.data, function(d) {
           return d.time;
         });
+        if (range) {
+          newMa = average(range.m, function(d) {
+            return d.wsp2;
+          });
+          if (range.ma !== newMa) {
+            range.ma = newMa;
+            return params.onRangeSelect({
+              start: range.p1,
+              center: range.ma,
+              end: range.p2
+            });
+          }
+        }
       },
       render: function(dom, state, params) {
         var clipId, drag, item, layout, newparams, rangefsm, _i, _len;
@@ -356,18 +370,25 @@ TODO: Region series for areas. E.g. probabilities, min and max.
         focus.append('rect').attr('class', 'foreground').style('fill', 'none').on('touchstart', rangefsm.touchstart).on('touchend', rangefsm.touchend).on('mousedown', rangefsm.mousedown).on('mouseup', rangefsm.mouseup).call(drag);
         updaterange = function() {
           if (range == null) {
-            params.onRangeSelect && params.onRangeSelect();
+            params.onRangeSelect && params.onRangeSelect(null);
             focus.select('line.rangestart').attr('display', 'none');
             focus.select('line.rangeend').attr('display', 'none');
             focus.select('line.rangemiddle').attr('display', 'none');
             return;
           }
-          params.onRangeSelect && params.onRangeSelect(range.p1, range.ma, range.p2);
+          if (params.onRangeSelect) {
+            params.onRangeSelect({
+              start: range.p1,
+              center: range.ma,
+              end: range.p2
+            });
+          }
           focus.select('line.rangestart').attr('display', null).attr('x1', scale.x(range.p1)).attr('x2', scale.x(range.p1));
           focus.select('line.rangeend').attr('display', null).attr('x1', scale.x(range.p2)).attr('x2', scale.x(range.p2));
           return focus.select('line.rangemiddle').attr('display', null).attr('x1', scale.x(range.m)).attr('x2', scale.x(range.m));
         };
         result.resize(params.dimensions);
+        updaterange();
         if (range != null) {
           return params.hub.emit('range', {
             p1: range.p1,
@@ -380,7 +401,7 @@ TODO: Region series for areas. E.g. probabilities, min and max.
         }
       },
       resize: function(dimensions) {
-        var i, layout, _i, _len;
+        var i, layout, _i, _len, _results;
         layout = calculate_layout(dimensions);
         svg.attr('width', layout.dimensions.width).attr('height', layout.dimensions.height);
         chart.select('rect').attr('width', layout.canvas.width).attr('height', layout.canvas.height);
@@ -408,14 +429,19 @@ TODO: Region series for areas. E.g. probabilities, min and max.
           }
         });
         focus.select('.foreground').attr('height', layout.canvas.height).attr('width', layout.canvas.width);
+        _results = [];
         for (_i = 0, _len = items.length; _i < _len; _i++) {
           i = items[_i];
+          if (i.provideMax() <= d3.max(maxDomains)) {
+            continue;
+          }
+          maxDomains = [i.provideMax()];
           if (i.resize == null) {
             continue;
           }
-          i.resize([layout.canvas.width, layout.canvas.height]);
+          _results.push(i.resize([layout.canvas.width, layout.canvas.height]));
         }
-        return updaterange();
+        return _results;
       }
     };
   };

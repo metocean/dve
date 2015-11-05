@@ -66,10 +66,8 @@ module.exports = (spec, components) ->
 
     provideMax: ->
       d3.max data, (d) -> Math.max d[spec.field], d[spec.delta]
-
     resize: (dimensions) ->
       prevdimensions = dimensions
-
       path =  d3.svg.line()
         .x (d) -> scale.x d.time
         .y (d) -> scale.y d[spec.delta]
@@ -87,3 +85,4 @@ module.exports = (spec, components) ->
       line.attr 'd', path data
       positive.attr 'd', positivearea data
       negative.attr 'd', negativearea data
+      return true
