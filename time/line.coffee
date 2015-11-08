@@ -24,6 +24,18 @@ module.exports = (spec, components) ->
   filteredData = null
   scale = null
   result =
+    update: (state, params) ->
+      data = data.filter (d) -> d[spec.field]?
+
+      getNeighbours = neighbours data, (d) -> d.time
+
+      start = getNeighbours(params.domain[0])[0]
+      end = getNeighbours(params.domain[1])
+      end = end[end.length-1]
+
+      filteredData = data.filter (d) ->
+        +d.time >= +start.time and +d.time <= +end.time
+      result.resize(params.dimensions)
     render: (dom, state, params) ->
       svg = dom.append 'g'
       scale = params.scale

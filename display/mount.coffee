@@ -13,11 +13,12 @@ listcomponent = require './list'
 
 module.exports = (spec, components) ->
   list = listcomponent spec.spec, components
-
   mount =
     init: (state, params) ->
       list.init state, params
-
+    update: (state, params) ->
+      list.items.forEach (item) ->
+        item.update && item.update(state, params)
     render: (dom, state, params) ->
       params = extend {}, params,
         dimensions: domdimensions dom

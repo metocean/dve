@@ -74,7 +74,6 @@ module.exports = (spec, components) ->
         .attr "transform", "translate(0,#{-layout.canvas.top})"
 
       scale = d3.time.scale().domain params.domain
-
       axis = d3
         .svg
         .axis()

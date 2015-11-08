@@ -71,7 +71,12 @@ module.exports = (spec, components) ->
         item = components[s.type] s, components
         item.init state, params if item.init?
         items.push item
-
+    update: (state, params) ->
+      newparams = extend {}, params,
+        axis: axis
+        scale: scale
+      items.forEach (item) ->
+        item.update && item.update(state, newparams)
     render: (dom, state, params) ->
       layout = calculate_layout params.dimensions
 
