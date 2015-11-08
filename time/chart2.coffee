@@ -69,6 +69,7 @@ module.exports = (spec, components) ->
       for s in spec.spec
         unless components[s.type]?
           return console.error "#{s.type} component not found"
+
         item = components[s.type] s, components
         item.init state, params if item.init?
         items.push item
@@ -291,7 +292,7 @@ module.exports = (spec, components) ->
           axis: axis
           scale: scale
         item.render chart, state, newparams
-        maxDomains.push item.provideMax()
+        if item.provideMax then maxDomains.push item.provideMax()
 
       focus = inner
         .append 'g'

@@ -361,7 +361,9 @@ TODO: Region series for areas. E.g. probabilities, min and max.
             scale: scale
           });
           item.render(chart, state, newparams);
-          maxDomains.push(item.provideMax());
+          if (item.provideMax) {
+            maxDomains.push(item.provideMax());
+          }
         }
         focus = inner.append('g').attr('class', 'focus');
         focus.append('line').attr('class', 'rangestart').attr('display', 'none').attr('y1', 0).attr('y2', layout.canvas.height);
