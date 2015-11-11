@@ -31,6 +31,7 @@ module.exports =
   # chart series
   line: require './time/line'
   delta: require './time/delta'
+  range: require './time/range'
   scatter: require './time/scatter'
   # single series
   direction: require './time/direction'

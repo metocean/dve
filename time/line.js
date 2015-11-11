@@ -38,8 +38,18 @@ TODO: Push series labels to chart for overlapping adjustment.
           return d.time;
         });
         start = getNeighbours(params.domain[0])[0];
+        if (!start) {
+          start = {
+            time: params.domain[0]
+          };
+        }
         end = getNeighbours(params.domain[1]);
         end = end[end.length - 1];
+        if (!end) {
+          end = {
+            time: params.domain[1]
+          };
+        }
         filteredData = data.filter(function(d) {
           return +d.time >= +start.time && +d.time <= +end.time;
         });
@@ -64,8 +74,18 @@ TODO: Push series labels to chart for overlapping adjustment.
           return d.time;
         });
         start = getNeighbours(params.domain[0])[0];
+        if (!start) {
+          start = {
+            time: params.domain[0]
+          };
+        }
         end = getNeighbours(params.domain[1]);
         end = end[end.length - 1];
+        if (!end) {
+          end = {
+            time: params.domain[1]
+          };
+        }
         filteredData = data.filter(function(d) {
           return +d.time >= +start.time && +d.time <= +end.time;
         });

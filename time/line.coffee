@@ -30,8 +30,10 @@ module.exports = (spec, components) ->
       getNeighbours = neighbours data, (d) -> d.time
 
       start = getNeighbours(params.domain[0])[0]
+      start = time: params.domain[0] if !start
       end = getNeighbours(params.domain[1])
       end = end[end.length-1]
+      end = time: params.domain[1] if !end
 
       filteredData = data.filter (d) ->
         +d.time >= +start.time and +d.time <= +end.time
@@ -89,12 +91,13 @@ module.exports = (spec, components) ->
       getNeighbours = neighbours data, (d) -> d.time
 
       start = getNeighbours(params.domain[0])[0]
+      start = time: params.domain[0] if !start
       end = getNeighbours(params.domain[1])
       end = end[end.length-1]
+      end = time: params.domain[1] if !end
 
       filteredData = data.filter (d) ->
         +d.time >= +start.time and +d.time <= +end.time
-
       poi = null
       params.hub.on 'poi', (p) ->
         poi = p
@@ -172,7 +175,6 @@ module.exports = (spec, components) ->
         .attr 'd', path filteredData
 
       labelWidth = +label.node().getComputedTextLength()
-
       labelShad
         .attr 'transform', "translate(#{dimensions[0] - labelWidth}, #{scale.y(filteredData[filteredData.length-2][spec.field])})"
 
