@@ -46,6 +46,9 @@ Keep them resized based on window resize events.
         return setTimeout(function() {
           var dimensions;
           dimensions = domdimensions(dom);
+          if (isNaN(dimensions[0])) {
+            return;
+          }
           return mount.resize(dimensions);
         }, 1000);
       },

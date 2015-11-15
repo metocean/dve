@@ -38,6 +38,7 @@ module.exports = (spec, components) ->
       # hack to take into account the scrollbar if our content extends past the bottom
       setTimeout(->
         dimensions = domdimensions dom
+        return if isNaN(dimensions[0]) #if the graph dom is no longer present, do not try to resize
         mount.resize dimensions
       , 1000)
 
