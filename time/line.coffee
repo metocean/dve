@@ -25,6 +25,7 @@ module.exports = (spec, components) ->
   scale = null
   result =
     update: (state, params) ->
+      data = state.data
       data = data.filter (d) -> d[spec.field]?
 
       getNeighbours = neighbours data, (d) -> d.time
@@ -41,9 +42,7 @@ module.exports = (spec, components) ->
     render: (dom, state, params) ->
       svg = dom.append 'g'
       scale = params.scale
-
       data = state.data
-
       line = svg
         .append 'path'
         .attr 'class', "#{spec.style} #{spec.type}"

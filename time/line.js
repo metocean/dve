@@ -31,6 +31,7 @@ TODO: Push series labels to chart for overlapping adjustment.
     return result = {
       update: function(state, params) {
         var end, getNeighbours, start;
+        data = state.data;
         data = data.filter(function(d) {
           return d[spec.field] != null;
         });
