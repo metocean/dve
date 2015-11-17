@@ -33,7 +33,7 @@ module.exports = (spec, components) ->
 
   result =
     id: spec.id
-    updateData: (state, params) ->
+    update: (state, params) ->
       selectdata state, params
       result.resize prevdimensions
     init: (state, params) ->

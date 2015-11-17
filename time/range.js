@@ -43,7 +43,7 @@ TODO: Push series labels to chart for overlapping adjustment.
     };
     return result = {
       id: spec.id,
-      updateData: function(state, params) {
+      update: function(state, params) {
         selectdata(state, params);
         return result.resize(prevdimensions);
       },
