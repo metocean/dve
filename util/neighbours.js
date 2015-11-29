@@ -9,7 +9,10 @@ Find the closest points in a dataset.
     return function(value) {
       var d, fd, last, _i, _len;
       value = +value;
-      if (data.length === 0 || +f(data[0]) > value || +f(data[data.length - 1]) < value) {
+      if (data.length === 0) {
+        return [];
+      }
+      if (+f(data[0]) > value) {
         return [];
       }
       last = null;
@@ -24,6 +27,7 @@ Find the closest points in a dataset.
         }
         last = d;
       }
+      return [last];
     };
   };
 
