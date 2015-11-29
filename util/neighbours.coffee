@@ -10,7 +10,7 @@ module.exports = (data, f) ->
     if data.length is 0
       return []
     if +f(data[0]) > value
-      return []
+      return [data[0]]
     last = null
     for d in data
       fd = +f(d)

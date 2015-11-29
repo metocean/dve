@@ -13,7 +13,7 @@ Find the closest points in a dataset.
         return [];
       }
       if (+f(data[0]) > value) {
-        return [];
+        return [data[0]];
       }
       last = null;
       for (_i = 0, _len = data.length; _i < _len; _i++) {
