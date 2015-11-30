@@ -83,7 +83,7 @@ module.exports = (spec, components) ->
         .axis()
         .scale scale
         .ticks d3.time.day
-        .tickFormat (d) -> d3.time.format('%a %d %b') d
+        .tickFormat (d) -> d3.time.format('%a %d') d
 
       focus = inner
         .append 'g'
