@@ -18,10 +18,8 @@ TODO: Push series labels to chart for overlapping adjustment.
   neighbours = require('../util/neighbours');
 
   module.exports = function(spec, components) {
-    var data, filteredData, focus, label, labelShad, line, result, scale, svg, updatepoi;
+    var data, filteredData, focus, line, result, scale, svg, updatepoi;
     svg = null;
-    label = null;
-    labelShad = null;
     line = null;
     focus = null;
     updatepoi = null;
@@ -62,8 +60,6 @@ TODO: Push series labels to chart for overlapping adjustment.
         scale = params.scale;
         data = state.data;
         line = svg.append('path').attr('class', "" + spec.style + " " + spec.type).attr('d', '');
-        labelShad = svg.append('text').attr('class', 'label-shad').attr('text-anchor', 'start').attr('dy', 12).text("" + spec.text + " (" + spec.units + ")");
-        label = svg.append('text').attr('class', 'label').attr('text-anchor', 'start').attr('dy', 12).text("" + spec.text + " (" + spec.units + ")");
         focus = svg.append('g').attr('class', 'focus');
         focus.append('circle').attr('class', 'poi-circle').attr('display', 'none').attr('r', 4);
         focus.append('text').attr('class', 'poi-y-val-shad').attr('display', 'none').attr('dy', '-0.3em');
@@ -138,7 +134,7 @@ TODO: Push series labels to chart for overlapping adjustment.
         });
       },
       resize: function(dimensions) {
-        var labelWidth, path;
+        var path;
         dimensions = dimensions;
         path = d3.svg.line().x(function(d) {
           return scale.x(d.time);
@@ -146,9 +142,6 @@ TODO: Push series labels to chart for overlapping adjustment.
           return scale.y(d[spec.field]);
         });
         line.attr('d', path(filteredData));
-        labelWidth = +label.node().getComputedTextLength();
-        labelShad.attr('transform', "translate(" + (dimensions[0] - labelWidth) + ", " + (scale.y(filteredData[filteredData.length - 2][spec.field])) + ")");
-        label.attr('transform', "translate(" + (dimensions[0] - labelWidth) + ", " + (scale.y(filteredData[filteredData.length - 2][spec.field])) + ")");
         return updatepoi();
       }
     };

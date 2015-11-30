@@ -15,8 +15,6 @@ neighbours = require '../util/neighbours'
 
 module.exports = (spec, components) ->
   svg = null
-  label = null
-  labelShad = null
   line = null
   focus = null
   updatepoi = null
@@ -47,20 +45,6 @@ module.exports = (spec, components) ->
         .append 'path'
         .attr 'class', "#{spec.style} #{spec.type}"
         .attr 'd', ''
-
-      labelShad = svg
-        .append 'text'
-        .attr 'class', 'label-shad'
-        .attr 'text-anchor', 'start'
-        .attr 'dy', 12
-        .text "#{spec.text} (#{spec.units})"
-
-      label = svg
-        .append 'text'
-        .attr 'class', 'label'
-        .attr 'text-anchor', 'start'
-        .attr 'dy', 12
-        .text "#{spec.text} (#{spec.units})"
 
       #---creation: createpoi----#
       focus = svg
@@ -172,12 +156,5 @@ module.exports = (spec, components) ->
 
       line
         .attr 'd', path filteredData
-
-      labelWidth = +label.node().getComputedTextLength()
-      labelShad
-        .attr 'transform', "translate(#{dimensions[0] - labelWidth}, #{scale.y(filteredData[filteredData.length-2][spec.field])})"
-
-      label
-        .attr 'transform', "translate(#{dimensions[0] - labelWidth}, #{scale.y(filteredData[filteredData.length-2][spec.field])})"
 
       updatepoi()
