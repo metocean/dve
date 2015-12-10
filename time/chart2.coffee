@@ -23,9 +23,12 @@ TODO: Region series for areas. E.g. probabilities, min and max.
 
 
 d3 = require 'd3'
-moment = require 'timespanner'
 extend = require 'extend'
 neighbours = require '../util/neighbours'
+moment = require 'moment-timezone'
+chrono = require 'chronological'
+moment = chrono moment
+require 'd3-chronological'
 
 calculate_layout = (dimensions) ->
   dimensions =
@@ -198,13 +201,16 @@ module.exports = (spec, components) ->
         .append 'rect'
         .attr 'x', '0'
         .attr 'y', '0'
+      everyDay = moment()
+        .tz('Australia/Sydney')
+        .startOf('d')
+        .every(1, 'd')
 
       scale =
-        x: d3.time.scale().domain params.domain
+        x: d3.chrono.scale('Australia/Sydney').domain(params.domain).nice(everyDay)
         y: d3.scale.linear()
-
       axis =
-        x: d3.svg.axis().scale(scale.x).orient("bottom").ticks(d3.time.hour)
+        x: d3.svg.axis().scale(scale.x).orient("bottom")
         y: d3.svg.axis().scale(scale.y).orient("left").ticks(6)
 
       roundtoclosest = (p) ->
@@ -403,7 +409,7 @@ module.exports = (spec, components) ->
         .selectAll '.x.axis .tick line'
         .data scale.x.ticks axis.x.ticks()[0]
         .attr 'class', (d) ->
-          d = moment(d).format('HH')
+          d = d.format('HH')
           if d is '00'
             'major'
           else if d is '12'

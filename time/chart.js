@@ -22,13 +22,19 @@ TODO: Region series for areas. E.g. probabilities, min and max.
  */
 
 (function() {
-  var calculate_layout, d3, extend, moment;
+  var calculate_layout, chrono, d3, extend, moment;
 
   d3 = require('d3');
 
-  moment = require('timespanner');
-
   extend = require('extend');
+
+  moment = require('moment-timezone');
+
+  chrono = require('chronological');
+
+  moment = chrono(moment);
+
+  require('d3-chronological');
 
   calculate_layout = function(dimensions) {
     var canvas, info;
@@ -100,7 +106,7 @@ TODO: Region series for areas. E.g. probabilities, min and max.
         });
       },
       render: function(dom, state, params) {
-        var clipId, drag, item, layout, newparams, poi, poifsm, _i, _len;
+        var clipId, drag, everyDay, item, layout, newparams, poi, poifsm, _i, _len;
         layout = calculate_layout(params.dimensions);
         svg = d3.select(dom).append('svg').attr('class', 'item chart');
         inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
@@ -109,12 +115,13 @@ TODO: Region series for areas. E.g. probabilities, min and max.
         clipId = "clip-" + (Math.floor(Math.random() * 1000000));
         chart = inner.append('g').attr('class', 'chart').attr('clip-path', "url(#" + clipId + ")");
         chart.append('defs').append('clipPath').attr('id', clipId).append('rect').attr('x', '0').attr('y', '0');
+        everyDay = moment().tz('Australia/Sydney').startOf('d').every(1, 'd');
         scale = {
-          x: d3.time.scale().domain(params.domain),
+          x: d3.chrono.scale('Australia/Sydney').domain(params.domain).nice(everyDay),
           y: d3.scale.linear()
         };
         axis = {
-          x: d3.svg.axis().scale(scale.x).orient("bottom").ticks(d3.time.hour),
+          x: d3.svg.axis().scale(scale.x).orient("bottom"),
           y: d3.svg.axis().scale(scale.y).orient("left").ticks(6)
         };
         poi = null;

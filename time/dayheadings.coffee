@@ -11,7 +11,10 @@ TODO: Merge with timeheadings.
 ###
 
 d3 = require 'd3'
-moment = require 'timespanner'
+moment = require 'moment-timezone'
+chrono = require 'chronological'
+moment = chrono moment
+require 'd3-chronological'
 
 calculate_layout = (dimensions) ->
   margin =
@@ -76,14 +79,17 @@ module.exports = (spec, components) ->
         .attr 'class', 'axis'
         .attr "transform", "translate(0,#{-layout.canvas.top + 3 * layout.canvas.height/4})"
 
-      scale = d3.time.scale().domain params.domain
 
+      everyDay = moment()
+        .tz('Australia/Sydney')
+        .startOf('d')
+        .every(1, 'd')
+      scale = d3.chrono.scale('Australia/Sydney').domain(params.domain).nice(everyDay)
       axis = d3
         .svg
         .axis()
         .scale scale
-        .ticks d3.time.day
-        .tickFormat (d) -> d3.time.format('%a %d') d
+        .tickFormat (d) -> d.format('ddd DD')
 
       focus = inner
         .append 'g'

@@ -11,11 +11,17 @@ TODO: Merge with timeheadings.
  */
 
 (function() {
-  var calculate_layout, d3, moment;
+  var calculate_layout, chrono, d3, moment;
 
   d3 = require('d3');
 
-  moment = require('timespanner');
+  moment = require('moment-timezone');
+
+  chrono = require('chronological');
+
+  moment = chrono(moment);
+
+  require('d3-chronological');
 
   calculate_layout = function(dimensions) {
     var canvas, info, margin;
@@ -61,15 +67,16 @@ TODO: Merge with timeheadings.
     updatepoi = null;
     return dayheadings = {
       render: function(dom, state, params) {
-        var drag, layout, poi, poifsm;
+        var drag, everyDay, layout, poi, poifsm;
         layout = calculate_layout(params.dimensions);
         svg = d3.select(dom).append('svg').attr('class', 'item dayheadings');
         inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
         inner.append('line').attr('class', 'divider').attr('x1', 0).attr('x2', 0).attr('y1', 0).attr('y2', layout.dimensions.height);
         inner.append('g').attr('class', 'axis').attr("transform", "translate(0," + (-layout.canvas.top + 3 * layout.canvas.height / 4) + ")");
-        scale = d3.time.scale().domain(params.domain);
-        axis = d3.svg.axis().scale(scale).ticks(d3.time.day).tickFormat(function(d) {
-          return d3.time.format('%a %d')(d);
+        everyDay = moment().tz('Australia/Sydney').startOf('d').every(1, 'd');
+        scale = d3.chrono.scale('Australia/Sydney').domain(params.domain).nice(everyDay);
+        axis = d3.svg.axis().scale(scale).tickFormat(function(d) {
+          return d.format('ddd DD');
         });
         focus = inner.append('g').attr('class', 'focus');
         focus.append('line').attr('class', 'poi').attr('display', 'none').attr('y1', 0).attr('y2', layout.dimensions.height);

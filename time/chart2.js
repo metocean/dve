@@ -22,15 +22,21 @@ TODO: Region series for areas. E.g. probabilities, min and max.
  */
 
 (function() {
-  var calculate_layout, d3, extend, moment, neighbours;
+  var calculate_layout, chrono, d3, extend, moment, neighbours;
 
   d3 = require('d3');
-
-  moment = require('timespanner');
 
   extend = require('extend');
 
   neighbours = require('../util/neighbours');
+
+  moment = require('moment-timezone');
+
+  chrono = require('chronological');
+
+  moment = chrono(moment);
+
+  require('d3-chronological');
 
   calculate_layout = function(dimensions) {
     var canvas, info;
@@ -231,7 +237,7 @@ TODO: Region series for areas. E.g. probabilities, min and max.
         }
       },
       render: function(dom, state, params) {
-        var clipId, drag, item, layout, newparams, rangefsm, _i, _len;
+        var clipId, drag, everyDay, item, layout, newparams, rangefsm, _i, _len;
         layout = calculate_layout(params.dimensions);
         svg = d3.select(dom).append('svg').attr('class', 'item chart');
         inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
@@ -240,12 +246,13 @@ TODO: Region series for areas. E.g. probabilities, min and max.
         clipId = "clip-" + (Math.floor(Math.random() * 1000000));
         chart = inner.append('g').attr('class', 'chart').attr('clip-path', "url(#" + clipId + ")");
         chart.append('defs').append('clipPath').attr('id', clipId).append('rect').attr('x', '0').attr('y', '0');
+        everyDay = moment().tz('Australia/Sydney').startOf('d').every(1, 'd');
         scale = {
-          x: d3.time.scale().domain(params.domain),
+          x: d3.chrono.scale('Australia/Sydney').domain(params.domain).nice(everyDay),
           y: d3.scale.linear()
         };
         axis = {
-          x: d3.svg.axis().scale(scale.x).orient("bottom").ticks(d3.time.hour),
+          x: d3.svg.axis().scale(scale.x).orient("bottom"),
           y: d3.svg.axis().scale(scale.y).orient("left").ticks(6)
         };
         roundtoclosest = function(p) {
@@ -412,7 +419,7 @@ TODO: Region series for areas. E.g. probabilities, min and max.
         scale.y.range([layout.canvas.height, 0]);
         inner.select('.x.axis').call(axis.x.tickSize(-layout.canvas.height, 0, 0).tickFormat(''));
         inner.selectAll('.x.axis .tick line').data(scale.x.ticks(axis.x.ticks()[0])).attr('class', function(d) {
-          d = moment(d).format('HH');
+          d = d.format('HH');
           if (d === '00') {
             return 'major';
           } else if (d === '12') {
