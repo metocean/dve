@@ -58,7 +58,6 @@ module.exports = (spec, components) ->
   scale = null
   axis = null
   focus = null
-  updatepoi = null
   data = null
   chart = null
   items = []
@@ -128,51 +127,6 @@ module.exports = (spec, components) ->
         x: d3.svg.axis().scale(scale.x).orient("bottom")
         y: d3.svg.axis().scale(scale.y).orient("left").ticks(6)
 
-      poi = null
-      params.hub.on 'poi', (p) ->
-        poi = p
-        updatepoi()
-
-      poifsm =
-        hide: ->
-          return if poi is null
-          params.hub.emit 'poi', null
-
-        show: (x) ->
-          range = scale.x.range()
-          return poifsm.hide() if range[0] > x or range[1] < x
-          d = scale.x.invert x
-
-          return if poi is d
-          params.hub.emit 'poi', moment d
-
-        update: ->
-          x = d3.mouse(inner.node())[0]
-          # Only update if enough drag
-          if poifsm.startx?
-            dist = Math.abs poifsm.startx - x
-            return if dist < 10
-          poifsm.startx = null
-          poifsm.show x
-        mousedown: ->
-          x = d3.mouse(inner.node())[0]
-          return poifsm.show x if !poifsm.currentx?
-          poifsm.startx = x
-        mouseup: ->
-          return if !poifsm.startx?
-          if !poifsm.currentx
-            poifsm.startx = null
-            return poifsm.hide()
-          dist = Math.abs poifsm.startx - poifsm.currentx
-          if dist < 10
-            poifsm.startx = null
-            return poifsm.hide()
-          x = d3.mouse(inner.node())[0]
-          poifsm.show x
-
-      drag = d3.behavior.drag()
-        .on 'drag', poifsm.update
-
       for item in items
         newparams = extend {}, params,
           axis: axis
@@ -183,37 +137,6 @@ module.exports = (spec, components) ->
       focus = inner
         .append 'g'
         .attr 'class', 'focus'
-
-      focus
-        .append 'line'
-        .attr 'class', 'poi'
-        .attr 'display', 'none'
-        .attr 'y1', 0
-        .attr 'y2', layout.canvas.height
-
-      focus
-        .append 'rect'
-        .attr 'class', 'foreground'
-        .style 'fill', 'none'
-        .on 'mousedown', poifsm.mousedown
-        .on 'mouseup', poifsm.mouseup
-        .call drag
-
-      updatepoi = ->
-        if !poi?
-          poifsm.currentx = scale.x poi
-          focus
-            .select 'line.poi'
-            .attr 'display', 'none'
-          return
-
-        poifsm.currentx = scale.x poi
-
-        focus
-          .select 'line.poi'
-          .attr 'display', null
-          .attr 'x1', scale.x poi
-          .attr 'x2', scale.x poi
 
       result.resize params.dimensions
 
@@ -279,5 +202,3 @@ module.exports = (spec, components) ->
           layout.canvas.width
           layout.canvas.height
         ]
-
-      updatepoi()

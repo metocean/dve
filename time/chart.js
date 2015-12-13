@@ -64,13 +64,12 @@ TODO: Region series for areas. E.g. probabilities, min and max.
   };
 
   module.exports = function(spec, components) {
-    var axis, chart, data, focus, inner, items, maxDomains, result, scale, svg, updatepoi;
+    var axis, chart, data, focus, inner, items, maxDomains, result, scale, svg;
     svg = null;
     inner = null;
     scale = null;
     axis = null;
     focus = null;
-    updatepoi = null;
     data = null;
     chart = null;
     items = [];
@@ -106,7 +105,7 @@ TODO: Region series for areas. E.g. probabilities, min and max.
         });
       },
       render: function(dom, state, params) {
-        var clipId, drag, everyDay, item, layout, newparams, poi, poifsm, _i, _len;
+        var clipId, everyDay, item, layout, newparams, _i, _len;
         layout = calculate_layout(params.dimensions);
         svg = d3.select(dom).append('svg').attr('class', 'item chart');
         inner = svg.append('g').attr('class', 'inner').attr('transform', "translate(" + layout.canvas.left + "," + layout.canvas.top + ")");
@@ -124,69 +123,6 @@ TODO: Region series for areas. E.g. probabilities, min and max.
           x: d3.svg.axis().scale(scale.x).orient("bottom"),
           y: d3.svg.axis().scale(scale.y).orient("left").ticks(6)
         };
-        poi = null;
-        params.hub.on('poi', function(p) {
-          poi = p;
-          return updatepoi();
-        });
-        poifsm = {
-          hide: function() {
-            if (poi === null) {
-              return;
-            }
-            return params.hub.emit('poi', null);
-          },
-          show: function(x) {
-            var d, range;
-            range = scale.x.range();
-            if (range[0] > x || range[1] < x) {
-              return poifsm.hide();
-            }
-            d = scale.x.invert(x);
-            if (poi === d) {
-              return;
-            }
-            return params.hub.emit('poi', moment(d));
-          },
-          update: function() {
-            var dist, x;
-            x = d3.mouse(inner.node())[0];
-            if (poifsm.startx != null) {
-              dist = Math.abs(poifsm.startx - x);
-              if (dist < 10) {
-                return;
-              }
-            }
-            poifsm.startx = null;
-            return poifsm.show(x);
-          },
-          mousedown: function() {
-            var x;
-            x = d3.mouse(inner.node())[0];
-            if (poifsm.currentx == null) {
-              return poifsm.show(x);
-            }
-            return poifsm.startx = x;
-          },
-          mouseup: function() {
-            var dist, x;
-            if (poifsm.startx == null) {
-              return;
-            }
-            if (!poifsm.currentx) {
-              poifsm.startx = null;
-              return poifsm.hide();
-            }
-            dist = Math.abs(poifsm.startx - poifsm.currentx);
-            if (dist < 10) {
-              poifsm.startx = null;
-              return poifsm.hide();
-            }
-            x = d3.mouse(inner.node())[0];
-            return poifsm.show(x);
-          }
-        };
-        drag = d3.behavior.drag().on('drag', poifsm.update);
         for (_i = 0, _len = items.length; _i < _len; _i++) {
           item = items[_i];
           newparams = extend({}, params, {
@@ -197,21 +133,10 @@ TODO: Region series for areas. E.g. probabilities, min and max.
           maxDomains.push(item.provideMax());
         }
         focus = inner.append('g').attr('class', 'focus');
-        focus.append('line').attr('class', 'poi').attr('display', 'none').attr('y1', 0).attr('y2', layout.canvas.height);
-        focus.append('rect').attr('class', 'foreground').style('fill', 'none').on('mousedown', poifsm.mousedown).on('mouseup', poifsm.mouseup).call(drag);
-        updatepoi = function() {
-          if (poi == null) {
-            poifsm.currentx = scale.x(poi);
-            focus.select('line.poi').attr('display', 'none');
-            return;
-          }
-          poifsm.currentx = scale.x(poi);
-          return focus.select('line.poi').attr('display', null).attr('x1', scale.x(poi)).attr('x2', scale.x(poi));
-        };
         return result.resize(params.dimensions);
       },
       resize: function(dimensions) {
-        var i, layout, _i, _len;
+        var i, layout, _i, _len, _results;
         layout = calculate_layout(dimensions);
         svg.attr('width', layout.dimensions.width).attr('height', layout.dimensions.height);
         chart.select('rect').attr('width', layout.canvas.width).attr('height', layout.canvas.height);
@@ -239,14 +164,15 @@ TODO: Region series for areas. E.g. probabilities, min and max.
           }
         });
         focus.select('.foreground').attr('height', layout.canvas.height).attr('width', layout.canvas.width);
+        _results = [];
         for (_i = 0, _len = items.length; _i < _len; _i++) {
           i = items[_i];
           if (i.resize == null) {
             continue;
           }
-          i.resize([layout.canvas.width, layout.canvas.height]);
+          _results.push(i.resize([layout.canvas.width, layout.canvas.height]));
         }
-        return updatepoi();
+        return _results;
       }
     };
   };
