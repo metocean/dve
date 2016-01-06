@@ -11,7 +11,7 @@ TODO: Merge with timeheadings.
  */
 
 (function() {
-  var calculate_layout, chrono, d3, moment;
+  var calculate_layout, chrono, d3, d3Chrono, moment;
 
   d3 = require('d3');
 
@@ -21,7 +21,11 @@ TODO: Merge with timeheadings.
 
   moment = chrono(moment);
 
-  require('d3-chronological');
+  d3 = require('d3');
+
+  d3Chrono = require('d3-chronological');
+
+  d3 = d3Chrono(d3);
 
   calculate_layout = function(dimensions) {
     var canvas, info, margin;

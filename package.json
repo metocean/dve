@@ -46,7 +46,7 @@
   "dependencies": {
     "colorbrewer": "0.*",
     "d3": "^3.*",
-    "d3-chronological": "^0.1.0",
+    "d3-chronological": "^0.2.0",
     "extend": "^2.0.1",
     "moment": "^2.10.3",
     "moment-timezone": "^0.3.1",

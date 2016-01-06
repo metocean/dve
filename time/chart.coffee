@@ -22,12 +22,13 @@ TODO: Region series for areas. E.g. probabilities, min and max.
 ###
 
 
-d3 = require 'd3'
 extend = require 'extend'
 moment = require 'moment-timezone'
 chrono = require 'chronological'
 moment = chrono moment
-require 'd3-chronological'
+d3 = require 'd3'
+d3Chrono = require 'd3-chronological'
+d3 = d3Chrono(d3)
 
 calculate_layout = (dimensions) ->
   dimensions =

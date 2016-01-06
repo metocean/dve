@@ -14,7 +14,9 @@ d3 = require 'd3'
 moment = require 'moment-timezone'
 chrono = require 'chronological'
 moment = chrono moment
-require 'd3-chronological'
+d3 = require 'd3'
+d3Chrono = require 'd3-chronological'
+d3 = d3Chrono(d3)
 
 calculate_layout = (dimensions) ->
   margin =
