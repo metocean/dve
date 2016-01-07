@@ -1,7 +1,7 @@
 (function() {
   module.exports = function(dom) {
     var paddingBottom, paddingLeft, paddingRight, paddingTop, styles;
-    if (window) {
+    if (typeof window !== "undefined" && window !== null) {
       styles = window.getComputedStyle(dom);
     } else {
       styles = {

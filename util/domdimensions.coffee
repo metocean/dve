@@ -1,5 +1,5 @@
 module.exports = (dom) ->
-  if window
+  if window?
     styles = window.getComputedStyle dom
   else
     styles =
