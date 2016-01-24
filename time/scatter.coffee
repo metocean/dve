@@ -20,6 +20,7 @@ module.exports = (spec, components) ->
   data = null
   filteredData = null
   scale = null
+  prevDimensions = null
 
   value =
     x: (d) -> d.time
@@ -32,6 +33,15 @@ module.exports = (spec, components) ->
       .attr "cy", (d) -> scale.y value.y d
 
   result =
+    update: (state, params) ->
+      data = state.data.filter (datum) -> datum[spec.field]?
+      getNeighbours = neighbours data, (d) -> d.time
+      start = getNeighbours(params.domain[0])[0]
+      end = getNeighbours(params.domain[1])
+      end = end[end.length-1]
+      filteredData = data.filter (d) ->
+        +d.time >= +start.time and +d.time <= +end.time
+      drawDots svg, filteredData
     render: (dom, state, params) ->
       svg = dom.append 'g'
       scale = params.scale
@@ -136,15 +146,12 @@ module.exports = (spec, components) ->
           .attr 'transform', "translate(#{scale.x(d.time)}, #{scale.y(d[spec.field])})"
           .attr 'dx', dxAttr
           .text "#{d[spec.field].toPrecision(3)} (#{spec.units})"
-
       result.resize params.dimensions
 
     provideMax: ->
       d3.max filteredData, (d) -> d[spec.field]
 
     resize: (dimensions) ->
-      dimensions = dimensions
-
       drawDots dotContainer, filteredData
 
       updatepoi()
