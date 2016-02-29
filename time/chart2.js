@@ -164,7 +164,7 @@ TODO: Region series for areas. E.g. probabilities, min and max.
             p2: newp2,
             m: m,
             ma: average(m, function(d) {
-              return d.wsp2;
+              return d.valueOffset;
             })
           });
         });
@@ -211,7 +211,7 @@ TODO: Region series for areas. E.g. probabilities, min and max.
             p2: newp2,
             m: m,
             ma: average(m, function(d) {
-              return d.wsp2;
+              return d.valueOffset;
             })
           });
         });
@@ -228,7 +228,7 @@ TODO: Region series for areas. E.g. probabilities, min and max.
         });
         if (range) {
           newMa = average(range.m, function(d) {
-            return d.wsp2;
+            return d.valueOffset;
           });
           if (range.ma !== newMa) {
             range.ma = newMa;
@@ -302,20 +302,13 @@ TODO: Region series for areas. E.g. probabilities, min and max.
               p2: p2.time,
               m: m,
               ma: average(m, function(d) {
-                return d.wsp2;
+                return d.valueOffset;
               })
             });
           },
           getx: function() {
-            var datarange, x;
+            var x;
             x = d3.mouse(inner.node())[0];
-            datarange = scale.x.range();
-            if (datarange[0] > x) {
-              x = datarange[0];
-            }
-            if (datarange[1] < x) {
-              x = datarange[1];
-            }
             return x;
           },
           update: function() {
@@ -408,7 +401,7 @@ TODO: Region series for areas. E.g. probabilities, min and max.
             p2: range.p2,
             m: range.m,
             ma: average(range.m, function(d) {
-              return d.wsp2;
+              return d.valueOffset;
             })
           });
         }

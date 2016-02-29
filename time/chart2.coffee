@@ -124,7 +124,7 @@ module.exports = (spec, components) ->
           p1: newp1
           p2: newp2
           m: m
-          ma: average m, (d) -> d.wsp2
+          ma: average m, (d) -> d.valueOffset
 
       params.hub.on 'range nudge forward', (p) ->
         return if !range?
@@ -155,13 +155,13 @@ module.exports = (spec, components) ->
           p1: newp1
           p2: newp2
           m: m
-          ma: average m, (d) -> d.wsp2
+          ma: average m, (d) -> d.valueOffset
     updateField: (itemId, state, params) ->
       items.forEach (item) ->
         if item.id == itemId then item.updateData state, params
       Neighbours = neighbours state.data, (d) -> d.time
       if range
-        newMa = average range.m, (d) -> d.wsp2 #calculate new ma to see if the center value has changed
+        newMa = average range.m, (d) -> d.valueOffset #calculate new ma to see if the center value has changed
         if range.ma != newMa #if the values are different, update the center value
           range.ma = newMa
           params.onRangeSelect
@@ -250,16 +250,11 @@ module.exports = (spec, components) ->
             p1: p1.time
             p2: p2.time
             m: m
-            ma: average m, (d) -> d.wsp2
+            ma: average m, (d) -> d.valueOffset
 
         getx: ->
           x = d3.mouse(inner.node())[0]
-          datarange = scale.x.range()
-          if datarange[0] > x
-            x = datarange[0]
-          if datarange[1] < x
-            x = datarange[1]
-          x
+          return x
 
         update: ->
           x = rangefsm.getx()
@@ -380,7 +375,7 @@ module.exports = (spec, components) ->
           p1: range.p1
           p2: range.p2
           m: range.m
-          ma: average range.m, (d) -> d.wsp2
+          ma: average range.m, (d) -> d.valueOffset
 
     resize: (dimensions) ->
       layout = calculate_layout dimensions
