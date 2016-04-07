@@ -27,7 +27,10 @@ module.exports = (spec, components) ->
         .select window
         .on namespacedListener, debounce 125, ->
           params.dimensions = domdimensions dom
-          dom.innerHTML = ''
+          
+          while dom.firstChild
+            dom.removeChild dom.firstChild
+
           list.render dom, state, params
 
       # hack to take into account the scrollbar if our content extends past the bottom
