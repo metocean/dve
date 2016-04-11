@@ -26,15 +26,28 @@ module.exports = (spec, components) ->
       d3
         .select window
         .on namespacedListener, debounce 125, ->
-          params.dimensions = domdimensions dom
+          dimensions = domdimensions dom
+
+          if isNaN(dimensions[0]) or isNaN(dimensions[1])
+            console.error 'Not resizing, element has invalid dimensions'
+            return
+
+          params.dimensions = dimensions
           dom.innerHTML = ''
           list.render dom, state, params
 
-      # hack to take into account the scrollbar if our content extends past the bottom
+      # hack to take into account the vertical scrollbar if our content extends past the bottom
       setTimeout(->
         dimensions = domdimensions dom
-        mount.resize dimensions
-      , 1000)
+
+        if isNaN(dimensions[0]) or isNaN(dimensions[1])
+          console.error 'Not resizing, element has invalid dimensions'
+          return
+
+        params.dimensions = dimensions
+        dom.innerHTML = ''
+        list.render dom, state, params
+      , 500)
 
     resize: (dimensions) ->
       list.resize dimensions
